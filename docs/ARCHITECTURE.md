@@ -56,7 +56,12 @@ The FastAPI service never receives the content being inspected. It exists for:
      validate the signature chain, read generative-AI assertions. Lazy-loaded.
    - `aiImage.ts` — 2D FFT radial power spectrum (up-sampling peaks), noise
      residual (missing/flat sensor noise), generator-native dimensions.
-   - `aiText.ts` — stylometry: burstiness, register, LLM-favoured vocabulary.
+   - `aiText.ts` — prose stylometry: burstiness, register, LLM-favoured vocabulary.
+   - `aiCode.ts` — code stylometry: comment density/uniformity, tutorial comments,
+     docstring coverage, assistant scaffolding leftovers, generic identifiers.
+     For `type === 'code'` the English letter-frequency test is skipped and the
+     summary leads with a "Trojan Source" warning when the Unicode module found
+     bidi overrides or homoglyphs in the source.
    - `assess.ts` — combines all of the above into one `AiAssessment`
      (`verdict`, `probability`, `confidence` basis, `signals[]`, `caveat`).
    Then builds the `AnalysisResult` (AI assessment, score, signal level, timeline).

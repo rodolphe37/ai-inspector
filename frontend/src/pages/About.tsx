@@ -46,7 +46,7 @@ export default function About() {
             transition={{ delay: 0.1 }}
             className="mt-4 text-lg text-muted max-w-2xl mx-auto"
           >
-            An independent AI-origin analyser for text and images — evidence-based,
+            An independent AI-origin analyser for text, code and images — evidence-based,
             not a black box.
           </motion.p>
         </div>

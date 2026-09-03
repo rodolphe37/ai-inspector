@@ -126,7 +126,7 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-6 text-center text-lg text-muted max-w-2xl mx-auto"
           >
-            An AI-origin analysis for text and images: cryptographic Content Credentials,
+            An AI-origin analysis for text, code and images: cryptographic Content Credentials,
             generator metadata, watermark markers and forensic detection — every verdict comes
             with its evidence and an honest confidence level.
           </motion.p>

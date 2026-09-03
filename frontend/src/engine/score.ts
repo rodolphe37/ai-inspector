@@ -72,8 +72,19 @@ export function buildSummary(signals: EngineSignals, ai: AiAssessment): string {
       : ''
   }.`;
 
-  const extra: string[] = [];
   const u = signals.unicode;
+  const bidi = u.details.some((d) => /bidirectional/i.test(d.description));
+  if (signals.contentType === 'code' && (bidi || u.homoglyphs > 0)) {
+    return (
+      `⚠ Possible "Trojan Source" tampering: this code contains ` +
+      `${bidi ? 'bidirectional control override(s)' : ''}${bidi && u.homoglyphs ? ' and ' : ''}` +
+      `${u.homoglyphs ? `${u.homoglyphs} cross-script homoglyph(s)` : ''}, which can make ` +
+      `source read differently from how it compiles. Review the Unicode section. ` +
+      `AI-origin: ${ai.label}${ai.confidence === 'statistical' ? ` (${ai.probability}%)` : ''}.`
+    );
+  }
+
+  const extra: string[] = [];
   if (u.invisibleCharacters) extra.push(`${u.invisibleCharacters} invisible/tag character(s)`);
   if (u.homoglyphs) extra.push(`${u.homoglyphs} homoglyph(s)`);
   if (signals.c2pa.manifest && !signals.c2pa.isAiGenerated) {

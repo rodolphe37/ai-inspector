@@ -1,8 +1,9 @@
 # IA Inspector — Web app
 
-React SPA that answers **"was this made by AI?"** with a verdict + its evidence:
-C2PA Content Credentials, generator metadata, forensic image analysis and text
-stylometry.
+React SPA that answers **"was this made by AI?"** for text, code and images,
+with a verdict + its evidence: C2PA Content Credentials, generator metadata,
+forensic image analysis, and text / code stylometry (which also flags
+"Trojan Source" Unicode tampering in code).
 
 All analysis runs **in the browser** (`src/engine`) — including full C2PA
 signature validation (WASM) and the FFT-based image forensics. The
@@ -41,7 +42,8 @@ npm run build                 # production build (+ PWA)
  Browser (SPA)
  ├── src/engine/            analysis — c2pa (WASM signature validation),
  │                          metadata (exifr), aiImage (FFT + noise forensics),
- │                          aiText (stylometry), assess (AI-origin verdict),
+ │                          aiText (prose), aiCode (code + Trojan Source),
+ │                          assess (AI-origin verdict),
  │                          unicode, statistics, fingerprints, score
  ├── src/services/          HTTP when signed in · IndexedDB when anonymous
  │     └── runAnalysis()    enforce plan limits → consume quota → analyse → persist

@@ -1,6 +1,6 @@
 # IA Inspector
 
-An **evidence-based AI-origin analyser** for text and images. It produces a
+An **evidence-based AI-origin analyser** for text, code and images. It produces a
 single verdict — *AI-generated / likely / possible / no evidence* — from:
 
 - **C2PA Content Credentials** — full manifest parsing + signature validation
@@ -11,6 +11,9 @@ single verdict — *AI-generated / likely / possible / no evidence* — from:
 - **Forensic image analysis** — frequency-domain up-sampling artifacts, sensor-
   noise residual, generator-native dimensions.
 - **Text stylometry** — burstiness, register, LLM-favoured vocabulary.
+- **Code stylometry** — comment density/uniformity, tutorial comments, docstring
+  coverage, assistant leftovers, generic identifiers. Also flags **"Trojan
+  Source"** Unicode tampering (bidi overrides / homoglyphs in source).
 
 Every verdict states its **confidence basis** (cryptographic / metadata /
 forensic estimate) and lists the signals behind it. Statistical estimates are

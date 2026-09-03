@@ -4,7 +4,7 @@ Repo guide for AI assistants. Keep it short; link out for detail.
 
 ## What this is
 
-`IA Inspector` — an **evidence-based AI-origin analyser** for text and
+`IA Inspector` — an **evidence-based AI-origin analyser** for text, code and
 images. It emits one verdict (`ai_confirmed` / `ai_likely` / `ai_possible` /
 `inconclusive` / `no_evidence` / `human_declared`) with a confidence basis
 (`cryptographic` / `metadata` / `statistical`) and the list of contributing
@@ -52,7 +52,7 @@ PostgreSQL: `cd backend && make db-up`, set `DATABASE_URL` in `backend/.env`,
 
 ```
 frontend/src/
-  engine/         c2pa (WASM) · aiImage (FFT/noise) · aiText (stylometry) · assess (verdict)
+  engine/         c2pa (WASM) · aiImage (FFT/noise) · aiText (prose stylometry) · aiCode (code stylometry + Trojan Source) · assess (verdict)
                   · unicode · metadata · statistics · fingerprints · score · index (orchestrator) · clean
   services/       index (analysisApi, historyApi, settingsApi, fingerprintApi, runAnalysis) · catalog · dashboard · errors
   stores/         useAuthStore · useQuotaStore · useSettingsStore · useHistoryStore

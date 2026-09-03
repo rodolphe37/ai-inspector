@@ -14,6 +14,7 @@ import { analyzeC2PA, noC2PA } from './c2pa';
 import { analyzeStatistics } from './statistics';
 import { analyzeImageAi } from './aiImage';
 import { analyzeTextAi } from './aiText';
+import { analyzeCodeAi } from './aiCode';
 import { assess } from './assess';
 import { matchFingerprints, type EngineSignals } from './fingerprints';
 import { buildSummary, DISCLAIMER, scoreSignals } from './score';
@@ -92,9 +93,9 @@ export async function analyzeContent(
   // --- C2PA (all tiers — the authoritative AI-origin signal) --------
   const c2pa = file && !isTextual ? await analyzeC2PA(file) : noC2PA;
 
-  // --- Statistics (pro+, textual) --------------------------------
+  // --- Statistics (pro+, prose only — letter-frequency is meaningless for code)
   const statistical =
-    can(tier, 'statistical_analysis') && isTextual && text.trim().length > 0
+    can(tier, 'statistical_analysis') && type === 'text' && text.trim().length > 0
       ? analyzeStatistics(text)
       : null;
 
@@ -111,7 +112,14 @@ export async function analyzeContent(
   );
   const imageAi =
     file && type === 'image' ? await analyzeImageAi(file, { hasCameraMetadata }) : null;
-  const textAi = isTextual && text.trim().length > 0 ? analyzeTextAi(text) : null;
+  const textAi =
+    text.trim().length > 0
+      ? type === 'code'
+        ? analyzeCodeAi(text, input.mode === 'text' ? input.language : name.split('.').pop())
+        : type === 'text'
+          ? analyzeTextAi(text)
+          : null
+      : null;
   const aiAssessment = assess(signals, fingerprints, imageAi, textAi);
 
   const { score, signalLevel } = scoreSignals(signals, fingerprints);

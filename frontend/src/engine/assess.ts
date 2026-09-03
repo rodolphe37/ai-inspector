@@ -125,9 +125,8 @@ export function assess(
       contributions.push({ label: s.label, detail: s.detail, weight: s.weight });
     }
     const p = textAi.probability;
-    basis.push(
-      `Text stylometric estimate: ${p}%${textAi.reliable ? '' : ' (short sample — low reliability)'}`,
-    );
+    const kind = signals.contentType === 'code' ? 'Code stylometry estimate' : 'Text stylometric estimate';
+    basis.push(`${kind}: ${p}%${textAi.reliable ? '' : ' (short sample — low reliability)'}`);
     if (p >= 62) return finish('ai_possible', p, 'statistical', basis, contributions);
     if (p >= 40) return finish('inconclusive', p, 'statistical', basis, contributions);
     return finish('no_evidence', p, 'statistical', basis, contributions);
