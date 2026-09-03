@@ -1,0 +1,40 @@
+{
+  "stats": {
+    "analyses": 128,
+    "signalsDetected": 17,
+    "cleanFiles": 94,
+    "knownFingerprints": 12
+  },
+  "activity": [
+    { "date": "2026-07-19", "analyses": 3, "signals": 0 },
+    { "date": "2026-07-20", "analyses": 5, "signals": 1 },
+    { "date": "2026-07-21", "analyses": 2, "signals": 0 },
+    { "date": "2026-07-22", "analyses": 7, "signals": 2 },
+    { "date": "2026-07-23", "analyses": 4, "signals": 1 },
+    { "date": "2026-07-24", "analyses": 6, "signals": 0 },
+    { "date": "2026-07-25", "analyses": 8, "signals": 3 },
+    { "date": "2026-07-26", "analyses": 3, "signals": 0 },
+    { "date": "2026-07-27", "analyses": 5, "signals": 1 },
+    { "date": "2026-07-28", "analyses": 9, "signals": 2 },
+    { "date": "2026-07-29", "analyses": 4, "signals": 0 },
+    { "date": "2026-07-30", "analyses": 6, "signals": 1 },
+    { "date": "2026-07-31", "analyses": 7, "signals": 2 },
+    { "date": "2026-08-01", "analyses": 5, "signals": 1 },
+    { "date": "2026-08-02", "analyses": 3, "signals": 0 },
+    { "date": "2026-08-03", "analyses": 8, "signals": 3 },
+    { "date": "2026-08-04", "analyses": 4, "signals": 0 },
+    { "date": "2026-08-05", "analyses": 6, "signals": 1 },
+    { "date": "2026-08-06", "analyses": 5, "signals": 2 },
+    { "date": "2026-08-07", "analyses": 7, "signals": 1 },
+    { "date": "2026-08-08", "analyses": 3, "signals": 0 },
+    { "date": "2026-08-09", "analyses": 6, "signals": 2 },
+    { "date": "2026-08-10", "analyses": 4, "signals": 0 },
+    { "date": "2026-08-11", "analyses": 8, "signals": 3 },
+    { "date": "2026-08-12", "analyses": 5, "signals": 1 },
+    { "date": "2026-08-13", "analyses": 7, "signals": 2 },
+    { "date": "2026-08-14", "analyses": 4, "signals": 0 },
+    { "date": "2026-08-15", "analyses": 6, "signals": 1 },
+    { "date": "2026-08-16", "analyses": 3, "signals": 0 },
+    { "date": "2026-08-17", "analyses": 5, "signals": 2 }
+  ]
+}

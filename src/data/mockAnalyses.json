@@ -1,0 +1,98 @@
+[
+  {
+    "id": "analysis_001",
+    "name": "research-paper.txt",
+    "type": "text",
+    "date": "2026-08-17T14:32:00Z",
+    "status": "possible_signal",
+    "score": 72
+  },
+  {
+    "id": "analysis_002",
+    "name": "article-draft.md",
+    "type": "text",
+    "date": "2026-08-17T09:15:00Z",
+    "status": "clean",
+    "score": 12
+  },
+  {
+    "id": "analysis_003",
+    "name": "photo-portrait.png",
+    "type": "image",
+    "date": "2026-08-16T18:44:00Z",
+    "status": "c2pa_found",
+    "score": 88
+  },
+  {
+    "id": "analysis_004",
+    "name": "utils.ts",
+    "type": "code",
+    "date": "2026-08-16T11:20:00Z",
+    "status": "clean",
+    "score": 5
+  },
+  {
+    "id": "analysis_005",
+    "name": "synth-output.txt",
+    "type": "text",
+    "date": "2026-08-15T16:02:00Z",
+    "status": "signal_detected",
+    "score": 91
+  },
+  {
+    "id": "analysis_006",
+    "name": "meeting-notes.md",
+    "type": "text",
+    "date": "2026-08-15T10:30:00Z",
+    "status": "inconclusive",
+    "score": 48
+  },
+  {
+    "id": "analysis_007",
+    "name": "voice-sample.wav",
+    "type": "audio",
+    "date": "2026-08-14T20:11:00Z",
+    "status": "possible_signal",
+    "score": 65
+  },
+  {
+    "id": "analysis_008",
+    "name": "config.json",
+    "type": "file",
+    "date": "2026-08-14T08:55:00Z",
+    "status": "clean",
+    "score": 3
+  },
+  {
+    "id": "analysis_009",
+    "name": "essay-final.txt",
+    "type": "text",
+    "date": "2026-08-13T22:18:00Z",
+    "status": "clean",
+    "score": 18
+  },
+  {
+    "id": "analysis_010",
+    "name": "generated-content.txt",
+    "type": "text",
+    "date": "2026-08-13T14:00:00Z",
+    "status": "signal_detected",
+    "score": 84
+  },
+  {
+    "id": "analysis_011",
+    "name": "landscape-photo.jpg",
+    "type": "image",
+    "date": "2026-08-12T19:33:00Z",
+    "status": "clean",
+    "score": 8
+  },
+  {
+    "id": "analysis_012",
+    "name": "api-handler.py",
+    "type": "code",
+    "date": "2026-08-12T13:45:00Z",
+    "status": "inconclusive",
+    "score": 42
+  }
+]

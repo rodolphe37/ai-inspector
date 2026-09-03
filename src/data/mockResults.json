@@ -1,0 +1,129 @@
+{
+  "id": "analysis_001",
+  "name": "research-paper.txt",
+  "type": "text",
+  "date": "2026-08-17T14:32:00Z",
+  "status": "possible_signal",
+  "score": 72,
+  "signalLevel": "moderate",
+  "isDemo": true,
+  "summary": "The content shows a statistical distribution compatible with a known watermarking fingerprint. No invisible Unicode characters or metadata anomalies were detected. No C2PA manifest was found.",
+  "disclaimer": "An absence of signal does not constitute proof of human origin. This is a demo result — no real content analysis was performed.",
+  "unicode": {
+    "status": "clean",
+    "invisibleCharacters": 0,
+    "controlCharacters": 0,
+    "homoglyphs": 0,
+    "details": []
+  },
+  "metadata": {
+    "status": "found",
+    "format": "Plain text",
+    "entries": [
+      { "key": "Creator", "value": "Example Application" },
+      { "key": "Created", "value": "2026-08-17" },
+      { "key": "Modified", "value": "2026-08-17" },
+      { "key": "Encoding", "value": "UTF-8" },
+      { "key": "Line endings", "value": "LF" },
+      { "key": "Character count", "value": "4,832" }
+    ]
+  },
+  "c2pa": {
+    "status": "not_found",
+    "manifest": false
+  },
+  "fingerprints": [
+    {
+      "id": "fp_synthid_text",
+      "name": "SynthID Text",
+      "provider": "Google DeepMind",
+      "status": "possible",
+      "confidence": 87,
+      "method": "Token distribution comparison"
+    },
+    {
+      "id": "fp_watermark_x",
+      "name": "Watermark-X",
+      "provider": "Confidential",
+      "status": "not_found",
+      "confidence": 99,
+      "method": "Log-likelihood ratio test"
+    },
+    {
+      "id": "fp_zeta",
+      "name": "Fingerprint-Z",
+      "provider": "Independent",
+      "status": "inconclusive",
+      "confidence": 54,
+      "method": "Structural pattern matching"
+    }
+  ],
+  "statistical": {
+    "status": "possible",
+    "observedScore": 4.73,
+    "threshold": 3.2,
+    "pValue": 0.000002,
+    "conclusion": "The observed distribution is statistically compatible with the selected fingerprint.",
+    "entropy": 4.21,
+    "frequencyDeviation": 0.038,
+    "watermarkSignal": 4.73,
+    "distribution": [
+      { "label": "A", "observed": 8.2, "expected": 8.5 },
+      { "label": "B", "observed": 6.1, "expected": 6.0 },
+      { "label": "C", "observed": 7.8, "expected": 7.2 },
+      { "label": "D", "observed": 5.4, "expected": 5.8 },
+      { "label": "E", "observed": 12.1, "expected": 12.8 },
+      { "label": "F", "observed": 2.1, "expected": 2.5 },
+      { "label": "G", "observed": 1.9, "expected": 1.6 },
+      { "label": "H", "observed": 6.0, "expected": 6.1 },
+      { "label": "I", "observed": 7.2, "expected": 6.9 },
+      { "label": "J", "observed": 0.4, "expected": 0.3 },
+      { "label": "K", "observed": 0.8, "expected": 0.7 },
+      { "label": "L", "observed": 4.1, "expected": 4.0 }
+    ]
+  },
+  "timeline": [
+    {
+      "step": 1,
+      "title": "Normalized content",
+      "description": "Content was normalized and prepared for analysis.",
+      "icon": "file",
+      "status": "complete"
+    },
+    {
+      "step": 2,
+      "title": "No invisible Unicode characters",
+      "description": "Zero-width spaces, joiners, and directional marks were not detected.",
+      "icon": "type",
+      "status": "complete"
+    },
+    {
+      "step": 3,
+      "title": "Metadata detected",
+      "description": "Standard metadata fields were found in the content.",
+      "icon": "info",
+      "status": "info"
+    },
+    {
+      "step": 4,
+      "title": "C2PA absent",
+      "description": "No C2PA manifest was detected in this content.",
+      "icon": "shield",
+      "status": "complete"
+    },
+    {
+      "step": 5,
+      "title": "Fingerprint match observed",
+      "description": "SynthID Text fingerprint returned a possible match.",
+      "icon": "fingerprint",
+      "status": "warning"
+    },
+    {
+      "step": 6,
+      "title": "Statistical signal observed",
+      "description": "Token distribution analysis shows compatibility with a known watermark.",
+      "icon": "bar-chart",
+      "status": "warning"
+    }
+  ]
+}
