@@ -8,6 +8,7 @@ import {
 import { PageTransition } from '@/components/layout/PageTransition';
 import { PrivacyBadge } from '@/components/ui/PrivacyBadge';
 import { runAnalysis, QuotaBlockedError, PlanLimitError } from '@/services';
+import { ApiError } from '@/lib/apiClient';
 import { useQuotaStore } from '@/stores/useQuotaStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { planFor } from '@/lib/plans';
@@ -87,7 +88,13 @@ export default function Analyze() {
         setError(err.message);
         return;
       }
-      setError('Analysis failed. Please try again.');
+      if (err instanceof ApiError && err.status >= 500) {
+        setError('The analysis service returned an error. Please try again in a moment.');
+      } else if (err instanceof TypeError) {
+        setError("Can't reach the analysis service. Check that the API is running, then retry.");
+      } else {
+        setError('Analysis failed. Please try again.');
+      }
       console.error(err);
     }
   };
