@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Download, Sparkles, Search, Eye, FileText, Type,
+  Download, Sparkles, Search, FileText, Type,
   Info, Shield, Fingerprint, BarChart3, AlertTriangle,
   CheckCircle2, ArrowLeft,
 } from 'lucide-react';
@@ -33,10 +33,15 @@ export default function Results() {
 
   useEffect(() => {
     if (!id) return;
-    analysisApi.getAnalysis(id).then((r) => {
-      setResult(r);
-      setLoading(false);
-    });
+    let alive = true;
+    analysisApi
+      .getAnalysis(id)
+      .then((r) => alive && setResult(r))
+      .catch(() => alive && setResult(null))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
   }, [id]);
 
   const handleExport = () => {
@@ -117,20 +122,10 @@ export default function Results() {
           </div>
         </div>
 
-        {/* Demo warning */}
-        {result.isDemo && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 border border-warning/20 mb-6">
-            <Eye className="h-4 w-4 text-warning flex-shrink-0" />
-            <span className="text-sm text-warning">
-              Demo result — no real content analysis performed.
-            </span>
-          </div>
-        )}
-
         {/* Score */}
         <div className="surface p-8 mb-6">
           <div className="flex flex-col lg:flex-row items-center gap-8">
-            <ScoreRing score={result.score} label="MODERATE SIGNAL" size={200} />
+            <ScoreRing score={result.score} label={`${result.signalLevel.toUpperCase()} SIGNAL`} size={200} />
             <div className="flex-1 text-center lg:text-left">
               <p className="text-lg text-muted">
                 This score represents a <span className="text-content font-medium">signal level</span>,
@@ -256,18 +251,16 @@ export default function Results() {
         </div>
 
         {/* Statistical analysis */}
+        {result.statistical.distribution.length > 0 ? (
         <div className="surface p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <BarChart3 className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">Statistical analysis</h3>
-            <span className="ml-2 text-xs text-warning px-2 py-0.5 rounded-full bg-warning/10 border border-warning/20">
-              DEMO DATA
-            </span>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-4 mb-6">
+          <div className="grid sm:grid-cols-4 gap-4 mb-6">
             <div className="surface-2 p-4 rounded-lg">
-              <p className="text-xs text-muted mb-1">Observed score</p>
+              <p className="text-xs text-muted mb-1">χ² (letter dist.)</p>
               <p className="text-2xl font-bold tabular-nums">{result.statistical.observedScore}</p>
             </div>
             <div className="surface-2 p-4 rounded-lg">
@@ -277,6 +270,10 @@ export default function Results() {
             <div className="surface-2 p-4 rounded-lg">
               <p className="text-xs text-muted mb-1">p-value</p>
               <p className="text-2xl font-bold tabular-nums">{result.statistical.pValue}</p>
+            </div>
+            <div className="surface-2 p-4 rounded-lg">
+              <p className="text-xs text-muted mb-1">Entropy (bits/char)</p>
+              <p className="text-2xl font-bold tabular-nums">{result.statistical.entropy}</p>
             </div>
           </div>
 
@@ -306,6 +303,15 @@ export default function Results() {
             </p>
           </div>
         </div>
+        ) : (
+          <div className="surface p-6 mb-6 border-info/20">
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart3 className="h-5 w-5 text-info" />
+              <h3 className="text-lg font-semibold">Statistical analysis</h3>
+            </div>
+            <p className="text-sm text-muted">{result.statistical.conclusion}</p>
+          </div>
+        )}
 
         {/* What we found timeline */}
         <div className="surface p-6 mb-6">

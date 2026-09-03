@@ -2,7 +2,10 @@ import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { SignUpModal } from '@/components/auth/SignUpModal';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { useQuotaStore } from '@/stores/useQuotaStore';
 
 const Landing = lazy(() => import('@/pages/Landing'));
 const Features = lazy(() => import('@/pages/Features'));
@@ -12,6 +15,7 @@ const Pricing = lazy(() => import('@/pages/Pricing'));
 const About = lazy(() => import('@/pages/About'));
 const Login = lazy(() => import('@/pages/Login'));
 const Signup = lazy(() => import('@/pages/Signup'));
+const AuthCallback = lazy(() => import('@/pages/AuthCallback'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 const Dashboard = lazy(() => import('@/pages/app/Dashboard'));
@@ -31,16 +35,36 @@ function PageLoader() {
   );
 }
 
-function App() {
-  const theme = useSettingsStore((s) => s.settings.appearance.theme);
+function useBootstrap() {
+  const initAuth = useAuthStore((s) => s.init);
+  const bootstrapQuota = useQuotaStore((s) => s.bootstrap);
+  const loadSettings = useSettingsStore((s) => s.load);
+  const status = useAuthStore((s) => s.status);
 
+  useEffect(() => {
+    void initAuth().then(() => {
+      void bootstrapQuota();
+      void loadSettings();
+    });
+  }, [initAuth, bootstrapQuota, loadSettings]);
+
+  // reload user-scoped data whenever auth state flips
+  useEffect(() => {
+    if (status !== 'loading') {
+      void loadSettings();
+      void useQuotaStore.getState().refresh();
+    }
+  }, [status, loadSettings]);
+}
+
+function useTheme() {
+  const theme = useSettingsStore((s) => s.settings.appearance.theme);
   useEffect(() => {
     const root = document.documentElement;
     const apply = (mode: 'dark' | 'light') => {
       if (mode === 'light') root.classList.add('light');
       else root.classList.remove('light');
     };
-
     if (theme === 'system') {
       const mq = window.matchMedia('(prefers-color-scheme: light)');
       apply(mq.matches ? 'light' : 'dark');
@@ -50,6 +74,11 @@ function App() {
     }
     apply(theme);
   }, [theme]);
+}
+
+function App() {
+  useBootstrap();
+  useTheme();
 
   return (
     <BrowserRouter>
@@ -66,6 +95,9 @@ function App() {
             <Route path="/signup" element={<Signup />} />
           </Route>
 
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/auth/magic" element={<AuthCallback />} />
+
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="analyze" element={<Analyze />} />
@@ -80,6 +112,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
+      <SignUpModal />
     </BrowserRouter>
   );
 }

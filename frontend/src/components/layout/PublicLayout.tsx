@@ -1,8 +1,9 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import {  Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Logo from "../../assets/app-logo.png"
+import { useAuthStore } from '@/stores/useAuthStore';
+import Logo from '../../assets/app-logo.png';
 
 const navLinks = [
   { to: '/features', label: 'Features' },
@@ -14,6 +15,7 @@ const navLinks = [
 
 export function PublicLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const authed = useAuthStore((s) => s.status === 'authenticated');
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
@@ -46,17 +48,13 @@ export function PublicLayout() {
             </nav>
 
             <div className="hidden md:flex items-center gap-3">
-              <Link
-                to="/login"
-                className="text-sm font-medium text-muted hover:text-content transition-colors"
-              >
-                Sign in
-              </Link>
-              <Link
-                to="/app"
-                className="text-sm font-medium px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-hover transition-colors"
-              >
-                Launch app
+              {!authed && (
+                <Link to="/login" className="text-sm font-medium text-muted hover:text-content transition-colors">
+                  Sign in
+                </Link>
+              )}
+              <Link to="/app" className="text-sm font-medium px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-hover transition-colors">
+                {authed ? 'Open app' : 'Launch app'}
               </Link>
             </div>
 
@@ -151,7 +149,7 @@ export function PublicLayout() {
               © 2026 Provenance Inspector. An absence of signal does not constitute proof of human origin.
             </p>
             <p className="text-xs text-subtle">
-              Demo mode — No real content analysis is performed.
+              Content is analysed locally in your browser. Not an AI detector.
             </p>
           </div>
         </div>

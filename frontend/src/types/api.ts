@@ -1,23 +1,22 @@
-import type { AnalysisResult, CleanResult } from './analysis';
+import type { AnalysisResult, Analysis } from './analysis';
+import type { Fingerprint } from './fingerprint';
+import type { UserSettings } from './settings';
 
 export interface AnalysisApi {
-  analyzeText(input: string, language?: string): Promise<AnalysisResult>;
-  analyzeFile(file: File): Promise<AnalysisResult>;
-  getAnalysis(id: string): Promise<AnalysisResult>;
-  cleanContent(id: string, operations: string[]): Promise<CleanResult>;
+  getAnalysis(id: string): Promise<AnalysisResult | null>;
 }
 
 export interface FingerprintApi {
-  list(): Promise<import('./fingerprint').Fingerprint[]>;
-  get(id: string): Promise<import('./fingerprint').Fingerprint>;
+  list(): Promise<Fingerprint[]>;
+  get(id: string): Promise<Fingerprint>;
 }
 
 export interface HistoryApi {
-  list(): Promise<import('./analysis').Analysis[]>;
+  list(): Promise<Analysis[]>;
   delete(id: string): Promise<void>;
 }
 
 export interface SettingsApi {
-  get(): Promise<import('./settings').UserSettings>;
-  update(settings: import('./settings').UserSettings): Promise<import('./settings').UserSettings>;
+  get(): Promise<UserSettings>;
+  update(settings: Partial<UserSettings>): Promise<UserSettings>;
 }

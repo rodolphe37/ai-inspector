@@ -92,6 +92,34 @@
     border: 1px solid rgb(var(--color-border));
     border-radius: var(--radius-lg);
   }
+  .input {
+    width: 100%;
+    padding: 0.625rem 1rem 0.625rem 2.5rem;
+    background-color: rgb(var(--color-surface-2));
+    border: 1px solid rgb(var(--color-border));
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    color: rgb(var(--color-text));
+    transition: border-color 0.15s;
+  }
+  .input:focus {
+    outline: none;
+    border-color: rgb(var(--color-primary));
+  }
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-md);
+    background-color: rgb(var(--color-primary));
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .btn-download:hover {
+    background-color: rgb(var(--color-primary-hover));
+  }
   .surface-2 {
     background-color: rgb(var(--color-surface-2));
     border: 1px solid rgb(var(--color-border));

@@ -8,16 +8,40 @@ import {
 } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { PrivacyBadge } from '@/components/ui/PrivacyBadge';
+import { analyzeUnicode } from '@/engine/unicode';
+import { analyzeStatistics } from '@/engine/statistics';
+import { analyzeTextMetadata } from '@/engine/metadata';
+import type { DetectionStatus } from '@/types/analysis';
 
 const demoText = `The rapid advancement of machine learning models has transformed how we interact with digital content. Understanding the provenance of information is essential for maintaining trust in media ecosystems. Provenance signals, metadata, and watermark detection provide a technical foundation for content attribution that does not rely on fallible AI classifiers.`;
 
-const demoResults = [
-  { label: 'Unicode', status: 'clean' as const },
-  { label: 'Metadata', status: 'found' as const },
-  { label: 'C2PA', status: 'not_found' as const },
-  { label: 'Known watermark', status: 'possible' as const },
-  { label: 'Statistical signal', status: 'inconclusive' as const },
-];
+function runDemo(text: string): { label: string; status: DetectionStatus; detail: string }[] {
+  const u = analyzeUnicode(text);
+  const s = analyzeStatistics(text);
+  const m = analyzeTextMetadata(text);
+  return [
+    {
+      label: 'Invisible Unicode',
+      status: u.invisibleCharacters > 0 ? 'found' : 'clean',
+      detail: u.invisibleCharacters > 0 ? `${u.invisibleCharacters} character(s)` : 'none detected',
+    },
+    {
+      label: 'Homoglyphs',
+      status: u.homoglyphs > 0 ? 'found' : 'clean',
+      detail: u.homoglyphs > 0 ? `${u.homoglyphs} cross-script letter(s)` : 'none detected',
+    },
+    {
+      label: 'Text metadata',
+      status: 'found',
+      detail: `${m.entries.length} fields · ${m.entries.find((e) => e.key === 'Line endings')?.value ?? ''}`,
+    },
+    {
+      label: 'Letter distribution',
+      status: s.status,
+      detail: `χ²=${s.observedScore} · entropy ${s.entropy} bits/char`,
+    },
+  ];
+}
 
 const whyCards = [
   {
@@ -51,16 +75,18 @@ const pipelineSteps = [
 
 export default function Landing() {
   const [analyzing, setAnalyzing] = useState(false);
-  const [showResults, setShowResults] = useState(false);
+  const [text, setText] = useState(demoText);
+  const [results, setResults] = useState<ReturnType<typeof runDemo> | null>(null);
 
   const handleAnalyze = () => {
     setAnalyzing(true);
-    setShowResults(false);
+    setResults(null);
     setTimeout(() => {
+      setResults(runDemo(text));
       setAnalyzing(false);
-      setShowResults(true);
-    }, 1800);
+    }, 900);
   };
+  const showResults = results != null;
 
   return (
     <div>
@@ -138,7 +164,7 @@ export default function Landing() {
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Live demo</h2>
             <p className="mt-2 text-muted">
-              See how provenance inspection works. This is a simulated analysis — no real processing occurs.
+              A real, deterministic analysis running in your browser. Edit the text and run it.
             </p>
           </div>
 
@@ -150,7 +176,8 @@ export default function Landing() {
                 <span className="text-xs text-subtle">plaintext</span>
               </div>
               <textarea
-                defaultValue={demoText}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
                 className="w-full h-48 bg-surface-2 rounded-lg p-4 text-sm font-mono text-content resize-none border border-default focus:outline-none focus:border-primary transition-colors"
               />
               <button
@@ -177,7 +204,7 @@ export default function Landing() {
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-semibold text-muted">OUTPUT</span>
                 {showResults && (
-                  <span className="text-xs text-warning">Demo result — no real analysis performed</span>
+                  <span className="text-xs text-subtle">preview · full pipeline in the app</span>
                 )}
               </div>
 
@@ -213,15 +240,18 @@ export default function Landing() {
                     animate={{ opacity: 1 }}
                     className="space-y-3"
                   >
-                    {demoResults.map((result, i) => (
+                    {results!.map((result, i) => (
                       <motion.div
                         key={result.label}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        className="flex items-center justify-between p-3 rounded-lg bg-surface-2 border border-default"
+                        className="flex items-center justify-between gap-3 p-3 rounded-lg bg-surface-2 border border-default"
                       >
-                        <span className="text-sm font-medium">{result.label}</span>
+                        <div className="min-w-0">
+                          <span className="text-sm font-medium">{result.label}</span>
+                          <p className="text-xs text-subtle truncate">{result.detail}</p>
+                        </div>
                         <StatusBadge status={result.status} />
                       </motion.div>
                     ))}
@@ -231,7 +261,7 @@ export default function Landing() {
                       transition={{ delay: 0.6 }}
                       className="pt-2"
                     >
-                      <PrivacyBadge label="Processed locally in demo mode" />
+                      <PrivacyBadge label="Analysed locally in your browser" />
                     </motion.div>
                   </motion.div>
                 </AnimatePresence>
@@ -326,7 +356,7 @@ export default function Landing() {
               </h2>
               <p className="mt-4 text-muted">
                 Provenance Inspector is designed for local-first analysis. No content is sent to
-                external servers in demo mode. No LLM is involved. No training on your data.
+                external servers. No LLM is involved. No training on your data.
               </p>
               <ul className="mt-6 space-y-3">
                 {[
@@ -385,7 +415,7 @@ export default function Landing() {
             Start inspecting your content
           </h2>
           <p className="mt-3 text-muted max-w-xl mx-auto">
-            No registration required for demo mode. Explore the full analysis pipeline with simulated data.
+            No account required to start. The full analysis pipeline runs in your browser.
           </p>
           <Link
             to="/app/analyze"

@@ -1,10 +1,12 @@
+import type { PlanTier } from './user';
+
 export type ThemeMode = 'dark' | 'light' | 'system';
 
 export interface UserSettings {
   account: {
     email: string;
     name: string;
-    plan: 'free' | 'pro' | 'business';
+    plan: PlanTier;
   };
   appearance: {
     theme: ThemeMode;

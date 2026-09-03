@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, FileText, Upload, X, CheckCircle2, Lock, Eye,
-  ClipboardPaste, Trash2, Loader2,
+  ClipboardPaste, Trash2, Loader2, AlertCircle,
 } from 'lucide-react';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { PrivacyBadge } from '@/components/ui/PrivacyBadge';
-import { useAnalysisStore } from '@/stores/useAnalysisStore';
-import { analysisApi } from '@/services';
+import { runAnalysis, QuotaBlockedError, PlanLimitError } from '@/services';
+import { useQuotaStore } from '@/stores/useQuotaStore';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { planFor } from '@/lib/plans';
 
 const sampleText = `The rapid advancement of machine learning models has transformed how we interact with digital content. Understanding the provenance of information is essential for maintaining trust in media ecosystems.
 
 Provenance signals, metadata, and watermark detection provide a technical foundation for content attribution that does not rely on fallible AI classifiers. By examining Unicode characters, metadata fields, C2PA manifests, and statistical distributions, we can build a transparent picture of a piece of content's history.`;
-
-const supportedFormats = ['TXT', 'MD', 'JSON', 'JS', 'TS', 'PY', 'HTML', 'CSS', 'PDF', 'DOCX', 'PNG', 'JPG', 'WEBP', 'WAV', 'MP3'];
 
 const analysisSteps = [
   { label: 'Normalizing', icon: FileText },
@@ -34,9 +34,14 @@ export default function Analyze() {
   const [dragging, setDragging] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const { startAnalysis } = useAnalysisStore();
+
+  const plan = useAuthStore((s) => s.plan);
+  const quota = useQuotaStore((s) => s.quota);
+  const caps = planFor(plan);
+  const supportedFormats = caps.contentTypes.map((t) => t.toUpperCase());
 
   const charCount = text.length;
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -53,59 +58,78 @@ export default function Analyze() {
     if (selected) setFile(selected);
   };
 
-  const runAnalysis = async () => {
+  const runAnalysisFlow = async () => {
+    setError(null);
     setAnalyzing(true);
     setCurrentStep(0);
-    startAnalysis();
 
-    for (let i = 0; i < analysisSteps.length; i++) {
-      setCurrentStep(i);
-      await new Promise((r) => setTimeout(r, 400));
+    const stepTimer = setInterval(() => {
+      setCurrentStep((s) => Math.min(s + 1, analysisSteps.length - 1));
+    }, 260);
+
+    try {
+      const input =
+        mode === 'file' && file
+          ? ({ mode: 'file', file } as const)
+          : ({ mode: 'text', text: text || sampleText, language } as const);
+
+      const { persistedId } = await runAnalysis(input);
+      clearInterval(stepTimer);
+      setAnalyzing(false);
+      setCurrentStep(-1);
+      navigate(`/app/results/${persistedId}`);
+    } catch (err) {
+      clearInterval(stepTimer);
+      setAnalyzing(false);
+      setCurrentStep(-1);
+      if (err instanceof QuotaBlockedError) return; // sign-up modal handles it
+      if (err instanceof PlanLimitError) {
+        setError(err.message);
+        return;
+      }
+      setError('Analysis failed. Please try again.');
+      console.error(err);
     }
-
-    let result;
-    if (mode === 'text' && text) {
-      result = await analysisApi.analyzeText(text, language);
-    } else if (mode === 'file' && file) {
-      result = await analysisApi.analyzeFile(file);
-    } else {
-      result = await analysisApi.analyzeText(sampleText);
-    }
-
-    setAnalyzing(false);
-    setCurrentStep(-1);
-    navigate(`/app/results/${result.id}`);
   };
 
   const canAnalyze = mode === 'text' ? text.trim().length > 0 : file !== null;
+  const remaining = quota && !quota.unlimited ? quota.remaining : null;
 
   return (
     <PageTransition>
       <div className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">Analyze content</h1>
-          <p className="mt-1 text-muted">Inspect text or files for known provenance signals.</p>
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Analyze content</h1>
+            <p className="mt-1 text-muted">Inspect text or files for known provenance signals — in your browser.</p>
+          </div>
+          {remaining != null && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 border border-default px-3 py-1 text-xs text-muted">
+              {remaining} scan{remaining === 1 ? '' : 's'} left
+            </span>
+          )}
         </div>
 
-        {/* Tabs */}
+        {error && (
+          <div className="mb-4 flex items-center gap-2 p-3 rounded-lg bg-error/10 border border-error/20">
+            <AlertCircle className="h-4 w-4 text-error shrink-0" />
+            <span className="text-sm text-error">{error}</span>
+          </div>
+        )}
+
         <div className="flex gap-1 p-1 bg-surface-2 rounded-lg w-fit mb-6">
           {(['text', 'file'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setMode(tab)}
-              className="relative px-4 py-2 text-sm font-medium transition-colors"
+              className={`relative px-4 py-2 text-sm font-medium transition-colors ${
+                mode === tab ? 'text-content' : 'text-muted'
+              }`}
             >
-              {tab === 'text' ? (
-                <span className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Text
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <Upload className="h-4 w-4" />
-                  File
-                </span>
-              )}
+              <span className="flex items-center gap-2">
+                {tab === 'text' ? <FileText className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
+                {tab === 'text' ? 'Text' : 'File'}
+              </span>
               {mode === tab && (
                 <motion.div
                   layoutId="tab-indicator"
@@ -119,13 +143,7 @@ export default function Analyze() {
 
         <AnimatePresence mode="wait">
           {mode === 'text' ? (
-            <motion.div
-              key="text"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
-              {/* Toolbar */}
+            <motion.div key="text" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-3">
                   <select
@@ -148,9 +166,8 @@ export default function Analyze() {
                   <button
                     onClick={async () => {
                       try {
-                        const clipText = await navigator.clipboard.readText();
-                        setText(clipText);
-                      } catch { /* clipboard not available */ }
+                        setText(await navigator.clipboard.readText());
+                      } catch { /* clipboard unavailable */ }
                     }}
                     className="flex items-center gap-1.5 text-xs text-muted hover:text-content px-2.5 py-1.5 rounded-lg hover:bg-surface-2 transition-colors"
                   >
@@ -167,7 +184,6 @@ export default function Analyze() {
                 </div>
               </div>
 
-              {/* Editor */}
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -176,9 +192,9 @@ export default function Analyze() {
               />
 
               <div className="mt-3 flex items-center justify-between">
-                <PrivacyBadge label="Processing locally in demo mode" />
+                <PrivacyBadge label="Analysed locally in your browser" />
                 <button
-                  onClick={runAnalysis}
+                  onClick={runAnalysisFlow}
                   disabled={!canAnalyze || analyzing}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -188,12 +204,7 @@ export default function Analyze() {
               </div>
             </motion.div>
           ) : (
-            <motion.div
-              key="file"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
+            <motion.div key="file" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               {!file ? (
                 <div
                   onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -204,17 +215,14 @@ export default function Analyze() {
                     dragging ? 'border-primary bg-primary/5' : 'border-border-hover hover:border-primary/50'
                   }`}
                 >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileSelect}
-                  />
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} />
                   <div className="p-4 rounded-2xl bg-surface-2 text-primary w-fit mx-auto mb-4">
                     <Upload className="h-8 w-8" />
                   </div>
                   <h3 className="text-lg font-semibold">Drop your file here</h3>
-                  <p className="mt-1 text-sm text-muted">or click to browse</p>
+                  <p className="mt-1 text-sm text-muted">
+                    or click to browse · up to {Math.round(caps.maxFileBytes / 1024 / 1024)} MB
+                  </p>
                   <div className="mt-4 flex flex-wrap justify-center gap-2">
                     {supportedFormats.map((fmt) => (
                       <span key={fmt} className="px-2 py-1 rounded-md bg-surface-2 border border-default text-xs text-muted">
@@ -224,11 +232,7 @@ export default function Analyze() {
                   </div>
                 </div>
               ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="surface p-6"
-                >
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="surface p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-3 rounded-xl bg-primary/10 text-primary">
@@ -241,10 +245,7 @@ export default function Analyze() {
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => setFile(null)}
-                      className="p-2 rounded-lg hover:bg-surface-2 text-muted"
-                    >
+                    <button onClick={() => setFile(null)} className="p-2 rounded-lg hover:bg-surface-2 text-muted">
                       <X className="h-4 w-4" />
                     </button>
                   </div>
@@ -255,9 +256,9 @@ export default function Analyze() {
                   </div>
 
                   <div className="mt-4 flex items-center justify-between">
-                    <PrivacyBadge label="File processed locally in demo mode" />
+                    <PrivacyBadge label="File parsed locally in your browser" />
                     <button
-                      onClick={runAnalysis}
+                      onClick={runAnalysisFlow}
                       disabled={analyzing}
                       className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors disabled:opacity-50"
                     >
@@ -271,46 +272,28 @@ export default function Analyze() {
           )}
         </AnimatePresence>
 
-        {/* Analysis overlay */}
         <AnimatePresence>
           {analyzing && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 bg-bg/90 backdrop-blur-sm flex items-center justify-center p-4"
             >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="surface p-8 max-w-md w-full"
-              >
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="surface p-8 max-w-md w-full">
                 <div className="flex items-center gap-3 mb-6">
                   <Loader2 className="h-5 w-5 text-primary animate-spin" />
                   <h2 className="text-lg font-semibold">Analyzing content</h2>
                 </div>
                 <div className="space-y-3">
                   {analysisSteps.map((step, i) => (
-                    <motion.div
-                      key={step.label}
-                      initial={{ opacity: 0.3 }}
-                      animate={{ opacity: i <= currentStep ? 1 : 0.3 }}
-                      className="flex items-center gap-3"
-                    >
+                    <motion.div key={step.label} animate={{ opacity: i <= currentStep ? 1 : 0.3 }} className="flex items-center gap-3">
                       <div className={`flex items-center justify-center h-6 w-6 rounded-full text-xs font-medium ${
-                        i < currentStep
-                          ? 'bg-success/20 text-success'
-                          : i === currentStep
-                            ? 'bg-primary/20 text-primary'
-                            : 'bg-surface-2 text-subtle'
+                        i < currentStep ? 'bg-success/20 text-success'
+                          : i === currentStep ? 'bg-primary/20 text-primary'
+                          : 'bg-surface-2 text-subtle'
                       }`}>
-                        {i < currentStep ? (
-                          <CheckCircle2 className="h-4 w-4" />
-                        ) : i === currentStep ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <span>{String(i + 1).padStart(2, '0')}</span>
-                        )}
+                        {i < currentStep ? <CheckCircle2 className="h-4 w-4" />
+                          : i === currentStep ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <span>{String(i + 1).padStart(2, '0')}</span>}
                       </div>
                       <span className={`text-sm ${i <= currentStep ? 'text-content' : 'text-subtle'}`}>
                         {String(i + 1).padStart(2, '0')} {step.label}

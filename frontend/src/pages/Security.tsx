@@ -10,7 +10,7 @@ const principles = [
   {
     icon: Lock,
     title: 'Privacy first',
-    description: 'Your content should remain yours. In demo mode, no content ever leaves your browser. The architecture is designed for local-first processing.',
+    description: 'Your content should remain yours. Analysis runs in your browser — content is never uploaded for inspection. Only what you explicitly save is stored.',
   },
   {
     icon: Eye,
@@ -129,7 +129,7 @@ export default function Security() {
           <h2 className="text-lg font-semibold mb-4">Our commitments</h2>
           <ul className="space-y-3">
             {[
-              'No content is sent to external servers in demo mode',
+              'Content is analysed locally; it is never sent to a server for inspection',
               'No LLM or AI classifier is used in the analysis pipeline',
               'No content is used for training or model improvement',
               'No tracking of content or analysis results',

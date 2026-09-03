@@ -45,7 +45,7 @@ const features = [
   {
     icon: Lock,
     title: 'Privacy-first architecture',
-    description: 'Designed for local processing. No content leaves your browser in demo mode. No LLM involved. No training on your data.',
+    description: 'Content is analysed in your browser. No LLM involved. No training on your data.',
   },
 ];
 
@@ -141,7 +141,7 @@ export default function Features() {
         <div className="surface p-8 text-center">
           <CheckCircle2 className="h-8 w-8 text-success mx-auto mb-4" />
           <h2 className="text-xl font-bold">Ready to inspect?</h2>
-          <p className="mt-2 text-muted">Start analyzing content in demo mode — no registration required.</p>
+          <p className="mt-2 text-muted">Start analysing content now — no account required.</p>
           <Link
             to="/app/analyze"
             className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors"
