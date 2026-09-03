@@ -9,6 +9,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+dev-dist
 *.local
 
 .vscode/*
@@ -21,3 +22,14 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.*
+!.env.example
+
+# Python backend
+server/.venv/
+server/**/__pycache__/
+server/**/*.pyc
+server/.pytest_cache/
+server/.ruff_cache/
+*.sqlite3
+*.db

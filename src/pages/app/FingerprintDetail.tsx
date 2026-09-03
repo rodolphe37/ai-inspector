@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Fingerprint as FingerprintIcon, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
+import { ArrowLeft, Fingerprint as FingerprintIcon, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { fingerprintApi } from '@/services';

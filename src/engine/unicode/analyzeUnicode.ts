@@ -4,7 +4,7 @@ export function analyzeUnicode(text: string): UnicodeResult {
   const findings: UnicodeResult['details'] = [];
   let invisible = 0;
   let control = 0;
-  let homoglyphs = 0;
+  const homoglyphs = 0;
 
   for (let i = 0; i < text.length; i++) {
     const char = text[i];

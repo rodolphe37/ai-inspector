@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Search, BarChart3, FileText, Lock, ArrowRight,
-  CheckCircle2, AlertTriangle, MinusCircle, HelpCircle,
+  CheckCircle2,
   Type, FileCheck, Fingerprint, Sparkles, Cpu, Eye,
 } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -67,7 +67,7 @@ export default function Landing() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bg/50 to-bg" />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent via-bg/50 to-bg" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

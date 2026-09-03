@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, Search, FileSearch, History,
+  LayoutDashboard, Search, History,
   Fingerprint, Sparkles, Settings, Bell, Menu, X, Eye, EyeOff,
   ChevronRight, User, LogOut,
 } from 'lucide-react';

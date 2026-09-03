@@ -41,7 +41,7 @@ function buildResult(name: string, type: string, content: string): AnalysisResul
 }
 
 export const mockAnalysisApi: AnalysisApi = {
-  async analyzeText(input: string, language = 'plaintext'): Promise<AnalysisResult> {
+  async analyzeText(input: string, _language = 'plaintext'): Promise<AnalysisResult> {
     await delay(1200);
     return buildResult('pasted-content.txt', 'text', input);
   },

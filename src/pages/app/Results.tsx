@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Download, Sparkles, Search, Eye, FileText, Type,
@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip,
-  ReferenceLine, LineChart, Line, CartesianGrid,
+  ReferenceLine, CartesianGrid,
 } from 'recharts';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { ScoreRing } from '@/components/ui/ScoreRing';
@@ -28,7 +28,6 @@ const timelineIcons: Record<string, typeof FileText> = {
 
 export default function Results() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
 
