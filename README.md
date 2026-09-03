@@ -40,6 +40,13 @@ npm run dev                                   # http://localhost:5173
 Use PostgreSQL instead of SQLite: `cd backend && make db-up` (Docker), set
 `DATABASE_URL` in `backend/.env`, then `make migrate`.
 
+**Trying Pro / Premium:** anonymous use needs no account. `cd backend && make
+seed-demo` creates local test accounts —
+`pro@demo.provenance-inspector.app` / `demo-pro-pass` and
+`premium@demo.provenance-inspector.app` / `demo-premium-pass`. Or register
+normally (→ Pro) and upgrade from Settings (billing is simulated). Details in
+[`backend/README.md`](backend/README.md#test-accounts-local-dev).
+
 ## Plans
 
 `anonymous` (no account, 5 scans / 48 h, local history) → `pro` → `premium`.

@@ -22,8 +22,23 @@ service only stores what a signed-in user chooses to keep.
 cd backend
 make install         # venv + deps + .env from .env.example
 make seed            # create tables (SQLite) and load the fingerprint catalogue
+make seed-demo       # optional: create local Pro + Premium test accounts
 make dev             # http://localhost:8000  ·  docs at /docs
 ```
+
+### Test accounts (local dev)
+
+Anonymous use needs no account. To try the **Pro** and **Premium** tiers,
+`make seed-demo` creates:
+
+| Email | Password | Plan |
+|---|---|---|
+| `pro@demo.provenance-inspector.app` | `demo-pro-pass` | pro |
+| `premium@demo.provenance-inspector.app` | `demo-premium-pass` | premium |
+
+It refuses to run outside `ENVIRONMENT=development` / `test` / `local`. You can
+also just register normally (you land on Pro) and switch to Premium from
+**Settings → Upgrade to Premium** — billing is simulated (`POST /billing/upgrade`).
 
 `make test` runs the pytest suite, `make smoke` runs an end-to-end check against
 a already-running server, `make lint` runs ruff.

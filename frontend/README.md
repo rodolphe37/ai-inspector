@@ -24,6 +24,11 @@ npm run dev                   # http://localhost:5173
 
 Run the [API](../backend) alongside it (`cd ../backend && make dev`).
 
+To try the Pro / Premium UI, create local test accounts with
+`cd ../backend && make seed-demo` (`pro@demo.provenance-inspector.app` /
+`demo-pro-pass`, `premium@demo.provenance-inspector.app` / `demo-premium-pass`),
+or register and upgrade from Settings (billing is simulated).
+
 ```bash
 npm run typecheck             # tsc --noEmit
 npm run lint                  # eslint
