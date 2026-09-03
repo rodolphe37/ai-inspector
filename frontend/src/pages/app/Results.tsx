@@ -215,8 +215,10 @@ export default function Results() {
             </div>
             <p className="text-sm text-muted">
               {result.c2pa.manifest
-                ? `C2PA manifest detected. Signer: ${result.c2pa.signer}`
-                : 'No C2PA manifest was detected in this demo analysis.'}
+                ? `C2PA manifest detected. Signer: ${result.c2pa.signer}. Signature not verified client-side.`
+                : result.type === 'text' || result.type === 'code'
+                  ? 'C2PA manifests apply to media files, not plain text.'
+                  : 'No embedded C2PA / Content Credentials manifest was found.'}
             </p>
           </motion.div>
 
@@ -234,18 +236,24 @@ export default function Results() {
               </div>
             </div>
             <div className="space-y-2.5">
-              {result.fingerprints.map((fp) => (
-                <div key={fp.id} className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium">{fp.name}</span>
-                    <span className="text-xs text-subtle ml-2">{fp.provider}</span>
+              {result.fingerprints.length === 0 ? (
+                <p className="text-sm text-muted">
+                  Known-fingerprint matching is available on the Pro and Premium plans.
+                </p>
+              ) : (
+                result.fingerprints.map((fp) => (
+                  <div key={fp.id} className="flex items-center justify-between" title={fp.method}>
+                    <div>
+                      <span className="text-sm font-medium">{fp.name}</span>
+                      <span className="text-xs text-subtle ml-2">{fp.provider}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs tabular-nums text-muted">{fp.confidence}%</span>
+                      <StatusBadge status={fp.status} />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs tabular-nums text-muted">{fp.confidence}%</span>
-                    <StatusBadge status={fp.status} />
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </motion.div>
         </div>
