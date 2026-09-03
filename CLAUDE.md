@@ -53,7 +53,7 @@ frontend/src/
   services/       index (analysisApi, historyApi, settingsApi, fingerprintApi, runAnalysis) · catalog · dashboard · errors
   stores/         useAuthStore · useQuotaStore · useSettingsStore · useHistoryStore
   lib/            apiClient · plans · localDb
-  components/auth/ AuthPanel · OAuthButtons · SignUpModal · RequireAuth/RequirePlan · UpgradePrompt
+  components/auth/ AuthPanel · OAuthButtons · SignUpModal · AuthCallback (page)
   pages/ , pages/app/
 
 backend/app/
