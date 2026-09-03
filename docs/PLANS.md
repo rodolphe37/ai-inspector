@@ -19,7 +19,7 @@ There is **no free registered tier**. Creating an account always lands the user 
 
 | Capability                    | anonymous                | pro                     | premium                 |
 |-------------------------------|--------------------------|-------------------------|-------------------------|
-| Scan quota                    | 5 / rolling 48 h         | 300 / rolling 24 h      | unlimited               |
+| Scan quota                    | 5 / fixed 48 h window    | 300 / fixed 24 h window | unlimited               |
 | Unicode analysis              | ✅                       | ✅                      | ✅                      |
 | Basic metadata                | ✅                       | ✅                      | ✅                      |
 | Full metadata (EXIF/XMP/IPTC) | ❌                       | ✅                      | ✅                      |
@@ -51,8 +51,8 @@ There is **no free registered tier**. Creating an account always lands the user 
 - When the quota is exhausted the endpoint returns `429` with
   `{ "detail": "...", "resets_at": "<iso8601>" }`. The frontend opens the sign-up
   modal; closing it puts the app in a "blocked until `resets_at`" state.
-- **pro**: same mechanics, `PRO_SCAN_LIMIT` (default 300) per `PRO_WINDOW_HOURS`
-  (default 24).
-- **premium**: quota checks are skipped entirely.
+- **pro**: identical fixed-window mechanics, `PRO_SCAN_LIMIT` (default 300) per
+  `PRO_WINDOW_HOURS` (default 24). Counted against the signed-in user id.
+- **premium**: quota checks are skipped entirely (`scan_limit` is `None`).
 
 All numbers are environment-overridable — see `server/.env.example`.

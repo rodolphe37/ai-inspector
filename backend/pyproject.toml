@@ -1,0 +1,27 @@
+[project]
+name = "provenance-inspector-api"
+version = "0.1.0"
+description = "Provenance Inspector — accounts, quotas and history API"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv", "alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
+ignore = ["B008"]  # FastAPI Depends() in defaults
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["E501"]        # smoke script favours one assertion per line
+"tests/*" = ["E501", "SIM115"]
+"alembic/*" = ["E501", "F401"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]

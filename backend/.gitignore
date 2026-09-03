@@ -1,0 +1,29 @@
+# virtualenv
+.venv/
+venv/
+
+# byte-compiled / caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# local database
+*.sqlite3
+*.db
+provenance.db*
+
+# env
+.env
+.env.*
+!.env.example
+
+# coverage
+.coverage
+htmlcov/
+coverage.xml
+
+# OS
+.DS_Store

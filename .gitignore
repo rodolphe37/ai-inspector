@@ -1,35 +1,15 @@
-# dependencies / build output
-node_modules
-dist
-dist-ssr
-dev-dist
-coverage
-*.local
-
-# logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-pnpm-debug.log*
-
-# editors / OS
-.vscode/*
-!.vscode/extensions.json
-.idea
+# OS / editor junk (shared)
 .DS_Store
 *.sw?
+.idea
+.vscode/*
+!.vscode/extensions.json
 
-# env
+# logs
+*.log
+
+# env files (each package keeps its own .env; never commit real values)
 .env
 .env.*
 !.env.example
-
-# Python backend
-backend/.venv/
-**/__pycache__/
-*.pyc
-.pytest_cache/
-.ruff_cache/
-*.sqlite3
-*.db
+.claude

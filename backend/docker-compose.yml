@@ -1,0 +1,47 @@
+# Local infrastructure for the Provenance Inspector API.
+#
+#   docker compose up -d db          # just Postgres (run the API on the host)
+#   docker compose --profile api up  # Postgres + the API in a container
+#
+# The API defaults to SQLite, so Postgres is entirely optional. To use it,
+# set in backend/.env:
+#   DATABASE_URL=postgresql+psycopg://provenance:provenance@localhost:5432/provenance
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: provenance
+      POSTGRES_PASSWORD: provenance
+      POSTGRES_DB: provenance
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U provenance"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    profiles: ["api"]
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://provenance:provenance@db:5432/provenance
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      FRONTEND_URL: http://localhost:5173
+      API_BASE_URL: http://localhost:8000
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-only-session-secret}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  pgdata:
