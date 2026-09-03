@@ -13,7 +13,7 @@ import { analyzeStatistics } from '@/engine/statistics';
 import { analyzeTextAi } from '@/engine/aiText';
 import type { DetectionStatus } from '@/types/analysis';
 
-const demoText = `In today's rapidly evolving digital landscape, understanding the provenance of information has become increasingly crucial. It is important to note that content attribution plays a pivotal role in fostering trust. By leveraging robust analytical frameworks, organizations can navigate the complexities of modern media ecosystems, underscoring the significance of transparency.`;
+const demoText = `In today's rapidly evolving digital landscape, understanding the provenance of information has become increasingly crucial. It is important to note that content attribution plays a pivotal role in fostering trust across modern media ecosystems. Furthermore, by leveraging robust analytical frameworks, organizations can navigate the complexities of an ever-changing environment. Additionally, this holistic approach underscores the significance of transparency and accountability. Consequently, stakeholders are better equipped to make informed decisions. In conclusion, provenance analysis represents a game-changing paradigm that will continue to shape the future of digital content verification.`;
 
 function runDemo(text: string): { label: string; status: DetectionStatus; detail: string }[] {
   const u = analyzeUnicode(text);
