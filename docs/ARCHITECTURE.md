@@ -51,8 +51,17 @@ The FastAPI service never receives the content being inspected. It exists for:
    - `200` → proceed. `429` → `QuotaError`; the store records `blockedUntil`
      and opens `SignUpModal`; `runAnalysis` throws `QuotaBlockedError` which the
      page swallows.
-4. The engine runs the modules the tier allows (`can(tier, feature)`), builds an
-   `AnalysisResult` (score, signal level, timeline).
+4. The engine runs the modules the tier allows (`can(tier, feature)`):
+   - `c2pa.ts` — the official `c2pa` WASM library: parse the manifest store,
+     validate the signature chain, read generative-AI assertions. Lazy-loaded.
+   - `aiImage.ts` — 2D FFT radial power spectrum (up-sampling peaks), noise
+     residual (missing/flat sensor noise), generator-native dimensions.
+   - `aiText.ts` — stylometry: burstiness, register, LLM-favoured vocabulary.
+   - `assess.ts` — combines all of the above into one `AiAssessment`
+     (`verdict`, `probability`, `confidence` basis, `signals[]`, `caveat`).
+   Then builds the `AnalysisResult` (AI assessment, score, signal level, timeline).
+   The confidence ladder is **cryptographic** (valid C2PA) > **metadata**
+   (generator tags / IPTC / watermark) > **statistical** (forensic estimate).
 5. Persist: signed-in + `server_history` → `POST /api/analyses`; otherwise
    `saveLocalAnalysis` (IndexedDB, capped at 30).
 6. Navigate to `/app/results/:id`. `Results.tsx` reads it back via

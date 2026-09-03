@@ -124,7 +124,7 @@ export function PublicLayout() {
               </div>
               <p className="text-sm text-muted max-w-md">
                 Independent provenance analysis. Inspect digital content for known signals,
-                metadata, and watermark patterns without relying on an AI classifier.
+                metadata, watermarks and forensic signals — with a clear confidence level, not a black-box guess.
               </p>
             </div>
             <div>
@@ -149,7 +149,7 @@ export function PublicLayout() {
               © 2026 Provenance Inspector. An absence of signal does not constitute proof of human origin.
             </p>
             <p className="text-xs text-subtle">
-              Content is analysed locally in your browser. Not an AI detector.
+              Content is analysed locally in your browser. Evidence-based — every verdict shows its basis.
             </p>
           </div>
         </div>

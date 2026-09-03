@@ -12,8 +12,12 @@ import { analyzeUnicode } from './unicode';
 import { analyzeFileMetadata, analyzeTextMetadata } from './metadata';
 import { analyzeC2PA, noC2PA } from './c2pa';
 import { analyzeStatistics } from './statistics';
+import { analyzeImageAi } from './aiImage';
+import { analyzeTextAi } from './aiText';
+import { assess } from './assess';
 import { matchFingerprints, type EngineSignals } from './fingerprints';
 import { buildSummary, DISCLAIMER, scoreSignals } from './score';
+import type { AiAssessment, AnalysisStatus } from '@/types/analysis';
 
 export type AnalyzeInput =
   | { mode: 'text'; text: string; language?: string; name?: string }
@@ -85,7 +89,8 @@ export async function analyzeContent(
       : { status: 'not_found' as const, format: 'UNKNOWN', entries: [] };
 
   // --- C2PA (pro+) ----------------------------------------------
-  const c2pa = can(tier, 'c2pa') && file && !isTextual ? await analyzeC2PA(file) : noC2PA;
+  // --- C2PA (all tiers — the authoritative AI-origin signal) --------
+  const c2pa = file && !isTextual ? await analyzeC2PA(file) : noC2PA;
 
   // --- Statistics (pro+, textual) --------------------------------
   const statistical =
@@ -100,10 +105,20 @@ export async function analyzeContent(
     ? matchFingerprints(signals, catalog)
     : [];
 
-  const { score, signalLevel, status } = scoreSignals(signals, fingerprints);
-  const summary = buildSummary(signals);
+  // --- AI-origin detection (all tiers) --------------------------
+  const hasCameraMetadata = metadata.entries.some((e) =>
+    /^(make|model|datetimeoriginal|lensmodel)$/i.test(e.key),
+  );
+  const imageAi =
+    file && type === 'image' ? await analyzeImageAi(file, { hasCameraMetadata }) : null;
+  const textAi = isTextual && text.trim().length > 0 ? analyzeTextAi(text) : null;
+  const aiAssessment = assess(signals, fingerprints, imageAi, textAi);
 
-  const timeline = buildTimeline(signals, fingerprints, tier);
+  const { score, signalLevel } = scoreSignals(signals, fingerprints);
+  const status = deriveStatus(aiAssessment, c2pa.manifest);
+  const summary = buildSummary(signals, aiAssessment);
+
+  const timeline = buildTimeline(signals, fingerprints, aiAssessment, tier);
 
   return {
     id: makeId(),
@@ -118,11 +133,28 @@ export async function analyzeContent(
     c2pa,
     fingerprints,
     statistical: statistical ?? emptyStatistical(),
+    aiAssessment,
     timeline,
     isDemo: false,
     summary,
     disclaimer: DISCLAIMER,
   };
+}
+
+function deriveStatus(ai: AiAssessment, hasManifest: boolean): AnalysisStatus {
+  switch (ai.verdict) {
+    case 'ai_confirmed':
+    case 'ai_likely':
+      return 'signal_detected';
+    case 'ai_possible':
+      return 'possible_signal';
+    case 'human_declared':
+      return 'c2pa_found';
+    case 'inconclusive':
+      return 'inconclusive';
+    default:
+      return hasManifest ? 'c2pa_found' : 'clean';
+  }
 }
 
 function emptyStatistical() {
@@ -142,6 +174,7 @@ function emptyStatistical() {
 function buildTimeline(
   signals: EngineSignals,
   fingerprints: { status: string; name: string }[],
+  ai: AiAssessment,
   tier: PlanTier,
 ): TimelineEvent[] {
   const events: TimelineEvent[] = [];
@@ -152,6 +185,18 @@ function buildTimeline(
     description: 'Input decoded and prepared for inspection.',
     icon: 'file',
     status: 'complete',
+  });
+
+  push({
+    title: `AI-origin verdict: ${ai.label}`,
+    description: `${ai.confidence === 'cryptographic' ? 'Cryptographic' : ai.confidence === 'metadata' ? 'Metadata-based' : ai.confidence === 'statistical' ? 'Forensic estimate' : 'No signal'} — ${ai.basis[0] ?? 'no evidence'}.`,
+    icon: 'fingerprint',
+    status:
+      ai.verdict === 'ai_confirmed' || ai.verdict === 'ai_likely'
+        ? 'warning'
+        : ai.verdict === 'ai_possible' || ai.verdict === 'inconclusive'
+          ? 'info'
+          : 'complete',
   });
 
   const u = signals.unicode;

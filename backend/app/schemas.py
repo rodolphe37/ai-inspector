@@ -159,6 +159,8 @@ class AnalysisCreate(CamelModel):
     status: str
     score: int = 0
     signal_level: str = "clean"
+    ai_verdict: str = "no_evidence"
+    ai_probability: int = 0
     size: int | None = None
     language: str | None = None
     result: dict[str, Any] = Field(default_factory=dict)
@@ -172,6 +174,8 @@ class AnalysisSummary(CamelModel):
     status: str
     score: int
     signal_level: str
+    ai_verdict: str = "no_evidence"
+    ai_probability: int = 0
     size: int | None = None
     language: str | None = None
 

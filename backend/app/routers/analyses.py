@@ -16,7 +16,8 @@ router = APIRouter(prefix="/analyses", tags=["analyses"])
 def _summary(a: Analysis) -> AnalysisSummary:
     return AnalysisSummary(
         id=a.id, name=a.name, type=a.type, date=a.created_at, status=a.status,
-        score=a.score, signal_level=a.signal_level, size=a.size, language=a.language,
+        score=a.score, signal_level=a.signal_level, ai_verdict=a.ai_verdict,
+        ai_probability=a.ai_probability, size=a.size, language=a.language,
     )
 
 
@@ -43,6 +44,8 @@ def create_analysis(body: AnalysisCreate, user: CurrentUser, db: DbSession) -> A
         status=body.status,
         score=body.score,
         signal_level=body.signal_level,
+        ai_verdict=body.ai_verdict,
+        ai_probability=body.ai_probability,
         size=body.size,
         language=body.language,
         result=body.result,

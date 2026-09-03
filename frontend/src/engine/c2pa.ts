@@ -1,63 +1,134 @@
 /**
- * C2PA / Content Credentials detection.
+ * Full C2PA / Content Credentials verification.
  *
- * This performs *structural* detection: it locates an embedded JUMBF / C2PA
- * manifest and pulls readable identifiers out of it. It does not verify the
- * COSE signature chain — full verification is a server-side (pro) capability.
+ * Uses the official `c2pa` library (WASM, from the Content Authenticity
+ * Initiative) to parse the manifest store, validate the signature chain and
+ * extract generative-AI assertions. Lazy-loaded — the WASM only downloads when
+ * an image is analysed.
  */
 import type { C2PAResult } from '@/types/analysis';
 
-const MARKERS = ['jumbf', 'jumb', 'c2pa', 'c2ma', 'urn:c2pa', 'contentauth'];
+// c2pa ships its wasm + worker as separate assets; Vite serves them via ?url.
+type C2paApi = {
+  read: (input: File | Blob) => Promise<{ manifestStore: unknown | null }>;
+};
 
-function latin1(bytes: Uint8Array, start: number, end: number): string {
-  let s = '';
-  for (let i = start; i < end && i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
-  return s;
+let c2paPromise: Promise<C2paApi> | null = null;
+
+async function getC2pa(): Promise<C2paApi> {
+  if (!c2paPromise) {
+    c2paPromise = (async () => {
+      const [{ createC2pa }, wasm, worker] = await Promise.all([
+        import('c2pa'),
+        import('c2pa/dist/assets/wasm/toolkit_bg.wasm?url'),
+        import('c2pa/dist/c2pa.worker.min.js?url'),
+      ]);
+      return createC2pa({
+        wasmSrc: wasm.default,
+        workerSrc: worker.default,
+      }) as unknown as C2paApi;
+    })();
+  }
+  return c2paPromise;
 }
 
+export const noC2PA: C2PAResult = { status: 'not_found', manifest: false };
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export async function analyzeC2PA(file: File): Promise<C2PAResult> {
-  let buf: ArrayBuffer;
+  let store: any;
   try {
-    buf = await file.arrayBuffer();
+    const c2pa = await getC2pa();
+    const res = await c2pa.read(file);
+    store = res.manifestStore;
   } catch {
-    return { status: 'not_found', manifest: false };
-  }
-  const bytes = new Uint8Array(buf);
-  const haystack = latin1(bytes, 0, Math.min(bytes.length, 3_000_000)).toLowerCase();
-
-  const hasManifest =
-    haystack.includes('jumb') &&
-    (haystack.includes('c2pa') || haystack.includes('contentauth') || haystack.includes('cai'));
-
-  if (!hasManifest && !MARKERS.some((m) => haystack.includes(m) && haystack.includes('claim'))) {
-    return { status: 'not_found', manifest: false };
+    return { ...noC2PA, errors: ['C2PA reader failed to run'] };
   }
 
-  // Best-effort readable field extraction from the (mostly CBOR) manifest.
-  const readable = latin1(bytes, 0, Math.min(bytes.length, 3_000_000));
+  if (!store || !store.activeManifest) return noC2PA;
+
+  const active = store.activeManifest;
+  const validationStatus: any[] = store.validationStatus ?? [];
+  const vResults = store.validationResults ?? {};
+
+  // Collect failures. Newer toolkit puts them under validationResults.activeManifest.failure;
+  // older builds only list failures in validationStatus.
+  const failureCodes: string[] = [
+    ...(vResults?.activeManifest?.failure ?? []).map((f: any) => f.code ?? String(f)),
+    ...validationStatus
+      .filter((s) => {
+        const c = String(s.code ?? '');
+        return c && !/valid|verified|match|trusted/i.test(c);
+      })
+      .map((s) => String(s.code)),
+  ];
+  const errors = [...new Set(failureCodes)];
+  const verified = errors.length === 0;
+
+  // Generative-AI assertions.
+  let isAi = false;
+  let generativeType: C2PAResult['generativeType'];
+  let softwareAgents: string[] = [];
+  try {
+    const c2paMod: any = await import('c2pa');
+    const genInfo = c2paMod.selectGenerativeInfo?.(active);
+    if (genInfo && genInfo.length) {
+      isAi = true;
+      generativeType = c2paMod.selectGenerativeType?.(genInfo);
+      softwareAgents = c2paMod.selectGenerativeSoftwareAgents?.(genInfo) ?? [];
+    }
+  } catch {
+    /* selector unavailable — fall through */
+  }
+
+  // Fallback: scan assertions for a generative digitalSourceType / action.
+  if (!isAi) {
+    try {
+      const assertions: any[] = active.assertions?.data ?? active.assertions ?? [];
+      const dump = JSON.stringify(assertions).toLowerCase();
+      if (
+        dump.includes('trainedalgorithmicmedia') ||
+        dump.includes('compositewithtrainedalgorithmicmedia') ||
+        dump.includes('generative') ||
+        dump.includes('com.adobe.generative-ai')
+      ) {
+        isAi = true;
+        generativeType = dump.includes('composite')
+          ? 'compositeWithTrainedAlgorithmicMedia'
+          : 'trainedAlgorithmicMedia';
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const sig = active.signatureInfo ?? {};
   const claims: string[] = [];
-  const generator = readable.match(/claim_generator["\s:]*([A-Za-z0-9_.\- /]{3,60})/);
-  const signerCN = readable.match(/(?:CN=|commonName["\s:]*)([A-Za-z0-9 .,'&-]{3,60})/);
-  const created = readable.match(/(?:c2pa\.created|dc:created|"when"[\s:"]*)([0-9T:\-.Z]{10,30})/);
-
-  if (readable.includes('c2pa.created') || readable.includes('trainedAlgorithmicMedia')) {
-    claims.push('Declares an AI-generated / trained-algorithm source');
+  if (isAi) {
+    claims.push(
+      generativeType === 'compositeWithTrainedAlgorithmicMedia'
+        ? 'Declares AI-assisted composition (some elements AI-generated)'
+        : 'Declares an AI-generated / trained-algorithm source',
+    );
+  } else {
+    claims.push('Provenance manifest present (no AI-generation assertion)');
   }
-  if (readable.includes('c2pa.edited') || readable.includes('c2pa.placed')) {
-    claims.push('Declares subsequent edits');
-  }
-  if (readable.includes('c2pa.opened') || readable.includes('c2pa.converted')) {
-    claims.push('Declares format conversion');
-  }
+  if (softwareAgents.length) claims.push(`Software: ${softwareAgents.join(', ')}`);
 
   return {
     status: 'found',
     manifest: true,
-    signer: signerCN?.[1]?.trim() || generator?.[1]?.trim() || 'Unknown (manifest not verified)',
-    timestamp: created?.[1],
-    claims: claims.length ? claims : ['Manifest present'],
-    valid: undefined, // signature not verified in the client tier
+    verified,
+    validationState: verified ? 'valid' : 'invalid',
+    signer: sig.issuer ?? undefined,
+    timestamp: sig.time ?? undefined,
+    claimGenerator: active.claimGenerator ?? active.claimGeneratorInfo?.[0]?.name ?? undefined,
+    isAiGenerated: isAi,
+    generativeType,
+    softwareAgents: softwareAgents.length ? softwareAgents : undefined,
+    claims,
+    errors: errors.length ? errors : undefined,
+    valid: verified,
   };
 }
-
-export const noC2PA: C2PAResult = { status: 'not_found', manifest: false };

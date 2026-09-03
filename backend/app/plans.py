@@ -24,7 +24,7 @@ FEATURES: dict[str, dict[PlanTier, object]] = {
     "unicode_analysis": {PlanTier.ANONYMOUS: True, PlanTier.PRO: True, PlanTier.PREMIUM: True},
     "basic_metadata": {PlanTier.ANONYMOUS: True, PlanTier.PRO: True, PlanTier.PREMIUM: True},
     "full_metadata": {PlanTier.ANONYMOUS: False, PlanTier.PRO: True, PlanTier.PREMIUM: True},
-    "c2pa": {PlanTier.ANONYMOUS: False, PlanTier.PRO: True, PlanTier.PREMIUM: True},
+    "c2pa": {PlanTier.ANONYMOUS: True, PlanTier.PRO: True, PlanTier.PREMIUM: True},
     "statistical_analysis": {PlanTier.ANONYMOUS: False, PlanTier.PRO: True, PlanTier.PREMIUM: True},
     "fingerprint_matching": {PlanTier.ANONYMOUS: False, PlanTier.PRO: True, PlanTier.PREMIUM: True},
     "detailed_report": {PlanTier.ANONYMOUS: False, PlanTier.PRO: False, PlanTier.PREMIUM: True},

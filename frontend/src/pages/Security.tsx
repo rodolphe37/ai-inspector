@@ -130,7 +130,7 @@ export default function Security() {
           <ul className="space-y-3">
             {[
               'Content is analysed locally; it is never sent to a server for inspection',
-              'No LLM or AI classifier is used in the analysis pipeline',
+              'No large language model is used; detection is deterministic and inspectable',
               'No content is used for training or model improvement',
               'No tracking of content or analysis results',
               'All detection methods are documented and transparent',

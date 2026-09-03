@@ -10,27 +10,24 @@ const steps = [
   { num: '01', icon: FileText, title: 'Normalize', description: 'Content is parsed, encoding is detected, and the input is normalized into a standard representation for analysis.' },
   { num: '02', icon: Search, title: 'Inspect', description: 'The normalized content is examined layer by layer — Unicode characters, metadata fields, and C2PA manifests are extracted and validated.' },
   { num: '03', icon: Fingerprint, title: 'Detect', description: 'Known fingerprints and watermarking schemes are matched against the content using their respective detection methods.' },
-  { num: '04', icon: BarChart3, title: 'Measure', description: 'Statistical tests quantify observed signals. Token distributions, entropy, and frequency deviations are compared against known parameters with p-values.' },
-  { num: '05', icon: FileCheck, title: 'Report', description: 'A transparent, auditable report is generated. Every finding includes a technical explanation and confidence indicator.' },
+  { num: '04', icon: BarChart3, title: 'Measure', description: 'Forensic analysis: for images, frequency-domain up-sampling artifacts and sensor-noise residual; for text, stylometry (burstiness, register, LLM-favoured vocabulary). Each produces a weighted signal.' },
+  { num: '05', icon: FileCheck, title: 'Verdict', description: 'All signals combine into one AI-origin verdict with a confidence basis — cryptographic (a signed manifest), metadata, or forensic estimate — and every contributing signal is listed.' },
   { num: '06', icon: Sparkles, title: 'Clean', description: 'Optionally, safe-to-remove artifacts such as invisible characters and metadata can be stripped from the content.' },
 ];
 
 const canDetect = [
-  'Known watermark signatures',
-  'Invisible Unicode characters',
-  'Embedded metadata fields',
-  'C2PA provenance manifests',
-  'Known statistical fingerprints',
-  'Control characters and homoglyphs',
+  'AI generation declared in signed C2PA Content Credentials (near-certain)',
+  'Generator metadata (Stable Diffusion, Midjourney, Firefly…) and IPTC AI tags',
+  'Diffusion / GAN forensic artifacts in images (frequency + noise analysis)',
+  'LLM-style stylometry in text (statistical estimate)',
+  'Invisible Unicode, homoglyphs and known watermark markers',
 ];
 
 const cannotGuarantee = [
-  'All unknown watermarking schemes',
-  'AI authorship of content',
-  'Absence of all possible signatures',
-  'Perfect watermark removal',
-  'Origin attribution with certainty',
-  'Detection of future watermark methods',
+  'That signal-free content is human-made (signals are routinely stripped)',
+  'Reliable text verdicts on short, edited, translated or non-native writing',
+  'Detection of every generator or a bespoke / removed watermark',
+  'A verdict without a stated confidence level — estimates are labelled as such',
 ];
 
 export default function HowItWorks() {
@@ -51,7 +48,7 @@ export default function HowItWorks() {
             transition={{ delay: 0.1 }}
             className="mt-4 text-lg text-muted max-w-2xl mx-auto"
           >
-            A deterministic, transparent pipeline for provenance inspection.
+            A transparent pipeline for AI-origin analysis — every step is inspectable.
             No black boxes, no opaque scores.
           </motion.p>
         </div>
@@ -147,9 +144,10 @@ export default function HowItWorks() {
         {/* Disclaimer */}
         <div className="surface p-6 border-warning/20 mb-12">
           <p className="text-sm text-muted text-center">
-            An absence of signal does not constitute proof of human origin.
-            A detected signal does not constitute proof of machine generation.
-            All results are observational and statistical.
+            A cryptographic verdict (signed Content Credentials) is authoritative. A
+            forensic or metadata verdict is an estimate — an absence of signal is not proof
+            of human origin, and statistical estimates misfire on edited or non-native content.
+            Every verdict states which kind it is.
           </p>
         </div>
 

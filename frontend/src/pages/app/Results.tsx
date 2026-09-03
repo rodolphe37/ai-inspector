@@ -122,25 +122,18 @@ export default function Results() {
           </div>
         </div>
 
-        {/* Score */}
-        <div className="surface p-8 mb-6">
-          <div className="flex flex-col lg:flex-row items-center gap-8">
-            <ScoreRing score={result.score} label={`${result.signalLevel.toUpperCase()} SIGNAL`} size={200} />
-            <div className="flex-1 text-center lg:text-left">
-              <p className="text-lg text-muted">
-                This score represents a <span className="text-content font-medium">signal level</span>,
-                not a probability of human or AI authorship.
-              </p>
-              <p className="mt-3 text-sm text-subtle">
-                No definitive origin can be established from content analysis alone.
-              </p>
-              <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-2 border border-default">
-                <AlertTriangle className="h-4 w-4 text-warning" />
-                <span className="text-xs text-muted">
-                  An absence of signal does not constitute proof of human origin.
-                </span>
-              </div>
-            </div>
+        {/* AI-origin verdict */}
+        <AiVerdictCard result={result} />
+
+        {/* Provenance signal level (secondary) */}
+        <div className="surface p-5 mb-6 flex flex-col sm:flex-row items-center gap-6">
+          <ScoreRing score={result.score} label={`${result.signalLevel.toUpperCase()}`} size={120} />
+          <div className="flex-1 text-center sm:text-left">
+            <p className="text-sm font-medium">Provenance signal level</p>
+            <p className="mt-1 text-sm text-muted">
+              How much technical provenance signal (Unicode, metadata, watermarks, manifests) is
+              present overall — distinct from the AI-origin verdict above.
+            </p>
           </div>
         </div>
 
@@ -209,17 +202,57 @@ export default function Results() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold">C2PA</h3>
+                <h3 className="font-semibold">C2PA Content Credentials</h3>
               </div>
               <StatusBadge status={result.c2pa.status === 'not_found' ? 'not_found' : 'found'} />
             </div>
-            <p className="text-sm text-muted">
-              {result.c2pa.manifest
-                ? `C2PA manifest detected. Signer: ${result.c2pa.signer}. Signature not verified client-side.`
-                : result.type === 'text' || result.type === 'code'
-                  ? 'C2PA manifests apply to media files, not plain text.'
-                  : 'No embedded C2PA / Content Credentials manifest was found.'}
-            </p>
+            {result.c2pa.manifest ? (
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted">Signature</span>
+                  <span className={`font-medium ${result.c2pa.verified ? 'text-success' : 'text-error'}`}>
+                    {result.c2pa.verified ? 'valid' : 'did not validate'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted">AI-generated claim</span>
+                  <span className={`font-medium ${result.c2pa.isAiGenerated ? 'text-warning' : ''}`}>
+                    {result.c2pa.isAiGenerated
+                      ? result.c2pa.generativeType === 'compositeWithTrainedAlgorithmicMedia'
+                        ? 'AI-assisted composite'
+                        : 'yes'
+                      : 'none'}
+                  </span>
+                </div>
+                {result.c2pa.signer && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-muted">Signer</span>
+                    <span className="font-medium text-right truncate">{result.c2pa.signer}</span>
+                  </div>
+                )}
+                {result.c2pa.claimGenerator && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-muted">Generator</span>
+                    <span className="font-medium text-right truncate">{result.c2pa.claimGenerator}</span>
+                  </div>
+                )}
+                {result.c2pa.softwareAgents?.length ? (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-muted">Software</span>
+                    <span className="font-medium text-right">{result.c2pa.softwareAgents.join(', ')}</span>
+                  </div>
+                ) : null}
+                {result.c2pa.errors?.length ? (
+                  <p className="text-xs text-error pt-1">Validation issues: {result.c2pa.errors.join(', ')}</p>
+                ) : null}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">
+                {result.type === 'text' || result.type === 'code'
+                  ? 'C2PA Content Credentials apply to media files, not plain text.'
+                  : 'No embedded C2PA / Content Credentials manifest was found. Note: credentials are commonly stripped by screenshots and social platforms.'}
+              </p>
+            )}
           </motion.div>
 
           {/* Fingerprints */}
@@ -367,5 +400,91 @@ export default function Results() {
         </div>
       </div>
     </PageTransition>
+  );
+}
+
+const VERDICT_STYLE: Record<
+  AnalysisResult['aiAssessment']['verdict'],
+  { ring: string; text: string; bg: string; border: string }
+> = {
+  ai_confirmed: { ring: 'text-error', text: 'text-error', bg: 'bg-error/10', border: 'border-error/30' },
+  ai_likely: { ring: 'text-warning', text: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/30' },
+  ai_possible: { ring: 'text-warning', text: 'text-warning', bg: 'bg-warning/5', border: 'border-warning/20' },
+  inconclusive: { ring: 'text-info', text: 'text-info', bg: 'bg-info/10', border: 'border-info/20' },
+  no_evidence: { ring: 'text-success', text: 'text-success', bg: 'bg-success/10', border: 'border-success/20' },
+  human_declared: { ring: 'text-success', text: 'text-success', bg: 'bg-success/10', border: 'border-success/20' },
+};
+
+const CONFIDENCE_LABEL: Record<AnalysisResult['aiAssessment']['confidence'], string> = {
+  cryptographic: 'Cryptographic proof',
+  metadata: 'Metadata-based',
+  statistical: 'Forensic estimate',
+  none: 'No signal',
+};
+
+function AiVerdictCard({ result }: { result: AnalysisResult }) {
+  const ai = result.aiAssessment;
+  const s = VERDICT_STYLE[ai.verdict];
+  const showPct = ai.confidence === 'statistical' || ai.confidence === 'metadata' || ai.verdict === 'ai_likely';
+
+  return (
+    <div className={`surface p-6 mb-6 border ${s.border}`}>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+        <div className={`shrink-0 h-24 w-24 rounded-full border-4 ${s.border} flex flex-col items-center justify-center ${s.bg}`}>
+          {showPct ? (
+            <>
+              <span className={`text-2xl font-bold tabular-nums ${s.text}`}>{ai.probability}%</span>
+              <span className="text-[10px] text-subtle uppercase tracking-wide">AI</span>
+            </>
+          ) : (
+            <Fingerprint className={`h-9 w-9 ${s.text}`} />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className={`text-xl font-bold ${s.text}`}>{ai.label}</h2>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 border border-default text-muted">
+              {CONFIDENCE_LABEL[ai.confidence]}
+            </span>
+          </div>
+          {ai.basis.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {ai.basis.map((b) => (
+                <li key={b} className="text-sm text-muted flex gap-2">
+                  <span className={s.text}>·</span>
+                  {b}
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-3 text-xs text-subtle flex gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-warning" />
+            {ai.caveat}
+          </p>
+        </div>
+      </div>
+
+      {ai.signals.length > 0 && (
+        <details className="mt-4 group">
+          <summary className="cursor-pointer text-sm text-primary hover:text-primary-hover select-none">
+            Signal breakdown ({ai.signals.length})
+          </summary>
+          <div className="mt-3 space-y-2">
+            {ai.signals.map((sig) => (
+              <div key={sig.label} className="text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-medium">{sig.label}</span>
+                  <span className="text-xs text-muted tabular-nums">{Math.round(sig.weight * 100)}%</span>
+                </div>
+                <div className="h-1.5 mt-1 bg-surface-2 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full" style={{ width: `${Math.min(100, sig.weight * 100)}%` }} />
+                </div>
+                <p className="text-xs text-subtle mt-0.5">{sig.detail}</p>
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
+    </div>
   );
 }

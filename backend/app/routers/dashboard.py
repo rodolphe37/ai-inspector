@@ -20,6 +20,11 @@ from ..security import as_aware, utcnow
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 SIGNAL_STATUSES = {"possible_signal", "signal_detected", "c2pa_found"}
+AI_VERDICTS = {"ai_confirmed", "ai_likely", "ai_possible"}
+
+
+def _is_signal(a) -> bool:
+    return a.ai_verdict in AI_VERDICTS or a.status in SIGNAL_STATUSES
 
 
 @router.get("", response_model=DashboardOut)
@@ -29,8 +34,8 @@ def dashboard(user: CurrentUser, db: DbSession, days: int = 30) -> DashboardOut:
     ).scalars().all()
 
     total = len(rows)
-    signals = sum(1 for a in rows if a.status in SIGNAL_STATUSES)
-    clean = sum(1 for a in rows if a.status == "clean")
+    signals = sum(1 for a in rows if _is_signal(a))
+    clean = sum(1 for a in rows if not _is_signal(a) and a.status in ("clean", "inconclusive"))
     known_fp = db.execute(select(func.count()).select_from(Fingerprint)).scalar_one()
 
     today = utcnow().date()
@@ -42,7 +47,7 @@ def dashboard(user: CurrentUser, db: DbSession, days: int = 30) -> DashboardOut:
         key = as_aware(a.created_at).date().isoformat()
         if key in buckets:
             buckets[key]["analyses"] += 1
-            if a.status in SIGNAL_STATUSES:
+            if _is_signal(a):
                 buckets[key]["signals"] += 1
 
     activity = [
@@ -52,7 +57,8 @@ def dashboard(user: CurrentUser, db: DbSession, days: int = 30) -> DashboardOut:
     recent = [
         AnalysisSummary(
             id=a.id, name=a.name, type=a.type, date=a.created_at, status=a.status,
-            score=a.score, signal_level=a.signal_level, size=a.size, language=a.language,
+            score=a.score, signal_level=a.signal_level, ai_verdict=a.ai_verdict,
+            ai_probability=a.ai_probability, size=a.size, language=a.language,
         )
         for a in rows[:5]
     ]

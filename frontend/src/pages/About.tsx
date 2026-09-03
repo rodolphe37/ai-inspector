@@ -46,8 +46,8 @@ export default function About() {
             transition={{ delay: 0.1 }}
             className="mt-4 text-lg text-muted max-w-2xl mx-auto"
           >
-            An independent tool for inspecting digital content provenance —
-            not an AI detector.
+            An independent AI-origin analyser for text and images — evidence-based,
+            not a black box.
           </motion.p>
         </div>
 
@@ -55,15 +55,16 @@ export default function About() {
         <div className="surface p-8 mb-16 max-w-3xl mx-auto">
           <h2 className="text-xl font-semibold mb-4">Our mission</h2>
           <p className="text-muted leading-relaxed">
-            Provenance Inspector was built to address a simple problem: understanding what's
-            inside digital content without relying on fallible AI classifiers. We believe that
-            provenance information — metadata, signatures, watermark patterns — should be
-            inspectable, transparent, and explainable.
+            Provenance Inspector answers &ldquo;was this made by AI?&rdquo; the way it should be
+            answered: by showing its work. Cryptographic Content Credentials, generator
+            metadata, watermark markers and forensic analysis — each verdict lists the evidence
+            behind it and states how confident it is.
           </p>
           <p className="text-muted leading-relaxed mt-4">
-            We do not claim to detect whether content was written by a human or a machine.
-            Instead, we inspect for known technical signals and report what we find — honestly,
-            with full context, and with clear limitations stated.
+            When there is hard evidence (a signed C2PA manifest), we say so with near-certainty.
+            When there is only a statistical estimate, we say that too — and we are honest that
+            it has a real false-positive rate on edited, translated or non-native content. We
+            never dress up a guess as proof.
           </p>
         </div>
 

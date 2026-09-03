@@ -10,16 +10,24 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { PrivacyBadge } from '@/components/ui/PrivacyBadge';
 import { analyzeUnicode } from '@/engine/unicode';
 import { analyzeStatistics } from '@/engine/statistics';
-import { analyzeTextMetadata } from '@/engine/metadata';
+import { analyzeTextAi } from '@/engine/aiText';
 import type { DetectionStatus } from '@/types/analysis';
 
-const demoText = `The rapid advancement of machine learning models has transformed how we interact with digital content. Understanding the provenance of information is essential for maintaining trust in media ecosystems. Provenance signals, metadata, and watermark detection provide a technical foundation for content attribution that does not rely on fallible AI classifiers.`;
+const demoText = `In today's rapidly evolving digital landscape, understanding the provenance of information has become increasingly crucial. It is important to note that content attribution plays a pivotal role in fostering trust. By leveraging robust analytical frameworks, organizations can navigate the complexities of modern media ecosystems, underscoring the significance of transparency.`;
 
 function runDemo(text: string): { label: string; status: DetectionStatus; detail: string }[] {
   const u = analyzeUnicode(text);
   const s = analyzeStatistics(text);
-  const m = analyzeTextMetadata(text);
-  return [
+  const ai = analyzeTextAi(text);
+  const rows: { label: string; status: DetectionStatus; detail: string }[] = [
+    {
+      label: 'AI-origin estimate',
+      status: ai.probability >= 62 ? 'possible' : ai.probability >= 40 ? 'inconclusive' : 'clean',
+      detail:
+        ai.signals.length === 0
+          ? 'sample too short for a stylometric estimate'
+          : `${ai.probability}% — ${ai.signals[0].label.toLowerCase()}${ai.reliable ? '' : ' (low reliability)'}`,
+    },
     {
       label: 'Invisible Unicode',
       status: u.invisibleCharacters > 0 ? 'found' : 'clean',
@@ -31,16 +39,12 @@ function runDemo(text: string): { label: string; status: DetectionStatus; detail
       detail: u.homoglyphs > 0 ? `${u.homoglyphs} cross-script letter(s)` : 'none detected',
     },
     {
-      label: 'Text metadata',
-      status: 'found',
-      detail: `${m.entries.length} fields · ${m.entries.find((e) => e.key === 'Line endings')?.value ?? ''}`,
-    },
-    {
       label: 'Letter distribution',
       status: s.status,
       detail: `χ²=${s.observedScore} · entropy ${s.entropy} bits/char`,
     },
   ];
+  return rows;
 }
 
 const whyCards = [
@@ -103,7 +107,7 @@ export default function Landing() {
           >
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-surface-2 border border-default text-muted">
               <Shield className="h-3.5 w-3.5 text-primary" />
-              Independent provenance analysis
+              AI-origin & provenance analysis
             </span>
           </motion.div>
 
@@ -113,7 +117,7 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-center text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-4xl mx-auto"
           >
-            Understand what's inside your content.
+            Was this made by AI?
           </motion.h1>
 
           <motion.p
@@ -122,8 +126,9 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-6 text-center text-lg text-muted max-w-2xl mx-auto"
           >
-            Inspect digital content for known provenance signals, metadata, invisible characters
-            and statistical watermark patterns — without relying on an AI classifier.
+            An AI-origin analysis for text and images: cryptographic Content Credentials,
+            generator metadata, watermark markers and forensic detection — every verdict comes
+            with its evidence and an honest confidence level.
           </motion.p>
 
           <motion.div
@@ -153,7 +158,7 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="mt-6 text-center text-sm text-subtle"
           >
-            Privacy-first · Algorithmic analysis · No LLM required
+            Private · In-browser · No LLM · Every verdict shows its evidence
           </motion.p>
         </div>
       </section>
@@ -164,7 +169,7 @@ export default function Landing() {
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Live demo</h2>
             <p className="mt-2 text-muted">
-              A real, deterministic analysis running in your browser. Edit the text and run it.
+              A real analysis running in your browser — AI-origin estimate plus provenance signals. Edit the text and run it.
             </p>
           </div>
 
@@ -275,11 +280,11 @@ export default function Landing() {
       <section className="py-20 border-t border-default">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-error/10 text-error border border-error/20">
-              Not an AI detector
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+              Evidence, not a black box
             </span>
             <h2 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight">
-              A different approach to content analysis
+              A different approach to AI detection
             </h2>
           </div>
 

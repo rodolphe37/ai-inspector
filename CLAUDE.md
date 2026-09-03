@@ -4,10 +4,13 @@ Repo guide for AI assistants. Keep it short; link out for detail.
 
 ## What this is
 
-`Provenance Inspector` — a tool that inspects digital content for **known
-provenance signals** (metadata, Unicode artifacts, C2PA manifests, statistical
-watermark patterns). It is **not an AI detector** and must never be described as
-one. Preserve the honest-limitations framing in the UI copy.
+`Provenance Inspector` — an **evidence-based AI-origin analyser** for text and
+images. It emits one verdict (`ai_confirmed` / `ai_likely` / `ai_possible` /
+`inconclusive` / `no_evidence` / `human_declared`) with a confidence basis
+(`cryptographic` / `metadata` / `statistical`) and the list of contributing
+signals. **Never present a statistical estimate as proof** — the honest caveats
+in `engine/assess.ts` and the UI copy are load-bearing. A cryptographic verdict
+(valid C2PA manifest) is authoritative; everything else is an estimate.
 
 Monorepo: [`frontend/`](frontend) (React SPA, runs all analysis in-browser) +
 [`backend/`](backend) (FastAPI — accounts, quotas, history, catalogue; never
@@ -49,7 +52,8 @@ PostgreSQL: `cd backend && make db-up`, set `DATABASE_URL` in `backend/.env`,
 
 ```
 frontend/src/
-  engine/         unicode · metadata · c2pa · statistics · fingerprints · score · index (orchestrator) · clean
+  engine/         c2pa (WASM) · aiImage (FFT/noise) · aiText (stylometry) · assess (verdict)
+                  · unicode · metadata · statistics · fingerprints · score · index (orchestrator) · clean
   services/       index (analysisApi, historyApi, settingsApi, fingerprintApi, runAnalysis) · catalog · dashboard · errors
   stores/         useAuthStore · useQuotaStore · useSettingsStore · useHistoryStore
   lib/            apiClient · plans · localDb

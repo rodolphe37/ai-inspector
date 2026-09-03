@@ -50,7 +50,9 @@ export const PLANS: Record<PlanTier, PlanCapabilities> = {
     windowHours: 48,
     maxFileBytes: 2 * 1024 * 1024,
     contentTypes: ['text', 'code', 'image'],
-    features: F(['unicode_analysis', 'basic_metadata', 'clean_text', 'clean_image_metadata']),
+    features: F([
+      'unicode_analysis', 'basic_metadata', 'c2pa', 'clean_text', 'clean_image_metadata',
+    ]),
   },
   pro: {
     tier: 'pro',

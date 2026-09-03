@@ -170,6 +170,8 @@ class Analysis(Base):
     status: Mapped[str] = mapped_column(String(24))
     score: Mapped[int] = mapped_column(Integer, default=0)
     signal_level: Mapped[str] = mapped_column(String(16), default="clean")
+    ai_verdict: Mapped[str] = mapped_column(String(24), default="no_evidence")
+    ai_probability: Mapped[int] = mapped_column(Integer, default=0)
     size: Mapped[int | None] = mapped_column(Integer, nullable=True)
     language: Mapped[str | None] = mapped_column(String(32), nullable=True)
     result: Mapped[dict] = mapped_column(JSON, default=dict)

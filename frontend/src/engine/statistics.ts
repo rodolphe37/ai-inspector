@@ -1,10 +1,11 @@
 /**
  * Deterministic statistical text analysis.
  *
- * This is NOT an AI detector. It reports language-model-agnostic distribution
- * statistics: character entropy, letter-frequency deviation from a reference
- * corpus (chi-square), and lexical repetition. Large deviations can indicate
- * templated text, translation, obfuscation or watermarking — never a source.
+ * One statistical signal that feeds the AI-origin verdict — not a verdict on its
+ * own. Reports language-model-agnostic distribution statistics: character
+ * entropy, letter-frequency deviation from a reference corpus (chi-square), and
+ * lexical repetition. Large deviations can indicate templated text, translation,
+ * obfuscation or watermarking.
  */
 import type { StatisticalResult } from '@/types/analysis';
 

@@ -1,9 +1,21 @@
 # Provenance Inspector
 
-Independent provenance analysis for digital content — metadata, Unicode
-artifacts, C2PA manifests and known statistical watermark patterns.
-**Not an AI detector.** An absence of signal does not prove human origin; a
-detected signal does not prove machine generation.
+An **evidence-based AI-origin analyser** for text and images. It produces a
+single verdict — *AI-generated / likely / possible / no evidence* — from:
+
+- **C2PA Content Credentials** — full manifest parsing + signature validation
+  (the `c2pa` WASM library). A valid manifest declaring AI generation is
+  near-certain proof.
+- **Generator metadata** — EXIF/XMP/PNG signatures (Stable Diffusion, Midjourney,
+  Firefly…), IPTC `DigitalSourceType`.
+- **Forensic image analysis** — frequency-domain up-sampling artifacts, sensor-
+  noise residual, generator-native dimensions.
+- **Text stylometry** — burstiness, register, LLM-favoured vocabulary.
+
+Every verdict states its **confidence basis** (cryptographic / metadata /
+forensic estimate) and lists the signals behind it. Statistical estimates are
+labelled as such — they have a real false-positive rate on edited, translated or
+non-native content, and an absence of signal is never proof of human origin.
 
 This is a monorepo:
 

@@ -162,6 +162,8 @@ export async function runAnalysis(input: AnalyzeInput): Promise<RunAnalysisResul
         status: result.status,
         score: result.score,
         signalLevel: result.signalLevel,
+        aiVerdict: result.aiAssessment.verdict,
+        aiProbability: result.aiAssessment.probability,
         size: input.mode === 'file' ? input.file.size : result.name.length,
         language: input.mode === 'text' ? input.language : null,
         result,

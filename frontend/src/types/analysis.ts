@@ -51,10 +51,46 @@ export interface MetadataResult {
 export interface C2PAResult {
   status: DetectionStatus;
   manifest: boolean;
+  /** Signature chain validated with no errors. */
+  verified?: boolean;
+  validationState?: 'valid' | 'invalid' | 'unknown';
   signer?: string;
   timestamp?: string;
+  claimGenerator?: string;
+  /** A generative-AI assertion is present in the (active) manifest. */
+  isAiGenerated?: boolean;
+  generativeType?: 'trainedAlgorithmicMedia' | 'compositeWithTrainedAlgorithmicMedia' | 'legacy';
+  softwareAgents?: string[];
   claims?: string[];
+  errors?: string[];
   valid?: boolean;
+}
+
+export type AiVerdict =
+  | 'ai_confirmed'
+  | 'ai_likely'
+  | 'ai_possible'
+  | 'inconclusive'
+  | 'no_evidence'
+  | 'human_declared';
+
+export type AiConfidenceBasis = 'cryptographic' | 'metadata' | 'statistical' | 'none';
+
+export interface AiSignalContribution {
+  label: string;
+  detail: string;
+  weight: number; // 0..1 contribution to the probability
+}
+
+export interface AiAssessment {
+  verdict: AiVerdict;
+  /** 0-100. For `cryptographic` this is near-certain; for `statistical` it is an estimate. */
+  probability: number;
+  confidence: AiConfidenceBasis;
+  label: string;
+  basis: string[];
+  signals: AiSignalContribution[];
+  caveat: string;
 }
 
 export interface FingerprintMatch {
@@ -105,6 +141,7 @@ export interface AnalysisResult {
   c2pa: C2PAResult;
   fingerprints: FingerprintMatch[];
   statistical: StatisticalResult;
+  aiAssessment: AiAssessment;
   timeline: TimelineEvent[];
   isDemo: boolean;
   summary: string;

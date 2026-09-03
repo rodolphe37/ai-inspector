@@ -4,7 +4,7 @@
  * The score is NOT a probability of AI vs human authorship. It expresses how
  * much *known provenance signal* the deterministic checks found.
  */
-import type { AnalysisStatus, FingerprintMatch, SignalLevel } from '@/types/analysis';
+import type { AiAssessment, AnalysisStatus, FingerprintMatch, SignalLevel } from '@/types/analysis';
 import type { EngineSignals } from './fingerprints';
 
 function clamp(n: number, lo = 0, hi = 100): number {
@@ -65,23 +65,23 @@ export function scoreSignals(
   return { score, signalLevel, status };
 }
 
-export function buildSummary(signals: EngineSignals): string {
-  const parts: string[] = [];
-  const u = signals.unicode;
-  if (u.invisibleCharacters) parts.push(`${u.invisibleCharacters} invisible/tag character(s)`);
-  if (u.homoglyphs) parts.push(`${u.homoglyphs} homoglyph(s)`);
-  if (u.controlCharacters) parts.push(`${u.controlCharacters} control character(s)`);
-  if (signals.c2pa.manifest) parts.push('an embedded C2PA manifest');
-  if (signals.statistical?.status === 'possible') parts.push('a statistical distribution anomaly');
-  const genSig = signals.metadata.entries.find((e) =>
-    e.key.toLowerCase().includes('generator signature'),
-  );
-  if (genSig) parts.push(genSig.value);
+export function buildSummary(signals: EngineSignals, ai: AiAssessment): string {
+  const head = `${ai.label}${
+    ai.confidence === 'statistical' || ai.confidence === 'metadata'
+      ? ` (${ai.probability}%)`
+      : ''
+  }.`;
 
-  if (!parts.length) {
-    return 'No known provenance signals were detected by the deterministic checks. This is not proof of human origin.';
+  const extra: string[] = [];
+  const u = signals.unicode;
+  if (u.invisibleCharacters) extra.push(`${u.invisibleCharacters} invisible/tag character(s)`);
+  if (u.homoglyphs) extra.push(`${u.homoglyphs} homoglyph(s)`);
+  if (signals.c2pa.manifest && !signals.c2pa.isAiGenerated) {
+    extra.push('an embedded C2PA provenance manifest');
   }
-  return `Detected ${parts.join(', ')}. A detected signal does not by itself establish how the content was produced.`;
+
+  const tail = extra.length ? ` Also found: ${extra.join(', ')}.` : '';
+  return `${head} ${ai.basis[0] ?? ''}.${tail}`.replace(/\.\./g, '.');
 }
 
 export const DISCLAIMER =

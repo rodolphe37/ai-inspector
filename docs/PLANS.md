@@ -20,12 +20,14 @@ There is **no free registered tier**. Creating an account always lands the user 
 | Capability                    | anonymous                | pro                     | premium                 |
 |-------------------------------|--------------------------|-------------------------|-------------------------|
 | Scan quota                    | 5 / fixed 48 h window    | 300 / fixed 24 h window | unlimited               |
+| AI-origin verdict             | ✅                       | ✅                      | ✅                      |
+| C2PA verification (signed)    | ✅                       | ✅                      | ✅                      |
+| Forensic image / text detection | ✅                     | ✅                      | ✅                      |
 | Unicode analysis              | ✅                       | ✅                      | ✅                      |
 | Basic metadata                | ✅                       | ✅                      | ✅                      |
 | Full metadata (EXIF/XMP/IPTC) | ❌                       | ✅                      | ✅                      |
-| C2PA manifest inspection      | ❌                       | ✅                      | ✅                      |
-| Statistical analysis          | ❌                       | ✅                      | ✅                      |
-| Fingerprint matching          | ❌                       | ✅                      | ✅                      |
+| Statistical letter analysis   | ❌                       | ✅                      | ✅                      |
+| Fingerprint-catalogue matching | ❌                      | ✅                      | ✅                      |
 | Detailed / technical report   | ❌                       | ❌                      | ✅                      |
 | Content types                 | text, images             | + PDF, DOCX, audio      | all                     |
 | Max file size                 | 2 MB                     | 50 MB                   | 200 MB                  |

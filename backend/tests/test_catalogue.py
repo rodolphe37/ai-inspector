@@ -18,8 +18,9 @@ def test_plans_meta(client):
     plans = client.get("/api/meta/plans").json()["plans"]
     by_tier = {p["tier"]: p for p in plans}
     assert set(by_tier) == {"anonymous", "pro", "premium"}
-    assert by_tier["anonymous"]["features"]["c2pa"] is False
-    assert by_tier["pro"]["features"]["c2pa"] is True
+    assert by_tier["anonymous"]["features"]["c2pa"] is True  # AI-origin core, all tiers
+    assert by_tier["anonymous"]["features"]["statistical_analysis"] is False
+    assert by_tier["pro"]["features"]["statistical_analysis"] is True
     assert by_tier["premium"]["scanLimit"] is None
     assert by_tier["anonymous"]["requiresAccount"] is False
     assert by_tier["pro"]["requiresAccount"] is True
