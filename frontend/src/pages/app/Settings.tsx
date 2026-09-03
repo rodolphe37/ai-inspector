@@ -139,7 +139,7 @@ export default function Settings() {
               ) : (
                 <div className="space-y-3">
                   <p className="text-sm text-muted">
-                    You're using Provenance Inspector anonymously (Free). Settings are stored in this browser.
+                    You're using IA Inspector anonymously (Free). Settings are stored in this browser.
                   </p>
                   <div className="flex gap-2">
                     <button onClick={() => upgrade('pro')} disabled={upgrading} className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover">

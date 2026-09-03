@@ -38,7 +38,7 @@ export default function About() {
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl sm:text-4xl font-bold tracking-tight"
           >
-            About Provenance Inspector
+            About IA Inspector
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -55,7 +55,7 @@ export default function About() {
         <div className="surface p-8 mb-16 max-w-3xl mx-auto">
           <h2 className="text-xl font-semibold mb-4">Our mission</h2>
           <p className="text-muted leading-relaxed">
-            Provenance Inspector answers &ldquo;was this made by AI?&rdquo; the way it should be
+            IA Inspector answers &ldquo;was this made by AI?&rdquo; the way it should be
             answered: by showing its work. Cryptographic Content Credentials, generator
             metadata, watermark markers and forensic analysis — each verdict lists the evidence
             behind it and states how confident it is.

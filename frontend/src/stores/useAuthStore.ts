@@ -78,7 +78,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     const refresh = (() => {
       try {
-        return localStorage.getItem('pi.refreshToken');
+        return localStorage.getItem('ia.refreshToken');
       } catch {
         return null;
       }

@@ -11,10 +11,10 @@ export default defineConfig({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.png', 'apple-touch-icon.png'],
     manifest: {
-      name: 'Provenance Inspector',
-      short_name: 'Provenance',
+      name: 'IA Inspector',
+      short_name: 'IA Inspector',
       description:
-        'Inspectez vos contenus numériques pour détecter les métadonnées, signatures de provenance, caractères invisibles et empreintes statistiques connues. Analyse algorithmique, sans LLM.',
+        "Analyse d'origine IA pour texte et images : Content Credentials C2PA, métadonnées de générateur, filigranes et analyse forensique — chaque verdict avec ses preuves. Sans LLM, dans le navigateur.",
       lang: 'fr',
       start_url: '/',
       id: "/",
@@ -30,7 +30,7 @@ export default defineConfig({
       ],
       protocol_handlers: [
         {
-          "protocol": "web+Provenance",
+          "protocol": "web+iainspector",
           "url": "/import?data=%s"
         }
       ]

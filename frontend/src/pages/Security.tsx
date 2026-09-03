@@ -15,7 +15,7 @@ const principles = [
   {
     icon: Eye,
     title: 'No LLM',
-    description: 'Provenance Inspector does not use any large language model. All analysis is algorithmic and statistical — deterministic and reproducible.',
+    description: 'IA Inspector does not use any large language model. All analysis is algorithmic and statistical — deterministic and reproducible.',
   },
   {
     icon: Shield,

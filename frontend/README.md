@@ -1,4 +1,4 @@
-# Provenance Inspector — Web app
+# IA Inspector — Web app
 
 React SPA that answers **"was this made by AI?"** with a verdict + its evidence:
 C2PA Content Credentials, generator metadata, forensic image analysis and text
@@ -25,8 +25,8 @@ npm run dev                   # http://localhost:5173
 Run the [API](../backend) alongside it (`cd ../backend && make dev`).
 
 To try the Pro / Premium UI, create local test accounts with
-`cd ../backend && make seed-demo` (`pro@demo.provenance-inspector.app` /
-`demo-pro-pass`, `premium@demo.provenance-inspector.app` / `demo-premium-pass`),
+`cd ../backend && make seed-demo` (`pro@demo.ia-inspector.app` /
+`demo-pro-pass`, `premium@demo.ia-inspector.app` / `demo-premium-pass`),
 or register and upgrade from Settings (billing is simulated).
 
 ```bash

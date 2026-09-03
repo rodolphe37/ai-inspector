@@ -1,4 +1,4 @@
-# Provenance Inspector
+# IA Inspector
 
 An **evidence-based AI-origin analyser** for text and images. It produces a
 single verdict — *AI-generated / likely / possible / no evidence* — from:
@@ -42,8 +42,8 @@ Use PostgreSQL instead of SQLite: `cd backend && make db-up` (Docker), set
 
 **Trying Pro / Premium:** anonymous use needs no account. `cd backend && make
 seed-demo` creates local test accounts —
-`pro@demo.provenance-inspector.app` / `demo-pro-pass` and
-`premium@demo.provenance-inspector.app` / `demo-premium-pass`. Or register
+`pro@demo.ia-inspector.app` / `demo-pro-pass` and
+`premium@demo.ia-inspector.app` / `demo-premium-pass`. Or register
 normally (→ Pro) and upgrade from Settings (billing is simulated). Details in
 [`backend/README.md`](backend/README.md#test-accounts-local-dev).
 

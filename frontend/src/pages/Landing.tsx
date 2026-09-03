@@ -360,7 +360,7 @@ export default function Landing() {
                 Your content should remain yours.
               </h2>
               <p className="mt-4 text-muted">
-                Provenance Inspector is designed for local-first analysis. No content is sent to
+                IA Inspector is designed for local-first analysis. No content is sent to
                 external servers. No LLM is involved. No training on your data.
               </p>
               <ul className="mt-6 space-y-3">

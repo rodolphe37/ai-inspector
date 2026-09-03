@@ -13,7 +13,7 @@ __pycache__/
 # local database
 *.sqlite3
 *.db
-provenance.db*
+ia_inspector.db*
 
 # env
 .env

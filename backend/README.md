@@ -1,8 +1,7 @@
-# Provenance Inspector — API
+# IA Inspector — API
 
 FastAPI service that provides **accounts, authentication, scan quotas, simulated
-billing, per-user history and the fingerprint catalogue** for the Provenance
-Inspector SPA.
+billing, per-user history and the fingerprint catalogue** for the IA Inspector SPA.
 
 It does **not** analyse content. All provenance analysis (Unicode, metadata,
 C2PA, statistics) runs client-side in the browser — see `../frontend`. This
@@ -33,8 +32,8 @@ Anonymous use needs no account. To try the **Pro** and **Premium** tiers,
 
 | Email | Password | Plan |
 |---|---|---|
-| `pro@demo.provenance-inspector.app` | `demo-pro-pass` | pro |
-| `premium@demo.provenance-inspector.app` | `demo-premium-pass` | premium |
+| `pro@demo.ia-inspector.app` | `demo-pro-pass` | pro |
+| `premium@demo.ia-inspector.app` | `demo-premium-pass` | premium |
 
 It refuses to run outside `ENVIRONMENT=development` / `test` / `local`. You can
 also just register normally (you land on Pro) and switch to Premium from
@@ -53,7 +52,7 @@ a already-running server, `make lint` runs ruff.
 ```bash
 make db-up            # docker compose up -d db  (postgres:16 on :5432)
 # in backend/.env:
-#   DATABASE_URL=postgresql+psycopg://provenance:provenance@localhost:5432/provenance
+#   DATABASE_URL=postgresql+psycopg://ia_inspector:ia_inspector@localhost:5432/ia_inspector
 make migrate          # alembic upgrade head
 make seed
 ```
@@ -77,7 +76,7 @@ list. The important ones:
 
 | Variable | Default | Notes |
 |---|---|---|
-| `DATABASE_URL` | `sqlite:///./provenance.db` | Postgres: `postgresql+psycopg://…` |
+| `DATABASE_URL` | `sqlite:///./ia_inspector.db` | Postgres: `postgresql+psycopg://…` |
 | `JWT_SECRET` / `SESSION_SECRET` | dev values | **must** be changed in production |
 | `CORS_ORIGINS` | `http://localhost:5173,…` | comma-separated |
 | `FRONTEND_URL` | `http://localhost:5173` | OAuth / magic-link redirect target |

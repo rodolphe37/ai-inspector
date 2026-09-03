@@ -32,7 +32,7 @@ from ..schemas import (
 )
 from ..security import as_aware, generate_token, hash_token, utcnow, verify_password
 
-log = logging.getLogger("provenance.auth")
+log = logging.getLogger("ia_inspector.auth")
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
@@ -138,7 +138,7 @@ def _send_magic_email(to: str, link: str) -> None:
     from email.message import EmailMessage
 
     msg = EmailMessage()
-    msg["Subject"] = "Your Provenance Inspector sign-in link"
+    msg["Subject"] = "Your IA Inspector sign-in link"
     msg["From"] = settings.smtp_from
     msg["To"] = to
     msg.set_content(f"Click to sign in:\n\n{link}\n\nThis link expires shortly.")

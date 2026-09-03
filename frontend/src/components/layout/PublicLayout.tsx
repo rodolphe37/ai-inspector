@@ -26,7 +26,7 @@ export function PublicLayout() {
               <div className="p-1.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
                  <img src={Logo} className='w-10 h-10'/>
               </div>
-              <span className="font-semibold text-content tracking-tight">Provenance Inspector</span>
+              <span className="font-semibold text-content tracking-tight">IA Inspector</span>
             </Link>
 
             <nav className="hidden md:flex items-center gap-1">
@@ -120,7 +120,7 @@ export function PublicLayout() {
                 <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
                   <img src={Logo} className='w-10 h-10'/>
                 </div>
-                <span className="font-semibold">Provenance Inspector</span>
+                <span className="font-semibold">IA Inspector</span>
               </div>
               <p className="text-sm text-muted max-w-md">
                 Independent provenance analysis. Inspect digital content for known signals,
@@ -146,7 +146,7 @@ export function PublicLayout() {
           </div>
           <div className="mt-8 pt-8 border-t border-default flex flex-col sm:flex-row justify-between gap-4">
             <p className="text-xs text-subtle">
-              © 2026 Provenance Inspector. An absence of signal does not constitute proof of human origin.
+              © 2026 IA Inspector. An absence of signal does not constitute proof of human origin.
             </p>
             <p className="text-xs text-subtle">
               Content is analysed locally in your browser. Evidence-based — every verdict shows its basis.

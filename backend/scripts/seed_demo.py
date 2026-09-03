@@ -6,8 +6,8 @@ Idempotent — running it again just resets the passwords / plans.
 
 Accounts (LOCAL DEV ONLY — never run against a real database):
 
-    pro@demo.provenance-inspector.app       demo-pro-pass       -> plan: pro
-    premium@demo.provenance-inspector.app    demo-premium-pass   -> plan: premium
+    pro@demo.ia-inspector.app       demo-pro-pass       -> plan: pro
+    premium@demo.ia-inspector.app    demo-premium-pass   -> plan: premium
 """
 
 from __future__ import annotations
@@ -20,8 +20,8 @@ from app.db import SessionLocal, init_db
 from app.security import hash_password
 
 DEMO = [
-    ("pro@demo.provenance-inspector.app", "Demo Pro", "demo-pro-pass", "pro"),
-    ("premium@demo.provenance-inspector.app", "Demo Premium", "demo-premium-pass", "premium"),
+    ("pro@demo.ia-inspector.app", "Demo Pro", "demo-pro-pass", "pro"),
+    ("premium@demo.ia-inspector.app", "Demo Premium", "demo-premium-pass", "premium"),
 ]
 
 

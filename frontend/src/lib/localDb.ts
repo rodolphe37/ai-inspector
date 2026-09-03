@@ -8,7 +8,7 @@ import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type { AnalysisResult, Analysis } from '@/types/analysis';
 import type { UserSettings } from '@/types/settings';
 
-interface ProvenanceDB extends DBSchema {
+interface IaInspectorDB extends DBSchema {
   analyses: {
     key: string;
     value: AnalysisResult & { createdAt: string };
@@ -20,15 +20,15 @@ interface ProvenanceDB extends DBSchema {
   };
 }
 
-const DB_NAME = 'provenance-inspector';
+const DB_NAME = 'ia-inspector';
 const DB_VERSION = 1;
 const MAX_LOCAL_ANALYSES = 30;
 
-let dbp: Promise<IDBPDatabase<ProvenanceDB>> | null = null;
+let dbp: Promise<IDBPDatabase<IaInspectorDB>> | null = null;
 
 function db() {
   if (!dbp) {
-    dbp = openDB<ProvenanceDB>(DB_NAME, DB_VERSION, {
+    dbp = openDB<IaInspectorDB>(DB_NAME, DB_VERSION, {
       upgrade(database) {
         const store = database.createObjectStore('analyses', { keyPath: 'id' });
         store.createIndex('by-date', 'createdAt');

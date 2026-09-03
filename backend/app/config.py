@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     )
 
     # --- Core -------------------------------------------------------------
-    app_name: str = "Provenance Inspector API"
+    app_name: str = "IA Inspector API"
     environment: str = "development"
     debug: bool = True
 
@@ -23,8 +23,8 @@ class Settings(BaseSettings):
 
     # SQLAlchemy URL. Defaults to a local SQLite file so the API runs with
     # zero external services. Point at Postgres in production, e.g.
-    # postgresql+psycopg://user:pass@localhost:5432/provenance
-    database_url: str = "sqlite:///./provenance.db"
+    # postgresql+psycopg://user:pass@localhost:5432/ia_inspector
+    database_url: str = "sqlite:///./ia_inspector.db"
 
     # Public URL of the SPA, used for OAuth / magic-link redirects.
     frontend_url: str = "http://localhost:5173"
@@ -77,7 +77,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
-    smtp_from: str = "no-reply@provenance-inspector.local"
+    smtp_from: str = "no-reply@ia-inspector.local"
 
     quota_debug_header: bool = Field(
         default=True,

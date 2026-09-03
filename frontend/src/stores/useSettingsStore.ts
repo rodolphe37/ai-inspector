@@ -71,7 +71,7 @@ export const useSettingsStore = create<SettingsState>()(
       },
     }),
     {
-      name: 'provenance-settings',
+      name: 'ia-settings',
       partialize: (s) => ({ settings: { appearance: s.settings.appearance } }),
       merge: (persisted, current) => {
         const p = persisted as { settings?: { appearance?: UserSettings['appearance'] } };

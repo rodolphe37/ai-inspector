@@ -1,5 +1,5 @@
 /**
- * Thin fetch wrapper around the Provenance Inspector API.
+ * Thin fetch wrapper around the IA Inspector API.
  *
  * Responsibilities:
  *  - attach the bearer access token and the X-Anon-Id header
@@ -14,9 +14,9 @@ const API_URL = (
 ).replace(/\/$/, '');
 
 const STORAGE = {
-  access: 'pi.accessToken',
-  refresh: 'pi.refreshToken',
-  anon: 'pi.anonId',
+  access: 'ia.accessToken',
+  refresh: 'ia.refreshToken',
+  anon: 'ia.anonId',
 } as const;
 
 // --- token store ---------------------------------------------------------

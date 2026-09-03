@@ -4,7 +4,7 @@ Repo guide for AI assistants. Keep it short; link out for detail.
 
 ## What this is
 
-`Provenance Inspector` — an **evidence-based AI-origin analyser** for text and
+`IA Inspector` — an **evidence-based AI-origin analyser** for text and
 images. It emits one verdict (`ai_confirmed` / `ai_likely` / `ai_possible` /
 `inconclusive` / `no_evidence` / `human_declared`) with a confidence basis
 (`cryptographic` / `metadata` / `statistical`) and the list of contributing

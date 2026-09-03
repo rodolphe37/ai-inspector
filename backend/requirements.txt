@@ -1,4 +1,4 @@
-# Runtime dependencies for the Provenance Inspector API.
+# Runtime dependencies for the IA Inspector API.
 # Pinned to the latest stable releases at time of writing (Sept 2026).
 fastapi==0.141.1
 uvicorn[standard]==0.52.4

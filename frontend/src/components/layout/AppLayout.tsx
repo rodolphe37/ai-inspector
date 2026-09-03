@@ -134,7 +134,7 @@ function SidebarContent({ plan, anon, onNavigate }: { plan: 'anonymous' | 'pro' 
           <div className="p-1.5 rounded-lg bg-primary/10">
             <img src={Logo} className="w-10 h-10" alt="" />
           </div>
-          <span className="font-semibold text-content text-sm tracking-tight">Provenance Inspector</span>
+          <span className="font-semibold text-content text-sm tracking-tight">IA Inspector</span>
         </Link>
         {onNavigate && (
           <button onClick={onNavigate} className="p-1.5 rounded-lg hover:bg-surface-2 text-muted"><X className="h-4 w-4" /></button>

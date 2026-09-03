@@ -27,7 +27,7 @@ from .routers import (
 from .seed import seed_fingerprints
 
 logging.basicConfig(level=logging.INFO)
-log = logging.getLogger("provenance")
+log = logging.getLogger("ia_inspector")
 
 
 @asynccontextmanager
@@ -35,7 +35,7 @@ async def lifespan(_: FastAPI):
     init_db()
     with SessionLocal() as db:
         seed_fingerprints(db)
-    log.info("Provenance Inspector API ready (env=%s, db=%s)", settings.environment,
+    log.info("IA Inspector API ready (env=%s, db=%s)", settings.environment,
              "sqlite" if settings.is_sqlite else "postgres")
     yield
 

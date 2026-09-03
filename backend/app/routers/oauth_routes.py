@@ -71,7 +71,7 @@ async def _handle_callback(provider: str, request: Request, db: Session) -> Redi
         user = get_user_by_email(db, profile.email) if profile.email else None
         if user is None:
             pid = profile.provider_account_id
-            email = profile.email or f"{provider}-{pid}@oauth.provenance-inspector.app"
+            email = profile.email or f"{provider}-{pid}@oauth.ia-inspector.app"
             user = User(
                 email=email.lower(),
                 name=profile.name or email.split("@")[0],

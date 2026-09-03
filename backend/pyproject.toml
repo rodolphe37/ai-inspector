@@ -1,7 +1,7 @@
 [project]
-name = "provenance-inspector-api"
+name = "ia-inspector-api"
 version = "0.1.0"
-description = "Provenance Inspector — accounts, quotas and history API"
+description = "IA Inspector — accounts, quotas and history API"
 requires-python = ">=3.11"
 
 [tool.ruff]
