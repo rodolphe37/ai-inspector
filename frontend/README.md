@@ -1,188 +1,67 @@
-# Provenance Inspector
+# Provenance Inspector — Web app
 
-Independent provenance analysis tool for inspecting digital content — metadata, Unicode artifacts, C2PA manifests, and known watermark patterns. **Not an AI detector.**
+React SPA for inspecting digital content for **known provenance signals** —
+metadata, Unicode artifacts, C2PA manifests and statistical watermark patterns.
+**Not an AI detector.**
 
-## Important
+All content analysis runs **in the browser** (`src/engine`). The
+[API](../backend) is only used for accounts, scan quotas and (for signed-in
+users) synced history.
 
-This is a **frontend-only demo application**. All analysis results are **mocked**. No real content analysis is performed. The interface clearly displays "Demo mode" indicators.
+## Stack
 
-## Installation
+React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · React Router 7 ·
+Zustand · Framer Motion · Recharts · `idb` · `exifr`
+
+## Develop
 
 ```bash
 npm install
+cp .env.example .env          # VITE_API_URL, defaults to http://localhost:8000/api
+npm run dev                   # http://localhost:5173
 ```
 
-## Development
+Run the [API](../backend) alongside it (`cd ../backend && make dev`).
 
 ```bash
-npm run dev
+npm run typecheck             # tsc --noEmit
+npm run lint                  # eslint
+npm run build                 # production build (+ PWA)
 ```
 
-## Build
-
-```bash
-npm run build
-```
-
-## Architecture
+## How it fits together
 
 ```
-src/
-├── components/
-│   ├── ui/          # Reusable UI primitives (StatusBadge, ScoreRing, Modal, etc.)
-│   ├── layout/      # Layout wrappers (PublicLayout, AppLayout, PageTransition)
-│   ├── dashboard/   # Dashboard-specific components
-│   ├── analysis/    # Analysis-specific components
-│   ├── results/     # Results page components
-│   ├── fingerprints/
-│   ├── charts/
-│   ├── landing/
-│   └── cleaning/
-├── data/            # Mock JSON data
-│   ├── mockAnalyses.json
-│   ├── mockFingerprints.json
-│   ├── mockDashboard.json
-│   ├── mockResults.json
-│   └── mockSettings.json
-├── engine/          # Future local analysis engine (stubs)
-│   ├── unicode/
-│   ├── metadata/
-│   ├── statistics/
-│   └── fingerprints/
-├── lib/             # API client
-│   └── apiClient.ts
-├── pages/           # Route pages
-│   ├── app/         # Dashboard pages
-│   └── *.tsx        # Public pages
-├── services/        # Service layer (mock implementations)
-│   ├── mockAnalysisApi.ts
-│   ├── mockFingerprintApi.ts
-│   ├── mockHistoryApi.ts
-│   ├── mockSettingsApi.ts
-│   └── index.ts
-├── stores/          # Zustand stores
-│   ├── useAnalysisStore.ts
-│   ├── useSettingsStore.ts
-│   └── useHistoryStore.ts
-├── types/           # TypeScript type definitions
-│   ├── analysis.ts
-│   ├── api.ts
-│   ├── c2pa.ts
-│   ├── fingerprint.ts
-│   ├── metadata.ts
-│   ├── settings.ts
-│   └── unicode.ts
-├── App.tsx          # Router
-├── main.tsx         # Entry point
-└── index.css        # Global styles + design tokens
+ Browser (SPA)
+ ├── src/engine/            deterministic analysis — Unicode, metadata (exifr),
+ │                          C2PA (structural), statistics (χ²/entropy), scoring
+ ├── src/services/          HTTP when signed in · IndexedDB when anonymous
+ │     └── runAnalysis()    enforce plan limits → consume quota → analyse → persist
+ ├── src/stores/            auth · quota · settings · history (Zustand)
+ └── src/lib/
+       ├── apiClient.ts     bearer + X-Anon-Id, silent token refresh, typed errors
+       └── plans.ts         capability matrix — mirror of backend/app/plans.py
+                            │
+                            ▼  VITE_API_URL
+                     ../backend (FastAPI)
 ```
 
-### Architecture Diagram
+## Plans
 
-```
-┌─────────────────────────────────────────────────────┐
-│                    Browser (SPA)                     │
-│                                                       │
-│  ┌──────────┐   ┌───────────┐   ┌──────────────────┐ │
-│  │  Pages   │──►│  Services │──►│  Mock API Layer  │ │
-│  │ (React)  │   │ (Interfaces)│   │  (TS mock data) │ │
-│  └──────────┘   └───────────┘   └──────────────────┘ │
-│       │              │                               │
-│       ▼              ▼                               │
-│  ┌──────────┐   ┌───────────┐                        │
-│  │  Stores  │   │   Engine  │                        │
-│  │ (Zustand)│   │  (stubs)  │                        │
-│  └──────────┘   └───────────┘                        │
-│                                                       │
-└─────────────────────────────────────────────────────┘
-                         │
-                    ┌─────┴─────┐
-                    │ VITE_API_URL │
-                    │  present?    │
-                    └─────┬─────┘
-                    ┌─────┴─────┐
-                    ▼           ▼
-              MOCK MODE    API MODE
-              (current)   (future: FastAPI)
-```
+Three tiers — `anonymous` (no account), `pro`, `premium` — defined in
+[`../docs/PLANS.md`](../docs/PLANS.md) and enforced both client-side (instant UI
+gating via `src/lib/plans.ts`) and server-side (quota + capability checks).
+
+Anonymous users get 5 scans / 48 h, Unicode + basic metadata, and local-only
+history (IndexedDB). Hitting the quota opens the sign-up modal; closing it
+blocks further scans until the window resets.
 
 ## Routes
 
-### Public
-- `/` — Landing page with interactive demo
-- `/features` — Feature overview
-- `/how-it-works` — Pipeline explanation
-- `/security` — Privacy & security principles
-- `/pricing` — Pricing plans
-- `/about` — About the project
-- `/login` — Login page (mock)
-- `/signup` — Signup page (mock)
+Public: `/`, `/features`, `/how-it-works`, `/security`, `/pricing`, `/about`,
+`/login`, `/signup`, `/auth/callback` (OAuth / magic link).
 
-### Application
-- `/app` — Dashboard overview
-- `/app/analyze` — Text/file analysis
-- `/app/results/:id` — Analysis results report
-- `/app/history` — Analysis history
-- `/app/fingerprints` — Known fingerprints list
-- `/app/fingerprints/:id` — Fingerprint detail
-- `/app/clean` — Content cleaning
-- `/app/settings` — Settings
-
-### System
-- `/*` — 404 page
-
-## Mock API Layer
-
-The service layer implements typed interfaces (`AnalysisApi`, `FingerprintApi`, `HistoryApi`, `SettingsApi`) that currently use mock implementations. The rest of the app is unaware whether it's talking to mocks or a real backend.
-
-## Future Backend Architecture
-
-To connect a real FastAPI backend:
-
-1. Set `VITE_API_URL` in `.env` (e.g., `VITE_API_URL=https://api.example.com`)
-2. Create `src/services/httpAnalysisApi.ts` implementing the same `AnalysisApi` interface using `apiClient`
-3. Update `src/services/index.ts` to switch based on `isMockMode`:
-
-```typescript
-import { isMockMode } from '@/lib/apiClient';
-import { mockAnalysisApi } from './mockAnalysisApi';
-import { httpAnalysisApi } from './httpAnalysisApi';
-
-export const analysisApi = isMockMode ? mockAnalysisApi : httpAnalysisApi;
-```
-
-No component changes required — the interface is identical.
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `VITE_API_URL` | Backend API URL. If absent, app runs in **mock mode**. |
-
-## Privacy Principles
-
-- **Local-first**: Content analysis is designed to run in the browser
-- **No LLM**: No large language model is used anywhere
-- **No training**: User content is never used for training
-- **No tracking**: No content tracking
-- **Opt-in storage**: Server-side history storage is optional
-
-## Limitations
-
-- All results are simulated demo data
-- No real watermark detection is performed
-- No real C2PA verification is performed
-- An absence of signal does not constitute proof of human origin
-- A detected signal does not constitute proof of machine generation
-
-## Tech Stack
-
-- React 18 + TypeScript
-- Vite
-- Tailwind CSS
-- React Router
-- Framer Motion
-- Recharts
-- Zustand
-- Zod
-- Lucide React
+App (`/app`, no login required — anonymous tier works): `/app`, `/app/analyze`,
+`/app/results/:id`, `/app/history`, `/app/fingerprints`, `/app/fingerprints/:id`,
+`/app/clean`, `/app/settings`. Pro/Premium-only capabilities render an inline
+upgrade prompt.
