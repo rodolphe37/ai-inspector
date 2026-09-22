@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.3.2] - 2026-09-22
+
+### Fixed
+- After a deploy, the first visit could still show the previous version (kept
+  by the service worker) until the next reload. The page now reloads itself
+  once the new version is installed.
+
 ## [1.3.1] - 2026-09-22
 
 ### Changed
@@ -138,6 +145,7 @@ First open-source release.
 - Renamed the project from "IA Inspector" to **AI Inspector** (English product name).
 - The em dash character is banned from code, UI copy and docs (checked in CI).
 
+[1.3.2]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/rodolphe37/ai-inspector/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/rodolphe37/ai-inspector/compare/v1.1.2...v1.2.0
