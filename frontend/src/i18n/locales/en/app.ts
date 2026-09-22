@@ -145,6 +145,8 @@ export const results = {
 
 export const fingerprints = {
   title: 'Known fingerprints',
+  authenticity: 'Proof of authenticity',
+  authenticityHint: 'Counter-signal: a match points to a real capture, not to AI. It lowers the AI verdict.',
   subtitle: 'Detection methods used to identify known provenance signals in content.',
   search: 'Search fingerprints…',
   empty: 'No fingerprints found',

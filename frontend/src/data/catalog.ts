@@ -336,6 +336,7 @@ export const CATALOG: CatalogEntry[] = [
   },
   {
     id: "camera-c2pa-capture",
+    evidence: "authenticity",
     name: "Camera-signed capture (C2PA)",
     provider: "Leica, Sony, Nikon, Canon, Fujifilm",
     type: "cryptographic",
@@ -345,14 +346,14 @@ export const CATALOG: CatalogEntry[] = [
     targetContent: "files",
     coverage: "Photos signed in the camera by C2PA-enabled models",
     detectionMethod: "Verify the C2PA manifest, check that it is signed by a camera maker and that it declares no generative AI.",
-    description: "Some cameras sign each photo at capture time. A valid camera signature without any AI assertion is strong evidence of a real capture; it says nothing about edits made after the signature.",
+    description: "Evidence of authenticity, not of AI: some cameras sign each photo at capture time. A valid camera signature without any AI assertion is strong evidence of a real capture, so it lowers the AI verdict instead of raising it. It says nothing about edits made after the signature.",
     lastUpdated: "2026-09-22",
     references: ["https://c2pa.org/specifications/"],
     fr: {
       name: "Capture signée par l'appareil (C2PA)",
       coverage: "Photos signées dans l'appareil par les modèles compatibles C2PA",
       detectionMethod: "Vérifier le manifeste C2PA, contrôler qu'il est signé par un fabricant d'appareils et qu'il ne déclare aucune IA générative.",
-      description: "Certains appareils photo signent chaque image au moment de la prise de vue. Une signature d'appareil valide, sans assertion IA, est une preuve forte de capture réelle ; elle ne dit rien des retouches faites après la signature.",
+      description: "Preuve d'authenticité, pas d'IA : certains appareils photo signent chaque image au moment de la prise de vue. Une signature d'appareil valide, sans assertion IA, est une preuve forte de capture réelle ; elle fait donc baisser le verdict IA au lieu de l'augmenter. Elle ne dit rien des retouches faites après la signature.",
     },
   },
   {
@@ -483,7 +484,7 @@ export const CATALOG: CatalogEntry[] = [
   },
   {
     id: "media-generator-tags",
-    name: "AI tool named in audio, video or document metadata",
+    name: "AI tool named in file metadata",
     provider: "Generic",
     type: "pattern",
     version: "n/a",
@@ -496,7 +497,7 @@ export const CATALOG: CatalogEntry[] = [
     lastUpdated: "2026-09-22",
     references: [],
     fr: {
-      name: "Outil d'IA nommé dans les métadonnées audio, vidéo ou document",
+      name: "Outil d'IA cité dans les métadonnées",
       coverage: "ID3, RIFF INFO, commentaires FLAC, balises MP4 / MOV, propriétés PDF et DOCX",
       detectionMethod: "Lire les champs encodeur, logiciel, commentaire et producteur, et y chercher des outils d'IA connus (Suno, Udio, ElevenLabs, Sora, Runway, Veo, Pika, Kling, Luma, Synthesia, HeyGen, ChatGPT…).",
       description: "Certains outils écrivent leur nom dans les fichiers qu'ils exportent. Une correspondance est un indice fort ; comme toute métadonnée, elle se supprime ou se modifie facilement, donc son absence ne prouve rien.",

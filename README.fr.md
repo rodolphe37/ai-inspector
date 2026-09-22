@@ -26,6 +26,7 @@ Chaque verdict est accompagné de ses preuves et d'un niveau de confiance honnê
 - [Pourquoi AI Inspector](#pourquoi-ai-inspector)
 - [Fonctionnalités](#fonctionnalités)
 - [Formats pris en charge](#formats-pris-en-charge)
+- [Catalogue de détection](#catalogue-de-détection)
 - [Comment un verdict est construit](#comment-un-verdict-est-construit)
 - [Confidentialité](#confidentialité)
 - [Démarrage rapide](#démarrage-rapide)
@@ -51,13 +52,14 @@ L'absence de signal n'est jamais présentée comme une preuve d'origine humaine.
 
 | | |
 |---|---|
-| **Content Credentials C2PA** | Lecture complète du manifeste et validation de la signature (bibliothèque officielle `c2pa` en WASM). |
+| **Content Credentials C2PA** | Lecture complète du manifeste et validation de la signature (bibliothèque officielle `c2pa` en WASM), reconnaissance du fournisseur (OpenAI, Adobe, Microsoft, Google, Samsung) et Durable Content Credentials. Une capture signée par l'appareil compte comme preuve d'authenticité. |
 | **Métadonnées de générateur** | Signatures dans les images, l'audio, la vidéo et les documents (Stable Diffusion, ComfyUI, Midjourney, Firefly, Suno, ElevenLabs, Sora, Runway, ChatGPT…) et `DigitalSourceType` IPTC. |
 | **Forensique d'image** | Artefacts de suréchantillonnage (domaine fréquentiel), résidu de bruit de capteur, dimensions natives des générateurs. |
 | **Stylométrie du texte (EN + FR)** | Variabilité, registre, vocabulaire prisé des LLM. La langue du texte est détectée et les références correspondantes sont utilisées. |
 | **Stylométrie du code** | Densité et style des commentaires, docstrings, restes d'assistant, identifiants génériques. |
 | **Détection « Trojan Source »** | Contrôles bidirectionnels et homoglyphes cachés dans le code source. |
 | **Statistiques de lettres** | Test du χ² par rapport aux fréquences de référence anglaises ou françaises, entropie, p-value. |
+| **Catalogue de détection** | 23 méthodes connues, chacune avec son statut, sa confiance et ses références : voir [Catalogue de détection](#catalogue-de-détection). |
 | **Nettoyage de contenu** | Suppression locale de l'Unicode invisible et des métadonnées de tous les formats pris en charge, puis téléchargement. Conservé dans l'historique. |
 | **PWA bilingue** | Interface en anglais et en français, installable, fonctionne hors ligne une fois chargée. |
 | **Sans compte, sans limite** | Tout est gratuit. L'historique et les réglages restent dans votre navigateur. |
@@ -80,6 +82,32 @@ restent identiques à l'octet près dès que le format le permet.
 
 Les nettoyages sont conservés dans l'historique (onglet dédié), avec ce qui a
 été retiré et la taille des fichiers. Le contenu lui-même n'est jamais stocké.
+
+## Catalogue de détection
+
+Les 23 méthodes auxquelles l'analyse est confrontée, intégrées à l'application
+(consultables dans **Empreintes connues**). Statut : **disponible** = détecté
+de façon fiable dans le navigateur ; **recherche** / **expérimental** = listé
+par transparence, le détecteur n'est pas public ou le signal n'est qu'une
+estimation.
+
+| Famille | Méthode | Statut |
+|---|---|---|
+| **Content Credentials (C2PA)** | Manifeste C2PA et signature | disponible |
+| | Credentials OpenAI, Adobe Firefly, Microsoft, Google, Samsung Galaxy AI | disponible |
+| | Durable Content Credentials (soft binding : filigrane ou empreinte qui permet de retrouver des credentials supprimés) | disponible |
+| | Capture signée par l'appareil (Leica, Sony, Nikon, Canon, Fujifilm) : **preuve d'authenticité**, un contre-signal qui fait baisser le verdict IA | disponible |
+| **Métadonnées de générateur** | `DigitalSourceType` IPTC (média algorithmique entraîné) | disponible |
+| | Balises logiciel et IA EXIF / XMP | disponible |
+| | Paramètres des interfaces Stable Diffusion (AUTOMATIC1111, Forge, SD.Next, Fooocus) | disponible |
+| | Workflow ComfyUI, métadonnées InvokeAI, NovelAI, Midjourney | disponible |
+| | Mention « Made with Google AI » | disponible |
+| | Outil d'IA cité dans les métadonnées : audio, vidéo ou documents (Suno, Udio, ElevenLabs, Sora, Runway, Veo, Pika, Kling, ChatGPT…) | disponible |
+| **Marqueurs de texte** | Caractères Unicode invisibles | disponible |
+| | Substitution d'homoglyphes | disponible |
+| | Écart de fréquence des n-grammes | expérimental |
+| **Filigranes** | SynthID Text, SynthID image / audio / vidéo (Google DeepMind) | recherche |
+| | Filigrane de jetons « liste verte » (KGW) | recherche |
 
 ## Comment un verdict est construit
 

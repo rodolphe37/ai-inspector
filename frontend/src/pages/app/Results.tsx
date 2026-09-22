@@ -286,7 +286,11 @@ export default function Results() {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <span className="text-xs tabular-nums text-muted">{fp.confidence}%</span>
-                      <StatusBadge status={fp.status} />
+                      {fp.evidence === 'authenticity' && fp.status === 'found' ? (
+                        <StatusBadge status="clean" label={t('fingerprints.authenticity')} />
+                      ) : (
+                        <StatusBadge status={fp.status} />
+                      )}
                     </div>
                   </div>
                 ))

@@ -149,6 +149,8 @@ export const results: typeof en.results = {
 
 export const fingerprints: typeof en.fingerprints = {
   title: 'Empreintes connues',
+  authenticity: 'Preuve d’authenticité',
+  authenticityHint: 'Contre-signal : une correspondance indique une capture réelle, pas une IA. Elle fait baisser le verdict IA.',
   subtitle: 'Méthodes de détection utilisées pour identifier des signaux de provenance connus.',
   search: 'Rechercher une empreinte…',
   empty: 'Aucune empreinte trouvée',

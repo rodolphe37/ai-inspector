@@ -203,6 +203,7 @@ export function matchFingerprints(
       status,
       confidence: status === 'not_found' ? fp.confidence : confidence,
       method,
+      evidence: fp.evidence ?? 'ai',
     });
   }
 

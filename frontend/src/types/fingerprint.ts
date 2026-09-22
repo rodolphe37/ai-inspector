@@ -15,4 +15,9 @@ export interface Fingerprint {
   targetContent: 'text' | 'image' | 'audio' | 'files';
   coverage: string;
   references?: string[];
+  /**
+   * What a match means. 'ai' (default): a sign of AI origin. 'authenticity':
+   * evidence of a real capture (counter-signal), never counted towards AI.
+   */
+  evidence?: 'ai' | 'authenticity';
 }

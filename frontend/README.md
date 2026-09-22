@@ -66,7 +66,10 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md#adding-a-language) to add a langua
 The known detection methods live in [`src/data/catalog.ts`](src/data/catalog.ts):
 metadata plus English text, and an optional `fr` block with the French wording.
 `localizedCatalog(lang)` returns them in the active language (English fallback).
-To add or update a method, edit that file and open a pull request.
+Each entry has a `targetContent` (text, image, audio or `files`) and an
+optional `evidence`: `ai` (default) or `authenticity` for counter-signals such
+as a camera-signed capture, which never raise the AI score. The engine side is
+`src/engine/fingerprints.ts`. To add or update a method, edit that file and open a pull request.
 
 ## Storage
 

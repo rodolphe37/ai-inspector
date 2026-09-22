@@ -67,6 +67,13 @@ export default function FingerprintDetail() {
           </div>
         </div>
 
+        {fp.evidence === 'authenticity' && (
+          <div className="mb-6 rounded-lg border border-success/25 bg-success/10 p-4 text-sm">
+            <span className="font-semibold text-success">{t('fingerprints.authenticity')}</span>
+            <span className="text-muted"> · {t('fingerprints.authenticityHint')}</span>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div className="surface p-5">
             <h3 className="text-sm font-semibold text-muted mb-3">{t('fingerprints.properties')}</h3>

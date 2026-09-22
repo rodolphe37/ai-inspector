@@ -78,17 +78,26 @@ export default function Fingerprints() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                   whileHover={{ y: -2 }}
+                  className="h-full"
                 >
-                  <Link to={`/app/fingerprints/${fp.id}`} className="surface p-5 block group">
-                    <div className="flex items-start justify-between mb-3">
+                  <Link to={`/app/fingerprints/${fp.id}`} className="surface p-5 group flex h-full flex-col">
+                    <div className="flex items-start justify-between gap-2 mb-3">
                       <div className={`p-2 rounded-lg bg-surface-2 ${typeColors[fp.type] || 'text-primary'}`}>
                         <Fingerprint className="h-5 w-5" />
                       </div>
-                      <StatusBadge status={FINGERPRINT_BADGE[fp.status]} label={t(`status.fingerprint.${fp.status}`)} />
+                      <div className="flex flex-wrap justify-end gap-1.5">
+                        {fp.evidence === 'authenticity' && (
+                          <span className="inline-flex items-center whitespace-nowrap rounded-full border border-success/25 bg-success/10 px-2 py-0.5 text-xs font-medium text-success" title={t('fingerprints.authenticityHint')}>
+                            {t('fingerprints.authenticity')}
+                          </span>
+                        )}
+                        <StatusBadge status={FINGERPRINT_BADGE[fp.status]} label={t(`status.fingerprint.${fp.status}`)} />
+                      </div>
                     </div>
-                    <h3 className="font-semibold group-hover:text-primary transition-colors">{fp.name}</h3>
-                    <p className="text-xs text-muted mt-0.5">{fp.provider}</p>
-                    <p className="text-sm text-muted mt-3 line-clamp-2">{fp.description}</p>
+                    <h3 className="min-h-12 font-semibold leading-6 line-clamp-2 group-hover:text-primary transition-colors" title={fp.name}>{fp.name}</h3>
+                    <p className="text-xs text-muted mt-0.5 truncate" title={fp.provider}>{fp.provider}</p>
+                    <p className="min-h-10 text-sm leading-5 text-muted mt-3 line-clamp-2">{fp.description}</p>
+                    <div className="mt-auto" />
                     <div className="mt-4 flex items-center gap-3 text-xs text-subtle">
                       <span className="uppercase">{t(`status.method.${fp.type}`, { defaultValue: fp.type })}</span>
                       <span>·</span>

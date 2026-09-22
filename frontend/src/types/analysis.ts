@@ -118,6 +118,8 @@ export interface FingerprintMatch {
   status: DetectionStatus;
   confidence: number;
   method: string;
+  /** See `Fingerprint.evidence`. */
+  evidence?: 'ai' | 'authenticity';
 }
 
 export interface StatisticalResult {

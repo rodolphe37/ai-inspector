@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.3.4] - 2026-09-22
+
+### Fixed
+- A camera-signed capture (C2PA) raised the "signal level" like an AI signal.
+  It is evidence of a real capture: it no longer counts towards the score and
+  is shown as "Proof of authenticity" in the catalogue, its detail page and the
+  results.
+- Known fingerprints: every card has the same height (long names are limited
+  to two lines, footer aligned).
+
+### Changed
+- README (EN / FR): new "Detection catalogue" section listing the 23 methods
+  with their status; the Features table mentions provider recognition and the
+  catalogue.
+- Shorter name for the "AI tool named in file metadata" method.
+
 ## [1.3.3] - 2026-09-22
 
 ### Changed
@@ -152,6 +168,7 @@ First open-source release.
 - Renamed the project from "IA Inspector" to **AI Inspector** (English product name).
 - The em dash character is banned from code, UI copy and docs (checked in CI).
 
+[1.3.4]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.0...v1.3.1

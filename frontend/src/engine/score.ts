@@ -40,8 +40,10 @@ export function scoreSignals(
     score += Math.min(35, signals.statistical.watermarkSignal * 5);
   }
 
-  const found = fingerprints.filter((f) => f.status === 'found').length;
-  const possible = fingerprints.filter((f) => f.status === 'possible').length;
+  // Evidence of a real capture (camera signature) is not an AI signal.
+  const aiMatches = fingerprints.filter((f) => f.evidence !== 'authenticity');
+  const found = aiMatches.filter((f) => f.status === 'found').length;
+  const possible = aiMatches.filter((f) => f.status === 'possible').length;
   score += Math.min(45, found * 25 + possible * 12);
 
   score = Math.round(clamp(score));

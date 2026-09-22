@@ -26,6 +26,7 @@ Every verdict comes with its evidence and an honest confidence level.
 - [Why AI Inspector](#why-ai-inspector)
 - [Features](#features)
 - [Supported formats](#supported-formats)
+- [Detection catalogue](#detection-catalogue)
 - [How a verdict is built](#how-a-verdict-is-built)
 - [Privacy model](#privacy-model)
 - [Quick start](#quick-start)
@@ -51,13 +52,14 @@ An absence of signal is never presented as proof of human origin.
 
 | | |
 |---|---|
-| **C2PA Content Credentials** | Full manifest parsing and signature validation (official `c2pa` WASM library). |
+| **C2PA Content Credentials** | Full manifest parsing and signature validation (official `c2pa` WASM library), provider recognition (OpenAI, Adobe, Microsoft, Google, Samsung) and Durable Content Credentials. A camera-signed capture counts as proof of authenticity. |
 | **Generator metadata** | Image, audio, video and document signatures (Stable Diffusion, ComfyUI, Midjourney, Firefly, Suno, ElevenLabs, Sora, Runway, ChatGPT…) and IPTC `DigitalSourceType`. |
 | **Image forensics** | Frequency-domain up-sampling artifacts, sensor-noise residual, generator-native dimensions. |
 | **Text stylometry (EN + FR)** | Burstiness, register, LLM-favoured vocabulary. The language of the text is detected and matching references are used. |
 | **Code stylometry** | Comment density, tutorial comments, docstring coverage, assistant leftovers, generic identifiers. |
 | **Trojan Source detection** | Bidirectional overrides and homoglyphs hidden in source code. |
 | **Letter statistics** | χ² test against English or French reference frequencies, entropy, p-value. |
+| **Detection catalogue** | 23 known methods, each with its status, confidence and references: see [Detection catalogue](#detection-catalogue). |
 | **Content cleaning** | Strip invisible Unicode and the metadata of every supported format locally, then download. Kept in the history. |
 | **Bilingual PWA** | English and French interface, installable, works offline once loaded. |
 | **No account, no limits** | Everything is free. History and settings stay in your browser. |
@@ -80,6 +82,31 @@ byte identical wherever the format allows it.
 
 Cleaning runs are kept in the history (their own tab), with what was removed
 and the file sizes. The content itself is never stored.
+
+## Detection catalogue
+
+The 23 methods the analysis matches against, embedded in the app (browse them
+under **Known fingerprints**). Status: **available** = reliably detected in
+the browser; **research** / **experimental** = listed for transparency, the
+detector is not public or the signal is only an estimate.
+
+| Family | Method | Status |
+|---|---|---|
+| **Content Credentials (C2PA)** | C2PA manifest and signature | available |
+| | OpenAI, Adobe Firefly, Microsoft, Google, Samsung Galaxy AI credentials | available |
+| | Durable Content Credentials (soft binding: watermark or fingerprint that recovers stripped credentials) | available |
+| | Camera-signed capture (Leica, Sony, Nikon, Canon, Fujifilm): **proof of authenticity**, a counter-signal that lowers the AI verdict | available |
+| **Generator metadata** | IPTC `DigitalSourceType` (trained algorithmic media) | available |
+| | EXIF / XMP software and AI tags | available |
+| | Stable Diffusion web UI parameters (AUTOMATIC1111, Forge, SD.Next, Fooocus) | available |
+| | ComfyUI workflow, InvokeAI, NovelAI, Midjourney metadata | available |
+| | "Made with Google AI" credit | available |
+| | AI tool named in file metadata: audio, video or documents (Suno, Udio, ElevenLabs, Sora, Runway, Veo, Pika, Kling, ChatGPT…) | available |
+| **Text markers** | Invisible Unicode characters | available |
+| | Homoglyph substitution | available |
+| | N-gram frequency deviation | experimental |
+| **Watermarks** | SynthID Text, SynthID image / audio / video (Google DeepMind) | research |
+| | Green-list token watermark (KGW) | research |
 
 ## How a verdict is built
 
