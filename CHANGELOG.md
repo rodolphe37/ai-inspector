@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-09-22
+
+### Added
+- Docker image (`frontend/Dockerfile`): Node 22 build, unprivileged nginx
+  serving the site in a read-only container (SPA fallback, cache and security
+  headers).
+- Docker Compose setup for a Traefik reverse proxy (`deploy/`) and a GitHub
+  Actions workflow that publishes the image to GHCR and redeploys the VPS on
+  every push to `main`.
+
+### Changed
+- Docker is the supported deployment; the site now runs at
+  https://ai-inspector.rodolphe-augusto.fr.
+- The deployment only prunes AI Inspector images on the server.
+
+### Removed
+- Netlify configuration (`netlify.toml`).
+
 ## [1.0.0] - 2026-09-22
 
 First open-source release.
@@ -16,8 +34,6 @@ First open-source release.
   frequencies for the χ² test (diacritics folded).
 - Bilingual catalogue of detection methods, embedded in the app.
 - App version shown in the footer and the app sidebar.
-- Docker image (unprivileged nginx: SPA fallback, cache and security headers),
-  Docker Compose setup for Traefik and a GitHub Actions deployment to a VPS.
 - Open-source documentation: README (EN/FR), contributing guide, code of
   conduct, security policy, architecture guide, CI and Dependabot.
 
@@ -32,3 +48,6 @@ First open-source release.
 ### Changed
 - Renamed the project from "IA Inspector" to **AI Inspector** (English product name).
 - The em dash character is banned from code, UI copy and docs (checked in CI).
+
+[1.1.0]: https://github.com/rodolphe37/ai-inspector/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/rodolphe37/ai-inspector/releases/tag/v1.0.0
