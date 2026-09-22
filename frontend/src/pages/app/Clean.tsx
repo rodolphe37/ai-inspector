@@ -11,7 +11,7 @@ import { PrivacyBadge } from '@/components/ui/PrivacyBadge';
 import { useTranslation } from 'react-i18next';
 import { cleanText, cleanFile, downloadBlob, type CleanFileResult } from '@/engine/clean';
 import { historyApi } from '@/services';
-import { ArtifactText } from '@/components/ui/ArtifactText';
+import { ArtifactLegend, ArtifactText } from '@/components/ui/ArtifactText';
 import { countArtifacts } from '@/engine/unicode';
 import { TEXT_LANGUAGES, isCodeLanguage, languageInfo } from '@/lib/textLanguages';
 
@@ -207,8 +207,12 @@ export default function Clean() {
               </div>
               {artifactCount > 0 && (
                 <>
+                  <p className="mb-2 text-xs text-subtle">{t('clean.legend')}</p>
                   <ArtifactText text={text} className="max-h-40 overflow-auto text-muted" />
-                  <p className="mt-2 text-xs text-subtle">{t('clean.legend')}</p>
+                  <div className="mt-3 border-t border-warning/20 pt-3">
+                    <p className="mb-2 text-xs font-medium text-content">{t('clean.legendTitle')}</p>
+                    <ArtifactLegend text={text} />
+                  </div>
                 </>
               )}
             </div>
