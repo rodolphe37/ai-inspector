@@ -76,4 +76,4 @@ jobs:
           APP_DIR: ${{ vars.VPS_APP_DIR || '/opt/ai-inspector' }}
         run: |
           ssh -i ~/.ssh/deploy_key -p "$PORT" -o StrictHostKeyChecking=yes "$USER@$HOST" \
-            "cd '$APP_DIR' && docker compose pull && docker compose up -d --remove-orphans && docker image prune -f"
+            "cd '$APP_DIR' && docker compose pull && docker compose up -d --remove-orphans && docker image prune -f --filter label=org.opencontainers.image.source=https://github.com/${{ github.repository }}"
