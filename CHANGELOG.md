@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-09-22
+
+### Added
+- Durable Content Credentials detection: the C2PA reader now recognises a
+  `c2pa.soft-binding` assertion (invisible watermark or perceptual fingerprint
+  that lets stripped credentials be recovered), reported as a known
+  fingerprint.
+
+### Removed
+- The deprecated "LSB steganography" catalogue entry, replaced by Durable
+  Content Credentials (it was already ignored by the analysis).
+
 ## [1.1.2] - 2026-09-22
 
 ### Fixed
@@ -83,6 +95,7 @@ First open-source release.
 - Renamed the project from "IA Inspector" to **AI Inspector** (English product name).
 - The em dash character is banned from code, UI copy and docs (checked in CI).
 
+[1.2.0]: https://github.com/rodolphe37/ai-inspector/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/rodolphe37/ai-inspector/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/rodolphe37/ai-inspector/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/rodolphe37/ai-inspector/compare/v1.0.0...v1.1.0

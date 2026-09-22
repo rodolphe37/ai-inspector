@@ -117,6 +117,11 @@ export const engine: typeof en = {
     noSample: 'Aucun échantillon statistique disponible',
     needsKey: 'Invérifiable sans le détecteur du fournisseur / la clé du filigrane',
     synthidImage: 'Filigrane génératif invisible, vérifiable uniquement avec le détecteur du fournisseur',
+    softBindingFound:
+      'Le manifeste C2PA déclare un soft binding : ses credentials sont récupérables s’ils sont supprimés',
+    softBindingAbsent: 'Manifeste C2PA présent, sans assertion de soft binding',
+    softBindingNoManifest:
+      'Aucun manifeste : un filigrane durable peut encore être présent, mais seul le décodeur du fournisseur peut le lire',
   },
   image: {
     fft: 'Artefacts de suréchantillonnage (domaine fréquentiel)',

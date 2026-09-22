@@ -59,6 +59,8 @@ export interface C2PAResult {
   claimGenerator?: string;
   /** A generative-AI assertion is present in the (active) manifest. */
   isAiGenerated?: boolean;
+  /** A C2PA soft-binding assertion is present (Durable Content Credentials). */
+  softBinding?: boolean;
   generativeType?: 'trainedAlgorithmicMedia' | 'compositeWithTrainedAlgorithmicMedia' | 'legacy';
   softwareAgents?: string[];
   claims?: string[];

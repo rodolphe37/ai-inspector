@@ -112,6 +112,10 @@ export const engine = {
     noSample: 'No statistical sample available',
     needsKey: 'Cannot be verified without the provider detector / watermark key',
     synthidImage: 'Invisible generative watermark, verifiable only with the provider detector',
+    softBindingFound: 'The C2PA manifest declares a soft binding: its credentials can be recovered if stripped',
+    softBindingAbsent: 'C2PA manifest present, without a soft-binding assertion',
+    softBindingNoManifest:
+      'No manifest: a durable watermark may still be embedded, but only the provider decoder can read it',
   },
   image: {
     fft: 'Frequency-domain up-sampling artifacts',

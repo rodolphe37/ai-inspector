@@ -104,6 +104,16 @@ export async function analyzeC2PA(file: File): Promise<C2PAResult> {
     }
   }
 
+  // Durable Content Credentials: a soft-binding assertion (invisible watermark
+  // or perceptual fingerprint) lets the manifest be recovered after stripping.
+  let softBinding = false;
+  try {
+    const assertions: any[] = active.assertions?.data ?? active.assertions ?? [];
+    softBinding = JSON.stringify(assertions).toLowerCase().includes('c2pa.soft-binding');
+  } catch {
+    /* unreadable assertions: treat as absent */
+  }
+
   const sig = active.signatureInfo ?? {};
   const claims: string[] = [];
   if (isAi) {
@@ -126,6 +136,7 @@ export async function analyzeC2PA(file: File): Promise<C2PAResult> {
     timestamp: sig.time ?? undefined,
     claimGenerator: active.claimGenerator ?? active.claimGeneratorInfo?.[0]?.name ?? undefined,
     isAiGenerated: isAi,
+    softBinding,
     generativeType,
     softwareAgents: softwareAgents.length ? softwareAgents : undefined,
     claims,

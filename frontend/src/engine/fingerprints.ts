@@ -111,6 +111,20 @@ export function matchFingerprints(
         method = t('engine.fingerprints.needsKey');
         break;
       }
+      case 'c2pa-soft-binding': {
+        if (signals.c2pa.manifest && signals.c2pa.softBinding) {
+          status = 'found';
+          method = t('engine.fingerprints.softBindingFound');
+        } else if (signals.c2pa.manifest) {
+          status = 'not_found';
+          method = t('engine.fingerprints.softBindingAbsent');
+        } else {
+          status = 'inconclusive';
+          confidence = 30;
+          method = t('engine.fingerprints.softBindingNoManifest');
+        }
+        break;
+      }
       case 'synthid-image': {
         status = 'inconclusive';
         confidence = 25;
