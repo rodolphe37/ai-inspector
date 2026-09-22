@@ -16,7 +16,7 @@ flowchart TB
         S --> K[data/catalog<br/>embedded, EN + FR]
         S --> DB[(IndexedDB<br/>history + settings)]
     end
-    Host[Static host<br/>Netlify] -. serves HTML/JS/WASM .-> Browser
+    Host[nginx container<br/>behind Traefik] -. serves HTML/JS/WASM .-> Browser
 ```
 
 ## Source layout
@@ -80,9 +80,11 @@ request; the next deploy ships it.
 ## PWA and hosting
 
 `vite-plugin-pwa` precaches the build, so the app works offline once loaded. The
-site is fully static; [`netlify.toml`](../netlify.toml) adds the SPA fallback,
-cache headers (immutable hashed assets, no-cache service worker) and security
-headers.
+site is fully static. The Docker image serves it with nginx
+([`frontend/nginx.conf`](../frontend/nginx.conf)): SPA fallback, cache headers
+(immutable hashed assets, no-cache service worker) and security headers. See
+[`deploy/README.md`](../deploy/README.md) for the Traefik setup and the
+GitHub Actions deployment.
 
 ## Checks and CI
 

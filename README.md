@@ -114,19 +114,21 @@ ai-inspector/
 │       ├── i18n/      English + French dictionaries, language detection
 │       ├── pages/     public pages and the /app workspace
 │       └── lib/       IndexedDB storage, helpers
-├── docs/              architecture guide
-└── netlify.toml       Netlify configuration
+├── deploy/            Docker Compose (Traefik) + self-hosting guide
+└── docs/              architecture guide
 ```
 
 ## Self-hosting
 
-AI Inspector is a static site: `npm run build` in `frontend/` produces `dist/`,
-which any static host can serve (with a fallback to `index.html` for client-side
-routes). A ready-to-use [`netlify.toml`](netlify.toml) is provided. No
-environment variable, database or server is needed.
+AI Inspector is a static site: no environment variable, database or server is
+needed.
 
-A Docker image (unprivileged nginx) and a Traefik setup are also provided:
-see [`deploy/README.md`](deploy/README.md).
+- **Docker (recommended):** the image in `frontend/Dockerfile` builds the site
+  and serves it with an unprivileged nginx (SPA fallback, cache and security
+  headers). A Traefik setup and a GitHub Actions deployment are provided: see
+  [`deploy/README.md`](deploy/README.md).
+- **Any static host:** `npm run build` in `frontend/` produces `dist/`; serve it
+  with a fallback to `index.html` for client-side routes.
 
 ## Documentation
 

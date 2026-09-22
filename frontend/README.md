@@ -80,6 +80,7 @@ injected at build time (`__APP_VERSION__`).
 
 ## Deploy
 
-Static build (`dist/`) on any static host. [`../netlify.toml`](../netlify.toml)
-configures Netlify (SPA fallback, cache and security headers); no environment
-variable is needed.
+The [`Dockerfile`](Dockerfile) builds the site and serves it with an
+unprivileged nginx ([`nginx.conf`](nginx.conf)). Deployment behind Traefik and
+the GitHub Actions workflow are described in
+[`../deploy/README.md`](../deploy/README.md). No environment variable is needed.

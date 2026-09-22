@@ -16,7 +16,8 @@ First open-source release.
   frequencies for the χ² test (diacritics folded).
 - Bilingual catalogue of detection methods, embedded in the app.
 - App version shown in the footer and the app sidebar.
-- Netlify configuration (`netlify.toml`): SPA fallback, cache and security headers.
+- Docker image (unprivileged nginx: SPA fallback, cache and security headers),
+  Docker Compose setup for Traefik and a GitHub Actions deployment to a VPS.
 - Open-source documentation: README (EN/FR), contributing guide, code of
   conduct, security policy, architecture guide, CI and Dependabot.
 

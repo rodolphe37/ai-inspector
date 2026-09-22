@@ -20,8 +20,9 @@ you will be credited in the release notes unless you prefer to stay anonymous.
 - **Content never leaves the browser.** Analysis, the catalogue of detection
   methods, history and settings all run or live on the user's device
   (IndexedDB), and can be wiped from Settings.
-- **Hosting headers** (`netlify.toml`): `X-Content-Type-Options: nosniff`,
-  `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`.
+- **Hosting** (`frontend/nginx.conf`, Docker image): unprivileged nginx in a
+  read-only container, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, no version in `Server`.
 - **Supply chain:** dependencies are pinned in `package-lock.json`, monitored by
   Dependabot, and CI runs the type checker, linter and build on every pull request.
 
