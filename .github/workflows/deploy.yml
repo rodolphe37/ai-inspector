@@ -1,0 +1,79 @@
+name: Deploy
+
+# Builds the Docker image, publishes it to GHCR, then restarts the container on
+# the VPS. Required repository secrets: VPS_HOST, VPS_USER, VPS_SSH_KEY
+# (private key of a dedicated deploy key) and VPS_SSH_KNOWN_HOSTS
+# (output of `ssh-keyscan -H <host>`). Optional variables: VPS_PORT (22),
+# VPS_APP_DIR (/opt/ai-inspector).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "deploy/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.licenses=MIT
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: image
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CONFIGURED: ${{ secrets.VPS_HOST != '' && secrets.VPS_SSH_KEY != '' }}
+    steps:
+      - name: Skip when the VPS is not configured yet
+        if: env.CONFIGURED != 'true'
+        run: echo "::notice::VPS secrets not set, image published but not deployed."
+      - name: Configure SSH
+        if: env.CONFIGURED == 'true'
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.VPS_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Pull and restart
+        if: env.CONFIGURED == 'true'
+        env:
+          HOST: ${{ secrets.VPS_HOST }}
+          USER: ${{ secrets.VPS_USER }}
+          PORT: ${{ vars.VPS_PORT || '22' }}
+          APP_DIR: ${{ vars.VPS_APP_DIR || '/opt/ai-inspector' }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$PORT" -o StrictHostKeyChecking=yes "$USER@$HOST" \
+            "cd '$APP_DIR' && docker compose pull && docker compose up -d --remove-orphans && docker image prune -f"

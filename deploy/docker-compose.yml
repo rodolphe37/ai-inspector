@@ -1,0 +1,32 @@
+# AI Inspector behind an existing Traefik instance.
+#
+# On the server (e.g. /opt/ai-inspector): put this file next to a `.env`
+# created from `.env.example`, then `docker compose up -d`.
+# The GitHub Actions workflow `deploy.yml` pulls and restarts it on each push.
+# Server-specific additions (extra Traefik middlewares...) belong in a
+# `docker-compose.override.yml` next to it, which Compose merges automatically.
+services:
+  ai-inspector:
+    image: ghcr.io/rodolphe37/ai-inspector:latest
+    container_name: ai-inspector
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK}
+      - traefik.http.routers.ai-inspector.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.ai-inspector.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+      - traefik.http.routers.ai-inspector.tls=true
+      - traefik.http.routers.ai-inspector.tls.certresolver=${TRAEFIK_CERTRESOLVER}
+      - traefik.http.services.ai-inspector.loadbalancer.server.port=8080
+
+networks:
+  traefik:
+    name: ${TRAEFIK_NETWORK}
+    external: true

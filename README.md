@@ -125,6 +125,9 @@ which any static host can serve (with a fallback to `index.html` for client-side
 routes). A ready-to-use [`netlify.toml`](netlify.toml) is provided. No
 environment variable, database or server is needed.
 
+A Docker image (unprivileged nginx) and a Traefik setup are also provided:
+see [`deploy/README.md`](deploy/README.md).
+
 ## Documentation
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): how the pieces fit together

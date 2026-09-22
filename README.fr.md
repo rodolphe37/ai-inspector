@@ -126,6 +126,9 @@ que n'importe quel hébergeur statique peut servir (avec un repli sur `index.htm
 les routes côté client). Un [`netlify.toml`](netlify.toml) prêt à l'emploi est fourni.
 Aucune variable d'environnement, base de données ni serveur n'est nécessaire.
 
+Une image Docker (nginx non privilégié) et une configuration Traefik sont aussi
+fournies : voir [`deploy/README.md`](deploy/README.md).
+
 ## Documentation
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) : l'assemblage des différentes parties
