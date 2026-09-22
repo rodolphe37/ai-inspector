@@ -25,6 +25,7 @@ Chaque verdict est accompagné de ses preuves et d'un niveau de confiance honnê
 
 - [Pourquoi AI Inspector](#pourquoi-ai-inspector)
 - [Fonctionnalités](#fonctionnalités)
+- [Formats pris en charge](#formats-pris-en-charge)
 - [Comment un verdict est construit](#comment-un-verdict-est-construit)
 - [Confidentialité](#confidentialité)
 - [Démarrage rapide](#démarrage-rapide)
@@ -51,15 +52,34 @@ L'absence de signal n'est jamais présentée comme une preuve d'origine humaine.
 | | |
 |---|---|
 | **Content Credentials C2PA** | Lecture complète du manifeste et validation de la signature (bibliothèque officielle `c2pa` en WASM). |
-| **Métadonnées de générateur** | Signatures EXIF / XMP / IPTC / PNG (Stable Diffusion, Midjourney, Firefly, DALL·E…) et `DigitalSourceType` IPTC. |
+| **Métadonnées de générateur** | Signatures dans les images, l'audio, la vidéo et les documents (Stable Diffusion, ComfyUI, Midjourney, Firefly, Suno, ElevenLabs, Sora, Runway, ChatGPT…) et `DigitalSourceType` IPTC. |
 | **Forensique d'image** | Artefacts de suréchantillonnage (domaine fréquentiel), résidu de bruit de capteur, dimensions natives des générateurs. |
 | **Stylométrie du texte (EN + FR)** | Variabilité, registre, vocabulaire prisé des LLM. La langue du texte est détectée et les références correspondantes sont utilisées. |
 | **Stylométrie du code** | Densité et style des commentaires, docstrings, restes d'assistant, identifiants génériques. |
 | **Détection « Trojan Source »** | Contrôles bidirectionnels et homoglyphes cachés dans le code source. |
 | **Statistiques de lettres** | Test du χ² par rapport aux fréquences de référence anglaises ou françaises, entropie, p-value. |
-| **Nettoyage de contenu** | Suppression locale de l'Unicode invisible et des métadonnées d'image, puis téléchargement. |
+| **Nettoyage de contenu** | Suppression locale de l'Unicode invisible et des métadonnées de tous les formats pris en charge, puis téléchargement. Conservé dans l'historique. |
 | **PWA bilingue** | Interface en anglais et en français, installable, fonctionne hors ligne une fois chargée. |
 | **Sans compte, sans limite** | Tout est gratuit. L'historique et les réglages restent dans votre navigateur. |
+
+## Formats pris en charge
+
+Tout est analysé et nettoyé dans le navigateur. Le nettoyage ne retire que les
+métadonnées : pixels, échantillons audio, images vidéo et texte des documents
+restent identiques à l'octet près dès que le format le permet.
+
+| Format | Extensions | Analyse | Nettoyage |
+|---|---|---|---|
+| **Texte** | collé, TXT, MD | Caractères invisibles, homoglyphes, contrôles bidi, stylométrie (EN / FR), statistiques de lettres | Caractères invisibles, homoglyphes, espaces de fin de ligne (retours forcés Markdown conservés) |
+| **Code** | collé, JS, TS, PY, GO, RS, JAVA… | Trojan Source, caractères cachés, stylométrie du code | Caractères invisibles et bidi (lignes vides conservées) |
+| **Images** | JPEG, PNG, WebP, GIF, HEIC, AVIF, TIFF | C2PA, EXIF / XMP / IPTC, blocs texte PNG, signatures de générateurs, forensique d'image | EXIF, XMP, IPTC, C2PA, blocs texte, sans perte (HEIC / AVIF / GIF réencodés en PNG) |
+| **PDF** | PDF | Propriétés du document, XMP, C2PA, logiciel producteur, stylométrie du texte extrait | Propriétés, XMP, fichiers intégrés (dont C2PA), données PieceInfo |
+| **Word** | DOCX | Propriétés auteur, application et personnalisées, stylométrie du texte | Propriétés auteur, application et personnalisées |
+| **Audio** | MP3, WAV, FLAC, M4A, OGG | C2PA, balises ID3 / RIFF INFO / Vorbis / MP4, signatures de générateurs (Suno, Udio, ElevenLabs…) | ID3, APE, RIFF INFO, commentaires Vorbis, métadonnées MP4, C2PA, sans réencodage (OGG : analyse seulement) |
+| **Vidéo** | MP4, MOV, AVI | C2PA, métadonnées du conteneur, signatures de générateurs (Sora, Runway, Veo, Pika, Kling…) | Boîtes de métadonnées et C2PA neutralisées sur place, sans réencodage |
+
+Les nettoyages sont conservés dans l'historique (onglet dédié), avec ce qui a
+été retiré et la taille des fichiers. Le contenu lui-même n'est jamais stocké.
 
 ## Comment un verdict est construit
 

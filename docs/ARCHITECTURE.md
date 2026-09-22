@@ -26,7 +26,10 @@ frontend/src/
 ├── engine/        pure analysis modules (no React)
 │   ├── index.ts        orchestrator: runs every module, builds the AnalysisResult
 │   ├── c2pa.ts         official c2pa WASM: manifest + signature validation (lazy-loaded)
-│   ├── metadata.ts     text metadata, EXIF / XMP / IPTC / PNG chunks (exifr)
+│   ├── metadata.ts     file metadata: EXIF / XMP / IPTC / PNG chunks (exifr), audio, video and document tags
+│   ├── containers.ts   format sniffing, tag readers and lossless strippers (JPEG, PNG, WebP, WAV, AVI, MP3, FLAC, MP4 / MOV / M4A)
+│   ├── documents.ts    PDF (pdf.js, pdf-lib) and DOCX (fflate): text, properties, cleaning
+│   ├── generators.ts   generator signatures, each looked for in the field its tool writes
 │   ├── aiImage.ts      FFT up-sampling artifacts, noise residual, generator dimensions
 │   ├── aiText.ts       prose stylometry, English and French profiles
 │   ├── aiCode.ts       code stylometry
@@ -36,7 +39,7 @@ frontend/src/
 │   ├── fingerprints.ts matches engine signals against the catalogue
 │   ├── assess.ts       combines everything into one AI-origin verdict
 │   ├── score.ts        provenance signal level + summary
-│   └── clean.ts        Unicode / metadata stripping
+│   └── clean.ts        text cleaning (language aware) and file cleaning for every format
 ├── data/catalog.ts    known detection methods, English + French text
 ├── i18n/              i18next setup + dictionaries (locales/en/*, locales/fr/*)
 ├── services/          runAnalysis, history / settings (IndexedDB), catalogue access
@@ -55,6 +58,22 @@ frontend/src/
    C2PA) > **metadata** (generator tags, IPTC, watermark) > **statistical**
    (forensic estimate).
 5. The result is saved in IndexedDB and `/app/results/:id` reads it back.
+
+For a file, the bytes are sniffed first (`containers.ts`): the real format
+decides which readers run, not the extension. PDF and DOCX text is extracted
+and goes through the same text analyses as pasted text.
+
+## Cleaning
+
+`clean.ts` removes metadata without re-encoding wherever the format allows it:
+JPEG / PNG / WebP segments and chunks are dropped, WAV is rebuilt, MP3 tags are
+cut, FLAC metadata blocks are removed, and in MP4 / MOV / M4A / AVI the
+metadata boxes are turned into same-size padding so every offset stays valid.
+PDF properties, XMP and embedded files are removed with pdf-lib; DOCX
+properties are blanked. Formats without a lossless path (HEIC, AVIF, GIF)
+are re-encoded to PNG through a canvas, and OGG is refused rather than altered. Each run
+is recorded in the `cleanings` store (name, type, what was removed, sizes; never
+the content) when history is on.
 
 ## Catalogue
 

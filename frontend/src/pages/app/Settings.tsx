@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Database, Palette, Lock, Search, Bell, Check, Trash2 } from 'lucide-react';
+import { Database, Palette, Lock, Search, Check, Trash2 } from 'lucide-react';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useHistoryStore } from '@/stores/useHistoryStore';
-import { clearLocalAnalyses } from '@/lib/localDb';
+import { clearLocalAnalyses, clearLocalCleanings } from '@/lib/localDb';
 import { useTranslation } from 'react-i18next';
 import type { ThemeMode } from '@/types/settings';
 import { LANGUAGES, setLanguage } from '@/i18n';
@@ -14,14 +14,13 @@ const sections = [
   { id: 'appearance', icon: Palette },
   { id: 'privacy', icon: Lock },
   { id: 'analysis', icon: Search },
-  { id: 'notifications', icon: Bell },
 ] as const;
 
 const themes: ThemeMode[] = ['dark', 'light', 'system'];
 
-function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
+function Toggle({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
   return (
-    <button onClick={onClick} className={`relative h-6 w-11 rounded-full transition-colors ${on ? 'bg-primary' : 'bg-border-hover'}`}>
+    <button role="switch" aria-checked={on} aria-label={label} onClick={onClick} className={`shrink-0 relative h-6 w-11 rounded-full transition-colors ${on ? 'bg-primary' : 'bg-border-hover'}`}>
       <motion.span layout transition={{ type: 'spring', stiffness: 500, damping: 30 }} className="absolute top-0.5 h-5 w-5 rounded-full bg-white" style={{ left: on ? '1.375rem' : '0.125rem' }} />
     </button>
   );
@@ -40,13 +39,13 @@ function SettingRow({ label, description, children }: { label: string; descripti
 }
 
 export default function Settings() {
-  const { settings, setTheme, togglePrivacy, toggleAnalysis, toggleNotifications } = useSettingsStore();
+  const { settings, setTheme, togglePrivacy, toggleAnalysis } = useSettingsStore();
   const [cleared, setCleared] = useState(false);
   const { t, i18n } = useTranslation();
 
   const clearHistory = async () => {
     if (!window.confirm(t('settings.data.confirm'))) return;
-    await clearLocalAnalyses();
+    await Promise.all([clearLocalAnalyses(), clearLocalCleanings()]);
     await useHistoryStore.getState().load();
     setCleared(true);
   };
@@ -120,14 +119,8 @@ export default function Settings() {
                 <Lock className="h-4 w-4 text-primary" />
                 <h2 className="text-lg font-semibold">{t('settings.sections.privacy')}</h2>
               </div>
-              <SettingRow label={t('settings.privacy.local')} description={t('settings.privacy.localDesc')}>
-                <Toggle on={settings.privacy.localProcessing} onClick={() => togglePrivacy('localProcessing')} />
-              </SettingRow>
               <SettingRow label={t('settings.privacy.history')} description={t('settings.privacy.historyDesc')}>
-                <Toggle on={settings.privacy.storeHistory} onClick={() => togglePrivacy('storeHistory')} />
-              </SettingRow>
-              <SettingRow label={t('settings.privacy.telemetry')} description={t('settings.privacy.telemetryDesc')}>
-                <Toggle on={settings.privacy.telemetry} onClick={() => togglePrivacy('telemetry')} />
+                <Toggle label={t('settings.privacy.history')} on={settings.privacy.storeHistory} onClick={() => togglePrivacy('storeHistory')} />
               </SettingRow>
             </section>
 
@@ -137,28 +130,16 @@ export default function Settings() {
                 <h2 className="text-lg font-semibold">{t('settings.sections.analysis')}</h2>
               </div>
               <SettingRow label={t('settings.analysis.detailed')} description={t('settings.analysis.detailedDesc')}>
-                <Toggle on={settings.analysis.detailedResults} onClick={() => toggleAnalysis('detailedResults')} />
+                <Toggle label={t('settings.analysis.detailed')} on={settings.analysis.detailedResults} onClick={() => toggleAnalysis('detailedResults')} />
               </SettingRow>
               <SettingRow label={t('settings.analysis.stats')} description={t('settings.analysis.statsDesc')}>
-                <Toggle on={settings.analysis.showStatisticalData} onClick={() => toggleAnalysis('showStatisticalData')} />
+                <Toggle label={t('settings.analysis.stats')} on={settings.analysis.showStatisticalData} onClick={() => toggleAnalysis('showStatisticalData')} />
               </SettingRow>
               <SettingRow label={t('settings.analysis.technical')} description={t('settings.analysis.technicalDesc')}>
-                <Toggle on={settings.analysis.showTechnicalInfo} onClick={() => toggleAnalysis('showTechnicalInfo')} />
+                <Toggle label={t('settings.analysis.technical')} on={settings.analysis.showTechnicalInfo} onClick={() => toggleAnalysis('showTechnicalInfo')} />
               </SettingRow>
             </section>
 
-            <section id="notifications" className="surface p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Bell className="h-4 w-4 text-primary" />
-                <h2 className="text-lg font-semibold">{t('settings.sections.notifications')}</h2>
-              </div>
-              <SettingRow label={t('settings.notifications.complete')} description={t('settings.notifications.completeDesc')}>
-                <Toggle on={settings.notifications.analysisComplete} onClick={() => toggleNotifications('analysisComplete')} />
-              </SettingRow>
-              <SettingRow label={t('settings.notifications.security')} description={t('settings.notifications.securityDesc')}>
-                <Toggle on={settings.notifications.securityAlerts} onClick={() => toggleNotifications('securityAlerts')} />
-              </SettingRow>
-            </section>
           </div>
         </div>
       </div>

@@ -22,7 +22,23 @@ export const dashboard = {
 
 export const history = {
   title: 'History',
-  subtitle: 'Analyses saved in this browser. They stay on this device.',
+  subtitle: 'Analyses and cleanings saved in this browser. They stay on this device.',
+  tabs: {
+    analyses: 'Analyses',
+    cleanings: 'Cleanings',
+  },
+  cleanedText: 'Text ({{count}} characters)',
+  cleaning: {
+    badge: 'Cleaned',
+    removed: 'Removed',
+    size: 'Size',
+    nothing: 'Nothing to remove',
+    reencoded: 're-encoded',
+    search: 'Search cleanings…',
+    emptyTitle: 'No cleanings yet',
+    emptyDesc: 'Files and texts you clean are listed here. Their content is never kept, only what was removed.',
+    action: 'Clean content',
+  },
   filters: {
     all: 'All',
     clean: 'Clean',
@@ -203,5 +219,6 @@ export const status = {
     pdf: 'PDF',
     docx: 'DOCX',
     file: 'File',
+    files: 'Files',
   },
 };

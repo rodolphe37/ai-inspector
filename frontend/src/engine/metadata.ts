@@ -1,19 +1,17 @@
 /**
  * Real metadata extraction: text heuristics + EXIF/XMP/IPTC for images
- * (via `exifr`), plus a lightweight PDF info-dictionary reader and PNG text
- * chunk scan for generator signatures.
+ * (via `exifr`), PNG text chunks, audio / video tags (containers.ts) and PDF / DOCX
+ * properties (documents.ts). Generator signatures are recognised in `generators.ts`.
  */
 import exifr from 'exifr';
 import type { MetadataEntry, MetadataResult } from '@/types/analysis';
 import { currentLocale, t } from '@/i18n';
 import { detectLanguage } from './language';
-
-const AI_SIGNATURES = [
-  'stable diffusion', 'stablediffusion', 'automatic1111', 'comfyui', 'invokeai',
-  'midjourney', 'dall-e', 'dall·e', 'dalle', 'firefly', 'adobe firefly',
-  'novelai', 'leonardo.ai', 'playground', 'ideogram', 'flux', 'gpt-image',
-  'made with google', 'gemini', 'imagen', 'grok', 'recraft',
-];
+import { detectGenerators, type GeneratorId } from './generators';
+import {
+  readFlacComments, readId3, readMp4, readRiffInfo, readWebpXmp, readXmpFields, type Container, type TagEntry,
+} from './containers';
+import type { DocumentContent } from './documents';
 
 function fmt(value: unknown): string {
   if (value == null) return '';
@@ -70,13 +68,14 @@ export function analyzeTextMetadata(
   return { status: 'found', format: name.split('.').pop()?.toUpperCase() || 'TXT', entries };
 }
 
-async function readPngTextChunks(buf: ArrayBuffer): Promise<MetadataEntry[]> {
+/** PNG tEXt / iTXt chunks: full text per keyword (lower case), for detection. */
+async function readPngTextChunks(buf: ArrayBuffer): Promise<Record<string, string>> {
   const bytes = new Uint8Array(buf);
   const sig = [137, 80, 78, 71, 13, 10, 26, 10];
-  if (!sig.every((b, i) => bytes[i] === b)) return [];
+  if (!sig.every((b, i) => bytes[i] === b)) return {};
   const dv = new DataView(buf);
   const decoder = new TextDecoder('latin1');
-  const out: MetadataEntry[] = [];
+  const out: Record<string, string> = {};
   let pos = 8;
   while (pos + 8 <= bytes.length) {
     const len = dv.getUint32(pos);
@@ -87,7 +86,7 @@ async function readPngTextChunks(buf: ArrayBuffer): Promise<MetadataEntry[]> {
       const nul = raw.indexOf('\0');
       const key = nul >= 0 ? raw.slice(0, nul) : type;
       const value = nul >= 0 ? raw.slice(nul + 1).replace(/\0/g, ' ') : raw;
-      out.push({ key: `PNG:${key}`, value: value.slice(0, 300) });
+      out[key.toLowerCase()] = value;
     }
     if (type === 'IEND') break;
     pos = dataStart + len + 4;
@@ -95,30 +94,14 @@ async function readPngTextChunks(buf: ArrayBuffer): Promise<MetadataEntry[]> {
   return out;
 }
 
-function readPdfInfo(buf: ArrayBuffer): MetadataEntry[] {
-  const text = new TextDecoder('latin1').decode(new Uint8Array(buf.slice(0, 4096)));
-  const tail = new TextDecoder('latin1').decode(
-    new Uint8Array(buf.slice(Math.max(0, buf.byteLength - 8192))),
-  );
-  const hay = text + '\n' + tail;
-  const out: MetadataEntry[] = [];
-  const grab = (label: string, key: string) => {
-    const m = hay.match(new RegExp(`/${key}\\s*\\(([^)]{0,200})\\)`));
-    if (m) out.push({ key: label, value: m[1].replace(/\\(.)/g, '$1') });
-  };
-  grab('PDF version', '');
-  const ver = text.match(/^%PDF-(\d\.\d)/);
-  if (ver) out.push({ key: 'PDF version', value: ver[1] });
-  grab('Title', 'Title');
-  grab('Author', 'Author');
-  grab('Creator', 'Creator');
-  grab('Producer', 'Producer');
-  grab('Creation date', 'CreationDate');
-  grab('Mod date', 'ModDate');
-  return out;
+export interface FileContext {
+  bytes: Uint8Array;
+  container: Container;
+  /** Text and properties of a PDF / DOCX, already extracted. */
+  document?: DocumentContent | null;
 }
 
-export async function analyzeFileMetadata(file: File): Promise<MetadataResult> {
+export async function analyzeFileMetadata(file: File, ctx: FileContext): Promise<MetadataResult> {
   const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
   const entries: MetadataEntry[] = [
     { key: t('engine.meta.fileName'), value: file.name },
@@ -129,9 +112,23 @@ export async function analyzeFileMetadata(file: File): Promise<MetadataResult> {
       value: file.lastModified ? new Date(file.lastModified).toISOString().slice(0, 10) : t('engine.meta.unknown'),
     },
   ];
+  const baseline = entries.length;
 
-  const isImage = ['png', 'jpg', 'jpeg', 'webp', 'tif', 'tiff', 'heic', 'avif'].includes(ext);
-  let signatureHits: string[] = [];
+  const isImage = ['jpeg', 'png', 'webp', 'gif', 'heif'].includes(ctx.container) ||
+    ['png', 'jpg', 'jpeg', 'webp', 'tif', 'tiff', 'heic', 'heif', 'avif', 'gif'].includes(ext);
+  const software: string[] = [];
+  const credit: string[] = [];
+  const chunks: Record<string, string> = {};
+
+  /** Add tag entries; the fields a tool writes its name into feed generator detection. */
+  const addTags = (tags: TagEntry[]) => {
+    for (const tag of tags) {
+      entries.push({ key: tag.key, value: tag.value.slice(0, 300) });
+      if (/^(software|encoder|encoded by|encoder settings|originator|comment|user text|description|application|creator|producer)/i.test(tag.key)) {
+        software.push(tag.value);
+      }
+    }
+  };
 
   if (isImage) {
     try {
@@ -157,8 +154,14 @@ export async function analyzeFileMetadata(file: File): Promise<MetadataResult> {
             entries.push({ key: k, value: fmt(parsed[k]) });
           }
         }
-        const blob = JSON.stringify(parsed).toLowerCase();
-        signatureHits = AI_SIGNATURES.filter((s) => blob.includes(s));
+        for (const k of ['Software', 'CreatorTool', 'ProcessingSoftware', 'History']) {
+          if (parsed[k] != null) software.push(fmt(parsed[k]));
+        }
+        for (const k of ['Credit', 'Source']) if (parsed[k] != null) credit.push(fmt(parsed[k]));
+        if (parsed.UserComment != null) {
+          const uc = parsed.UserComment;
+          chunks['usercomment'] = uc instanceof Uint8Array ? new TextDecoder().decode(uc).replace(/^(UNICODE|ASCII)\0+/, '') : String(uc);
+        }
         if (parsed.DigitalSourceType) {
           entries.push({ key: 'IPTC DigitalSourceType', value: fmt(parsed.DigitalSourceType) });
         }
@@ -167,36 +170,57 @@ export async function analyzeFileMetadata(file: File): Promise<MetadataResult> {
       /* not all images carry parseable metadata */
     }
 
-    if (ext === 'png') {
-      try {
-        const chunks = await readPngTextChunks(await file.arrayBuffer());
-        entries.push(...chunks);
-        const blob = chunks.map((c) => `${c.key} ${c.value}`).join(' ').toLowerCase();
-        signatureHits.push(...AI_SIGNATURES.filter((s) => blob.includes(s)));
-      } catch {
-        /* ignore */
+    // XMP the EXIF library may miss (WebP chunk, PNG iTXt `XML:com.adobe.xmp`).
+    const rawXmp = ctx.container === 'webp' ? readWebpXmp(ctx.bytes) : '';
+    const applyXmp = (xml: string) => {
+      for (const f of readXmpFields(xml)) {
+        if (entries.some((e) => e.value === f.value)) continue;
+        entries.push({ key: f.key === 'DigitalSourceType' ? 'IPTC DigitalSourceType' : f.key, value: f.value });
+        if (f.key === 'Credit' || f.key === 'Source') credit.push(f.value);
+        if (f.key === 'CreatorTool' || f.key === 'Software') software.push(f.value);
+      }
+    };
+    if (rawXmp) applyXmp(rawXmp);
+
+    if (ctx.container === 'png') {
+      const png = await readPngTextChunks(ctx.bytes.slice().buffer);
+      Object.assign(chunks, png);
+      for (const [key, value] of Object.entries(png)) {
+        if (key === 'xml:com.adobe.xmp') applyXmp(value);
+        else entries.push({ key: `PNG:${key}`, value: value.slice(0, 300) });
       }
     }
-  } else if (ext === 'pdf') {
+  } else if (ctx.document) {
+    addTags(ctx.document.properties);
+    software.push(...ctx.document.software);
+  } else {
     try {
-      entries.push(...readPdfInfo(await file.arrayBuffer()));
+      switch (ctx.container) {
+        case 'mp3': addTags(readId3(ctx.bytes)); break;
+        case 'wav':
+        case 'avi': addTags(readRiffInfo(ctx.bytes)); break;
+        case 'flac': addTags(readFlacComments(ctx.bytes)); break;
+        case 'mp4': addTags(readMp4(ctx.bytes)); break;
+        default: break;
+      }
     } catch {
-      /* ignore */
+      /* malformed container: keep the basic file facts */
     }
   }
 
-  signatureHits = [...new Set(signatureHits)];
-  if (signatureHits.length) {
+  const generators = detectGenerators(software, credit, chunks);
+  if (generators.length) {
+    // Stable key: read by assess.ts / score.ts / fingerprints.ts.
     entries.push({
       key: 'Generator signature',
-      value: `matches: ${signatureHits.join(', ')}`,
+      value: generators.map((g) => g.name).join(', '),
     });
   }
 
-  const hasRealMetadata = entries.length > 4;
   return {
-    status: hasRealMetadata ? 'found' : 'not_found',
-    format: ext.toUpperCase() || 'FILE',
+    status: entries.length > baseline ? 'found' : 'not_found',
+    format: ctx.container !== 'unknown' ? ctx.container.toUpperCase() : ext.toUpperCase() || 'FILE',
     entries,
+    generators: [...new Set(generators.map((g) => g.id))] as GeneratorId[],
   };
 }

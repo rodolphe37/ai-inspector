@@ -58,6 +58,49 @@ export const landing: typeof en = {
       },
     },
   },
+  formats: {
+    badge: 'Formats pris en charge',
+    title: 'Texte, code, images, documents, audio et vidéo',
+    subtitle: 'Chaque format est analysé et nettoyé dans votre navigateur. Les métadonnées sont retirées sans réencodage dès que le format le permet.',
+    note: 'Le nettoyage ne retire que les métadonnées : pixels, son, images vidéo et texte des documents restent identiques à l’octet près. L’OGG peut être analysé, mais pas nettoyé sans réencodage.',
+    items: {
+      text: {
+        name: 'Texte',
+        analysis: 'Caractères invisibles, homoglyphes, contrôles bidi, stylométrie (anglais et français).',
+        clean: 'Retire les caractères invisibles et les homoglyphes, normalise les espaces et fins de ligne.',
+      },
+      code: {
+        name: 'Code',
+        analysis: 'Trojan Source (bidi), caractères cachés, stylométrie du code.',
+        clean: 'Retire les caractères invisibles et bidi sans toucher au code.',
+      },
+      image: {
+        name: 'Images',
+        analysis: 'Content Credentials C2PA, EXIF / XMP / IPTC, signatures de générateurs (Stable Diffusion, ComfyUI, Midjourney…), analyse spectrale.',
+        clean: 'Retire EXIF, XMP, IPTC et C2PA sans perte (HEIC / AVIF sont réencodés).',
+      },
+      pdf: {
+        name: 'PDF',
+        analysis: 'Propriétés du document, XMP, C2PA, logiciel producteur, stylométrie du texte extrait.',
+        clean: 'Retire les propriétés, le XMP et les fichiers intégrés (dont C2PA).',
+      },
+      docx: {
+        name: 'Word (DOCX)',
+        analysis: 'Propriétés auteur, application et personnalisées, stylométrie du texte.',
+        clean: 'Vide les propriétés auteur, application et personnalisées.',
+      },
+      audio: {
+        name: 'Audio',
+        analysis: 'C2PA, balises ID3 / RIFF / Vorbis / MP4, signatures de générateurs (Suno, Udio, ElevenLabs…).',
+        clean: 'Retire les balises et le C2PA sans toucher au flux audio.',
+      },
+      video: {
+        name: 'Vidéo',
+        analysis: 'C2PA, métadonnées du conteneur, signatures de générateurs (Sora, Runway, Veo, Pika…).',
+        clean: 'Neutralise les boîtes de métadonnées et le C2PA sans toucher au flux vidéo.',
+      },
+    },
+  },
   pipeline: {
     title: 'Pipeline d’analyse',
     subtitle: 'Le parcours d’un contenu dans le moteur d’inspection',

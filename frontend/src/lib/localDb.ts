@@ -5,7 +5,7 @@
  * never sent to the server.
  */
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import type { AnalysisResult, Analysis } from '@/types/analysis';
+import type { AnalysisResult, Analysis, CleaningRecord } from '@/types/analysis';
 import type { UserSettings } from '@/types/settings';
 
 interface IaInspectorDB extends DBSchema {
@@ -18,20 +18,31 @@ interface IaInspectorDB extends DBSchema {
     key: string;
     value: unknown;
   };
+  cleanings: {
+    key: string;
+    value: CleaningRecord;
+    indexes: { 'by-date': string };
+  };
 }
 
 const DB_NAME = 'ai-inspector';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbp: Promise<IDBPDatabase<IaInspectorDB>> | null = null;
 
 function db() {
   if (!dbp) {
     dbp = openDB<IaInspectorDB>(DB_NAME, DB_VERSION, {
-      upgrade(database) {
-        const store = database.createObjectStore('analyses', { keyPath: 'id' });
-        store.createIndex('by-date', 'createdAt');
-        database.createObjectStore('kv');
+      // Additive migrations only: existing history and settings are kept.
+      upgrade(database, oldVersion) {
+        if (oldVersion < 1) {
+          const store = database.createObjectStore('analyses', { keyPath: 'id' });
+          store.createIndex('by-date', 'createdAt');
+          database.createObjectStore('kv');
+        }
+        if (oldVersion < 2) {
+          database.createObjectStore('cleanings', { keyPath: 'id' }).createIndex('by-date', 'date');
+        }
       },
     });
   }
@@ -90,6 +101,44 @@ export async function clearLocalAnalyses(): Promise<void> {
   try {
     const d = await db();
     await d.clear('analyses');
+  } catch {
+    /* ignore */
+  }
+}
+
+// --- cleaning runs ------------------------------------------------------
+
+export async function saveLocalCleaning(record: CleaningRecord): Promise<void> {
+  try {
+    const d = await db();
+    await d.put('cleanings', record);
+  } catch {
+    /* storage unavailable, non-fatal */
+  }
+}
+
+export async function listLocalCleanings(): Promise<CleaningRecord[]> {
+  try {
+    const d = await db();
+    return (await d.getAllFromIndex('cleanings', 'by-date')).reverse();
+  } catch {
+    return [];
+  }
+}
+
+export async function deleteLocalCleaning(id: string): Promise<void> {
+  try {
+    const d = await db();
+    await d.delete('cleanings', id);
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function clearLocalCleanings(): Promise<void> {
+  try {
+    const d = await db();
+    await d.clear('cleanings');
   } catch {
     /* ignore */
   }

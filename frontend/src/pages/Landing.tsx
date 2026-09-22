@@ -6,6 +6,7 @@ import {
   Shield, Search, BarChart3, FileText, Lock, ArrowRight,
   CheckCircle2,
   Type, FileCheck, Fingerprint, Sparkles, Cpu, Eye,
+  Code2, Image as ImageIcon, FileType, Music, Video, Eraser,
 } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { PrivacyBadge } from '@/components/ui/PrivacyBadge';
@@ -65,6 +66,16 @@ const whyCards = [
   { icon: Search, key: 'inspect' },
   { icon: BarChart3, key: 'measure' },
   { icon: FileText, key: 'explain' },
+] as const;
+
+const formats = [
+  { icon: Type, key: 'text', ext: 'TXT · MD' },
+  { icon: Code2, key: 'code', ext: 'JS · TS · PY · …' },
+  { icon: ImageIcon, key: 'image', ext: 'JPEG · PNG · WebP · HEIC · AVIF' },
+  { icon: FileText, key: 'pdf', ext: 'PDF' },
+  { icon: FileType, key: 'docx', ext: 'DOCX' },
+  { icon: Music, key: 'audio', ext: 'MP3 · WAV · FLAC · M4A · OGG' },
+  { icon: Video, key: 'video', ext: 'MP4 · MOV · AVI' },
 ] as const;
 
 const pipelineSteps = [
@@ -306,6 +317,55 @@ export default function Landing() {
                 <p className="mt-2 text-sm text-muted">{t(`landing.why.cards.${card.key}.description`)}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Supported formats */}
+      <section id="formats" className="py-20 border-t border-default">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+              {t('landing.formats.badge')}
+            </span>
+            <h2 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight">{t('landing.formats.title')}</h2>
+            <p className="mt-2 text-muted max-w-2xl mx-auto">{t('landing.formats.subtitle')}</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {formats.map((f, i) => (
+              <motion.div
+                key={f.key}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.35, delay: i * 0.05 }}
+                className="surface p-5 flex flex-col"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-lg bg-primary/10 text-primary shrink-0">
+                    <f.icon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold">{t(`landing.formats.items.${f.key}.name`)}</h3>
+                    <p className="text-[11px] font-mono text-muted truncate">{f.ext}</p>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2 text-sm">
+                  <p className="flex gap-2">
+                    <Search className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                    <span className="text-muted">{t(`landing.formats.items.${f.key}.analysis`)}</span>
+                  </p>
+                  <p className="flex gap-2">
+                    <Eraser className="h-4 w-4 mt-0.5 shrink-0 text-success" />
+                    <span className="text-muted">{t(`landing.formats.items.${f.key}.clean`)}</span>
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+            <div className="surface p-5 flex flex-col justify-center text-sm text-muted sm:col-span-2 lg:col-span-1">
+              <p>{t('landing.formats.note')}</p>
+            </div>
           </div>
         </div>
       </section>

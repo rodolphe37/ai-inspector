@@ -4,6 +4,41 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-09-22
+
+### Added
+- Analysis and cleaning for every listed format: text, code, images (JPEG,
+  PNG, WebP, GIF, HEIC, AVIF), PDF, DOCX, audio (MP3, WAV, FLAC, M4A, OGG
+  analysis only) and video (MP4, MOV, AVI). The real format is sniffed from
+  the bytes, not taken from the extension.
+- Lossless metadata stripping: no re-encoding for JPEG, PNG, WebP, WAV, MP3,
+  FLAC, MP4 / MOV / M4A and AVI (offsets stay valid); PDF properties, XMP and
+  embedded files removed; DOCX properties blanked. Text and code files can be
+  cleaned too.
+- PDF and DOCX text goes through the text analyses (stylometry, Unicode,
+  statistics).
+- Generator signatures, each read from the field its tool writes: Stable
+  Diffusion web UIs, ComfyUI, InvokeAI, NovelAI, Midjourney, Google AI credit,
+  and audio, video and document tools (Suno, Udio, ElevenLabs, Sora, Runway,
+  Veo, Pika, Kling, ChatGPT…).
+- Content Credentials from more providers: Microsoft, Google, Samsung, plus
+  camera capture credentials.
+- Cleaning history: every cleaning run is listed in its own History tab with a
+  badge, what was removed and the sizes. The content is never stored.
+- Supported formats section on the landing page and in the README.
+- Clean page: same input as Analyze (language selector, counters, paste and
+  clear, drag and drop with format chips); Markdown hard line breaks and blank
+  lines in code are kept; the download uses the language's extension.
+- Live view of invisible characters and homoglyphs before cleaning, and a copy
+  button for the cleaned text.
+
+### Fixed
+- Text cleaning left some invisible characters and homoglyphs in place.
+- Settings: toggles that did nothing were removed, the remaining ones now
+  change the results page, and switches are announced by screen readers.
+- Legitimate French typography (narrow no-break spaces), emoji sequences and
+  Cyrillic or Greek text are no longer flagged.
+
 ## [1.2.0] - 2026-09-22
 
 ### Added
@@ -95,6 +130,7 @@ First open-source release.
 - Renamed the project from "IA Inspector" to **AI Inspector** (English product name).
 - The em dash character is banned from code, UI copy and docs (checked in CI).
 
+[1.3.0]: https://github.com/rodolphe37/ai-inspector/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/rodolphe37/ai-inspector/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/rodolphe37/ai-inspector/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/rodolphe37/ai-inspector/compare/v1.1.0...v1.1.1

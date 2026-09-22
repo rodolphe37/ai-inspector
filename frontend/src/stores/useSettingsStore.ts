@@ -10,7 +10,6 @@ interface SettingsState {
   setTheme: (theme: ThemeMode) => void;
   togglePrivacy: (key: keyof UserSettings['privacy']) => void;
   toggleAnalysis: (key: keyof UserSettings['analysis']) => void;
-  toggleNotifications: (key: keyof UserSettings['notifications']) => void;
   updateSettings: (settings: UserSettings) => void;
 }
 
@@ -54,13 +53,6 @@ export const useSettingsStore = create<SettingsState>()(
       toggleAnalysis: (key) => {
         const a = get().settings.analysis;
         const settings = { ...get().settings, analysis: { ...a, [key]: !a[key] } };
-        set({ settings });
-        persistRemote(settings);
-      },
-
-      toggleNotifications: (key) => {
-        const n = get().settings.notifications;
-        const settings = { ...get().settings, notifications: { ...n, [key]: !n[key] } };
         set({ settings });
         persistRemote(settings);
       },

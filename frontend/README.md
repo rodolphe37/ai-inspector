@@ -70,7 +70,7 @@ To add or update a method, edit that file and open a pull request.
 ## Storage
 
 Everything user-related stays in the browser (IndexedDB database `ai-inspector`):
-analysis results, history, settings. There is no account and no limit;
+analysis results, cleaning runs (without their content), history, settings. There is no account and no limit;
 **Settings > Your data** clears the history.
 
 ## Version

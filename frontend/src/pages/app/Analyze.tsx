@@ -9,6 +9,7 @@ import { PageTransition } from '@/components/layout/PageTransition';
 import { PrivacyBadge } from '@/components/ui/PrivacyBadge';
 import { useTranslation } from 'react-i18next';
 import { runAnalysis } from '@/services';
+import { TEXT_LANGUAGES } from '@/lib/textLanguages';
 
 const supportedFormats = ['text', 'code', 'image', 'pdf', 'docx', 'audio', 'video'] as const;
 
@@ -134,14 +135,9 @@ export default function Analyze() {
                     onChange={(e) => setLanguage(e.target.value)}
                     className="text-sm bg-surface-2 border border-default rounded-lg px-3 py-1.5 text-content focus:outline-none focus:border-primary"
                   >
-                    <option value="plaintext">{t('analyze.plainText')}</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="typescript">TypeScript</option>
-                    <option value="python">Python</option>
-                    <option value="markdown">Markdown</option>
-                    <option value="json">JSON</option>
-                    <option value="html">HTML</option>
-                    <option value="css">CSS</option>
+                    {TEXT_LANGUAGES.map((l) => (
+                      <option key={l.id} value={l.id}>{l.label ?? t('analyze.plainText')}</option>
+                    ))}
                   </select>
                   <span className="text-xs text-subtle">{t('analyze.counts', { chars: charCount, words: wordCount })}</span>
                 </div>

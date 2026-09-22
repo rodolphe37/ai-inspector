@@ -1,4 +1,4 @@
-export type AnalysisType = 'text' | 'code' | 'image' | 'audio' | 'file';
+export type AnalysisType = 'text' | 'code' | 'image' | 'audio' | 'video' | 'pdf' | 'docx' | 'file';
 export type AnalysisStatus =
   | 'clean'
   | 'possible_signal'
@@ -19,6 +19,20 @@ export interface Analysis {
   score: number;
   size?: number;
   language?: string;
+}
+
+/** A cleaning run kept in the history. The content itself is never stored. */
+export interface CleaningRecord {
+  id: string;
+  name: string;
+  type: AnalysisType;
+  date: string;
+  /** What was removed, already in the UI language of that moment. */
+  removed: { type: string; count: number }[];
+  beforeSize: number;
+  afterSize: number;
+  /** false = the file had to be re-encoded (HEIC / AVIF / TIFF). */
+  lossless: boolean;
 }
 
 export interface UnicodeResult {
@@ -46,6 +60,8 @@ export interface MetadataResult {
   status: DetectionStatus;
   entries: MetadataEntry[];
   format: string;
+  /** Generator signatures recognised in the metadata (see engine/generators.ts). */
+  generators?: string[];
 }
 
 export interface C2PAResult {

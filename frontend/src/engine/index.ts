@@ -10,6 +10,8 @@ import { analyzeUnicode } from './unicode';
 import { analyzeFileMetadata, analyzeTextMetadata } from './metadata';
 import { analyzeC2PA, noC2PA } from './c2pa';
 import { analyzeStatistics } from './statistics';
+import { fileType, sniff, type Container } from './containers';
+import { readDocx, readPdf, type DocumentContent } from './documents';
 import { analyzeImageAi } from './aiImage';
 import { analyzeTextAi } from './aiText';
 import { analyzeCodeAi } from './aiCode';
@@ -27,18 +29,6 @@ export interface AnalyzeOptions {
   catalog: Fingerprint[];
 }
 
-function fileType(name: string, mime: string): AnalysisType {
-  const ext = name.split('.').pop()?.toLowerCase() ?? '';
-  if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'tif', 'tiff', 'heic', 'avif'].includes(ext)) return 'image';
-  if (['wav', 'mp3', 'flac', 'm4a', 'ogg'].includes(ext)) return 'audio';
-  if (['ts', 'tsx', 'js', 'jsx', 'py', 'go', 'rs', 'java', 'c', 'cpp', 'rb'].includes(ext)) return 'code';
-  if (['txt', 'md', 'json', 'html', 'css', 'csv'].includes(ext)) return 'text';
-  if (mime.startsWith('image/')) return 'image';
-  if (mime.startsWith('audio/')) return 'audio';
-  if (mime.startsWith('text/')) return 'text';
-  return 'file';
-}
-
 function makeId(): string {
   return `an_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 }
@@ -54,6 +44,9 @@ export async function analyzeContent(
   let type: AnalysisType;
   let text = '';
   let file: File | null = null;
+  let bytes: Uint8Array | null = null;
+  let container: Container = 'unknown';
+  let document: DocumentContent | null = null;
 
   if (input.mode === 'text') {
     text = input.text;
@@ -63,38 +56,40 @@ export async function analyzeContent(
   } else {
     file = input.file;
     name = file.name;
-    type = fileType(file.name, file.type);
+    bytes = new Uint8Array(await file.arrayBuffer());
+    container = sniff(bytes);
+    type = fileType(file.name, file.type, container);
     if (type === 'text' || type === 'code') {
-      try {
-        text = await file.text();
-      } catch {
-        text = '';
-      }
+      text = new TextDecoder().decode(bytes);
+    } else if (type === 'pdf' || type === 'docx') {
+      // Documents: the text goes through the same analyses as pasted text.
+      document = await (type === 'pdf' ? readPdf(bytes) : readDocx(bytes)).catch(() => null);
+      text = document?.text ?? '';
     }
   }
 
   const isTextual = type === 'text' || type === 'code';
+  const hasText = text.trim().length > 0;
+  const isProse = type === 'text' || type === 'pdf' || type === 'docx';
 
   // --- Unicode (textual content) --------------------------------------
-  const unicode = isTextual
+  const unicode = hasText
     ? analyzeUnicode(text)
     : { status: 'clean' as const, invisibleCharacters: 0, controlCharacters: 0, homoglyphs: 0, details: [] };
 
   // --- Metadata ---------------------------------------------------
   const metadata = isTextual
     ? analyzeTextMetadata(text, name, input.mode === 'text' ? input.language : undefined)
-    : file
-      ? await analyzeFileMetadata(file)
+    : file && bytes
+      ? await analyzeFileMetadata(file, { bytes, container, document })
       : { status: 'not_found' as const, format: 'UNKNOWN', entries: [] };
 
   // --- C2PA (the authoritative AI-origin signal) -------------------
-  const c2pa = file && !isTextual ? await analyzeC2PA(file) : noC2PA;
+  // The c2pa reader handles images, PDF, MP3 / WAV / M4A and MP4 / MOV / AVI.
+  const c2pa = file && !isTextual && type !== 'docx' ? await analyzeC2PA(file) : noC2PA;
 
   // --- Statistics (prose only: letter-frequency is meaningless for code)
-  const statistical =
-    type === 'text' && text.trim().length > 0
-      ? analyzeStatistics(text)
-      : null;
+  const statistical = isProse && hasText ? analyzeStatistics(text) : null;
 
   const signals: EngineSignals = { contentType: type, unicode, metadata, c2pa, statistical };
 
@@ -111,7 +106,7 @@ export async function analyzeContent(
     text.trim().length > 0
       ? type === 'code'
         ? analyzeCodeAi(text, input.mode === 'text' ? input.language : name.split('.').pop())
-        : type === 'text'
+        : isProse
           ? analyzeTextAi(text)
           : null
       : null;

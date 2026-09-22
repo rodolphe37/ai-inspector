@@ -17,6 +17,7 @@ import { ScoreSkeleton, CardsSkeleton } from '@/components/ui/Skeleton';
 import { useTranslation } from 'react-i18next';
 import { analysisApi } from '@/services';
 import { currentLocale } from '@/i18n';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import type { AnalysisResult, TimelineEvent } from '@/types/analysis';
 
 const timelineIcons: Record<string, typeof FileText> = {
@@ -33,6 +34,7 @@ export default function Results() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
+  const prefs = useSettingsStore((st) => st.settings.analysis);
 
   useEffect(() => {
     if (!id) return;
@@ -127,9 +129,10 @@ export default function Results() {
         </div>
 
         {/* AI-origin verdict */}
-        <AiVerdictCard result={result} />
+        <AiVerdictCard result={result} showSignals={prefs.detailedResults} />
 
         {/* Provenance signal level (secondary) */}
+        {prefs.showTechnicalInfo && (<>
         <div className="surface p-5 mb-6 flex flex-col sm:flex-row items-center gap-6">
           <ScoreRing score={result.score} label={t(`status.signalLevel.${result.signalLevel}`).toUpperCase()} size={120} />
           <div className="flex-1 text-center sm:text-left">
@@ -291,8 +294,10 @@ export default function Results() {
             </div>
           </motion.div>
         </div>
+        </>)}
 
         {/* Statistical analysis */}
+        {prefs.showStatisticalData && (<>
         {result.statistical.distribution.length > 0 ? (
         <div className="surface p-6 mb-6">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 mb-6">
@@ -359,8 +364,10 @@ export default function Results() {
             <p className="text-sm text-muted">{result.statistical.conclusion}</p>
           </div>
         )}
+        </>)}
 
         {/* What we found timeline */}
+        {prefs.detailedResults && (<>
         <div className="surface p-6 mb-6">
           <h3 className="text-lg font-semibold mb-6">{t('results.timeline')}</h3>
           <div className="space-y-0">
@@ -393,6 +400,7 @@ export default function Results() {
             })}
           </div>
         </div>
+        </>)}
 
         {/* Disclaimer */}
         <div className="surface p-5 border-warning/20">
@@ -421,7 +429,7 @@ const VERDICT_STYLE: Record<
   human_declared: { ring: 'text-success', text: 'text-success', bg: 'bg-success/10', border: 'border-success/20' },
 };
 
-function AiVerdictCard({ result }: { result: AnalysisResult }) {
+function AiVerdictCard({ result, showSignals }: { result: AnalysisResult; showSignals: boolean }) {
   const { t } = useTranslation();
   const ai = result.aiAssessment;
   const s = VERDICT_STYLE[ai.verdict];
@@ -465,7 +473,7 @@ function AiVerdictCard({ result }: { result: AnalysisResult }) {
         </div>
       </div>
 
-      {ai.signals.length > 0 && (
+      {showSignals && ai.signals.length > 0 && (
         <details className="mt-4 group">
           <summary className="cursor-pointer text-sm text-primary hover:text-primary-hover select-none">
             {t('results.verdict.breakdown', { count: ai.signals.length })}

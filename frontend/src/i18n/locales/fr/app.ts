@@ -25,7 +25,23 @@ export const dashboard: typeof en.dashboard = {
 
 export const history: typeof en.history = {
   title: 'Historique',
-  subtitle: 'Analyses enregistrées dans ce navigateur. Elles restent sur cet appareil.',
+  subtitle: 'Analyses et nettoyages enregistrés dans ce navigateur. Ils restent sur cet appareil.',
+  tabs: {
+    analyses: 'Analyses',
+    cleanings: 'Nettoyages',
+  },
+  cleanedText: 'Texte ({{count}} caractères)',
+  cleaning: {
+    badge: 'Nettoyé',
+    removed: 'Retiré',
+    size: 'Taille',
+    nothing: 'Rien à retirer',
+    reencoded: 'réencodé',
+    search: 'Rechercher un nettoyage…',
+    emptyTitle: 'Aucun nettoyage pour le moment',
+    emptyDesc: 'Les fichiers et textes nettoyés apparaissent ici. Leur contenu n’est jamais conservé, seulement ce qui a été retiré.',
+    action: 'Nettoyer un contenu',
+  },
   filters: {
     all: 'Toutes',
     clean: 'Propres',
@@ -207,5 +223,6 @@ export const status: typeof en.status = {
     pdf: 'PDF',
     docx: 'DOCX',
     file: 'Fichier',
+    files: 'Fichiers',
   },
 };

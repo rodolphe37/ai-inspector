@@ -25,6 +25,7 @@ Every verdict comes with its evidence and an honest confidence level.
 
 - [Why AI Inspector](#why-ai-inspector)
 - [Features](#features)
+- [Supported formats](#supported-formats)
 - [How a verdict is built](#how-a-verdict-is-built)
 - [Privacy model](#privacy-model)
 - [Quick start](#quick-start)
@@ -51,15 +52,34 @@ An absence of signal is never presented as proof of human origin.
 | | |
 |---|---|
 | **C2PA Content Credentials** | Full manifest parsing and signature validation (official `c2pa` WASM library). |
-| **Generator metadata** | EXIF / XMP / IPTC / PNG signatures (Stable Diffusion, Midjourney, Firefly, DALL·E…) and IPTC `DigitalSourceType`. |
+| **Generator metadata** | Image, audio, video and document signatures (Stable Diffusion, ComfyUI, Midjourney, Firefly, Suno, ElevenLabs, Sora, Runway, ChatGPT…) and IPTC `DigitalSourceType`. |
 | **Image forensics** | Frequency-domain up-sampling artifacts, sensor-noise residual, generator-native dimensions. |
 | **Text stylometry (EN + FR)** | Burstiness, register, LLM-favoured vocabulary. The language of the text is detected and matching references are used. |
 | **Code stylometry** | Comment density, tutorial comments, docstring coverage, assistant leftovers, generic identifiers. |
 | **Trojan Source detection** | Bidirectional overrides and homoglyphs hidden in source code. |
 | **Letter statistics** | χ² test against English or French reference frequencies, entropy, p-value. |
-| **Content cleaning** | Strip invisible Unicode and image metadata locally, then download. |
+| **Content cleaning** | Strip invisible Unicode and the metadata of every supported format locally, then download. Kept in the history. |
 | **Bilingual PWA** | English and French interface, installable, works offline once loaded. |
 | **No account, no limits** | Everything is free. History and settings stay in your browser. |
+
+## Supported formats
+
+Everything is analysed and cleaned in the browser. Cleaning removes metadata
+only: pixels, audio samples, video frames and document text are left byte for
+byte identical wherever the format allows it.
+
+| Format | Extensions | Analysis | Cleaning |
+|---|---|---|---|
+| **Text** | pasted, TXT, MD | Invisible characters, homoglyphs, bidi controls, stylometry (EN / FR), letter statistics | Invisible characters, homoglyphs, trailing whitespace (Markdown hard breaks kept) |
+| **Code** | pasted, JS, TS, PY, GO, RS, JAVA… | Trojan Source, hidden characters, code stylometry | Invisible and bidi characters (blank lines kept) |
+| **Images** | JPEG, PNG, WebP, GIF, HEIC, AVIF, TIFF | C2PA, EXIF / XMP / IPTC, PNG text chunks, generator signatures, image forensics | EXIF, XMP, IPTC, C2PA, text chunks, lossless (HEIC / AVIF / GIF re-encoded to PNG) |
+| **PDF** | PDF | Document properties, XMP, C2PA, producing software, stylometry of the extracted text | Properties, XMP, embedded files (including C2PA), page-piece data |
+| **Word** | DOCX | Author, application and custom properties, stylometry of the text | Author, application and custom properties |
+| **Audio** | MP3, WAV, FLAC, M4A, OGG | C2PA, ID3 / RIFF INFO / Vorbis / MP4 tags, generator signatures (Suno, Udio, ElevenLabs…) | ID3, APE, RIFF INFO, Vorbis comments, MP4 metadata, C2PA, no re-encoding (OGG: analysis only) |
+| **Video** | MP4, MOV, AVI | C2PA, container metadata, generator signatures (Sora, Runway, Veo, Pika, Kling…) | Metadata boxes and C2PA neutralised in place, no re-encoding |
+
+Cleaning runs are kept in the history (their own tab), with what was removed
+and the file sizes. The content itself is never stored.
 
 ## How a verdict is built
 

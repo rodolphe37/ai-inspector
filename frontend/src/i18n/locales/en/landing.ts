@@ -56,6 +56,49 @@ export const landing = {
       },
     },
   },
+  formats: {
+    badge: 'Supported formats',
+    title: 'Text, code, images, documents, audio and video',
+    subtitle: 'Every format is analysed and cleaned in your browser. Metadata is removed without re-encoding whenever the format allows it.',
+    note: 'Cleaning removes metadata only: pixels, sound, video frames and document text stay byte for byte identical. OGG can be analysed but not cleaned without re-encoding.',
+    items: {
+      text: {
+        name: 'Text',
+        analysis: 'Invisible characters, homoglyphs, bidi controls, stylometry (English and French).',
+        clean: 'Removes invisible characters and homoglyphs, normalises spaces and line endings.',
+      },
+      code: {
+        name: 'Code',
+        analysis: 'Trojan Source (bidi), hidden characters, code stylometry.',
+        clean: 'Removes invisible and bidi characters without touching the code.',
+      },
+      image: {
+        name: 'Images',
+        analysis: 'C2PA Content Credentials, EXIF / XMP / IPTC, generator signatures (Stable Diffusion, ComfyUI, Midjourney…), spectral analysis.',
+        clean: 'Strips EXIF, XMP, IPTC and C2PA losslessly (HEIC / AVIF are re-encoded).',
+      },
+      pdf: {
+        name: 'PDF',
+        analysis: 'Document properties, XMP, C2PA, producing software, stylometry of the extracted text.',
+        clean: 'Removes properties, XMP and embedded files (including C2PA).',
+      },
+      docx: {
+        name: 'Word (DOCX)',
+        analysis: 'Author, application and custom properties, stylometry of the text.',
+        clean: 'Blanks author, application and custom properties.',
+      },
+      audio: {
+        name: 'Audio',
+        analysis: 'C2PA, ID3 / RIFF / Vorbis / MP4 tags, generator signatures (Suno, Udio, ElevenLabs…).',
+        clean: 'Strips tags and C2PA without touching the audio stream.',
+      },
+      video: {
+        name: 'Video',
+        analysis: 'C2PA, container metadata, generator signatures (Sora, Runway, Veo, Pika…).',
+        clean: 'Neutralises metadata boxes and C2PA without touching the video stream.',
+      },
+    },
+  },
   pipeline: {
     title: 'Analysis pipeline',
     subtitle: 'How content flows through the inspection engine',
