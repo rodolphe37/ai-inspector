@@ -1,0 +1,35 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Go to ...\n2. Paste / upload ...\n3. See ..."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Shown in the footer (for example v1.0.0).
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+  - type: dropdown
+    id: language
+    attributes:
+      label: Interface language
+      options: [English, Français]
+  - type: markdown
+    attributes:
+      value: "Please do not attach private content. For security issues, use a private advisory (see SECURITY.md)."

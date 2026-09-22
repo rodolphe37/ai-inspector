@@ -1,0 +1,23 @@
+# OS / editor junk (shared)
+.DS_Store
+*.sw?
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# logs
+*.log
+
+# env files (each package keeps its own .env; never commit real values)
+.env
+.env.*
+!.env.example
+.claude
+# local-only notes (deployment runbooks, personal config)
+*.local.md
+
+# AI assistant notes (kept local)
+CLAUDE.md
+
+# Local Netlify folder
+.netlify
