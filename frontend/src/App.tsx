@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MotionConfig } from 'framer-motion';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useSettingsStore } from '@/stores/useSettingsStore';
@@ -59,6 +60,8 @@ function App() {
   useTheme();
 
   return (
+    // `user`: honour the OS "reduce motion" setting (no slides, instant fades).
+    <MotionConfig reducedMotion="user">
     <BrowserRouter>
       <Suspense fallback={<PageLoader />}>
         <Routes>
@@ -85,6 +88,7 @@ function App() {
         </Routes>
       </Suspense>
     </BrowserRouter>
+    </MotionConfig>
   );
 }
 

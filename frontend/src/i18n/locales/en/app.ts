@@ -72,6 +72,7 @@ export const results = {
   notAvailable: 'Result not available.',
   backToHistory: 'Back to history',
   export: 'Export report',
+  exportShort: 'Export',
   again: 'Analyze again',
   signalLevel: {
     title: 'Provenance signal level',

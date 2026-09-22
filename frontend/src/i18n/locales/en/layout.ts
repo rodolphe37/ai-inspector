@@ -13,6 +13,7 @@ export const nav = {
     fingerprints: 'Fingerprints',
     clean: 'Clean',
     settings: 'Settings',
+    results: 'Result',
   },
   // Short labels for the mobile bottom bar.
   short: {

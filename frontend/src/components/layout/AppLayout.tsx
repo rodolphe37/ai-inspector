@@ -34,7 +34,12 @@ export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { t } = useTranslation();
-  const currentCrumb = t(`nav.app.${breadcrumbMap[location.pathname] ?? 'overview'}`);
+  const crumbKey =
+    breadcrumbMap[location.pathname] ??
+    (location.pathname.startsWith('/app/results/') ? 'results'
+      : location.pathname.startsWith('/app/fingerprints/') ? 'fingerprints'
+        : 'overview');
+  const currentCrumb = t(`nav.app.${crumbKey}`);
 
   return (
     <div className="min-h-screen bg-bg flex">

@@ -168,7 +168,7 @@ export default function Clean() {
           <p className="text-sm text-muted">
             {previewText?.removed.filter((r) => r.count > 0).map((r) => `${r.count} ${r.type.toLowerCase()}`).join(' · ') || t('clean.noChanges')}
           </p>
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2"><ArrowLeft className="h-4 w-4 text-muted" /><span className="text-sm font-semibold">{t('clean.before')}</span></div>
               <pre className="surface-2 p-4 rounded-lg font-mono text-xs text-muted max-h-48 overflow-auto whitespace-pre-wrap">{JSON.stringify(text).slice(1, -1)}</pre>

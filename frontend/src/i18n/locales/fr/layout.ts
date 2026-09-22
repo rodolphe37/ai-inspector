@@ -15,6 +15,7 @@ export const nav: typeof enNav = {
     fingerprints: 'Empreintes',
     clean: 'Nettoyer',
     settings: 'Réglages',
+    results: 'Résultat',
   },
   short: {
     overview: 'Accueil',

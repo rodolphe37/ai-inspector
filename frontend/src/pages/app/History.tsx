@@ -45,12 +45,12 @@ export default function History() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="flex gap-1 p-1 bg-surface-2 rounded-lg w-fit">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-surface-2 rounded-lg sm:flex sm:w-fit">
             {filters.map((f) => (
               <button
                 key={f}
                 onClick={() => { setFilter(f); setPage(1); }}
-                className={`relative px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                className={`relative whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                   filter === f ? 'text-content' : 'text-muted hover:text-content'
                 }`}
               >
@@ -59,7 +59,7 @@ export default function History() {
               </button>
             ))}
           </div>
-          <div className="relative flex-1 max-w-xs">
+          <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle" />
             <input
               value={search}
@@ -81,7 +81,32 @@ export default function History() {
           />
         ) : (
           <>
-            <div className="surface overflow-x-auto">
+            {/* Mobile: one card per analysis (no horizontal scrolling). */}
+            <ul className="sm:hidden space-y-2">
+              {paginated.map((analysis) => {
+                const s = badgeFor(analysis.status);
+                return (
+                  <li key={analysis.id} className="surface flex items-center gap-3 p-3">
+                    <Link to={`/app/results/${analysis.id}`} className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium" title={analysis.name}>{analysis.name}</span>
+                      <span className="mt-0.5 block text-xs text-subtle">
+                        {t(`status.type.${analysis.type}`)} · {new Date(analysis.date).toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric' })}
+                      </span>
+                      <span className="mt-2 inline-block"><StatusBadge status={s.badge} label={t(`status.analysis.${s.status}`)} /></span>
+                    </Link>
+                    <button
+                      onClick={() => void remove(analysis.id)}
+                      className="shrink-0 rounded-lg p-2 text-muted transition-colors hover:bg-surface-2 hover:text-error"
+                      aria-label={t('history.delete', { name: analysis.name })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="surface hidden overflow-x-auto sm:block">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-default">
@@ -99,7 +124,7 @@ export default function History() {
                     return (
                       <motion.tr key={analysis.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }} className="border-b border-default last:border-0 hover:bg-surface-2/50 transition-colors">
                         <td className="px-5 py-3.5">
-                          <Link to={`/app/results/${analysis.id}`} className="text-sm font-medium hover:text-primary">{analysis.name}</Link>
+                          <Link to={`/app/results/${analysis.id}`} className="block max-w-[10rem] truncate text-sm font-medium hover:text-primary sm:max-w-xs" title={analysis.name}>{analysis.name}</Link>
                         </td>
                         <td className="px-5 py-3.5 hidden sm:table-cell"><span className="text-xs text-muted uppercase">{t(`status.type.${analysis.type}`)}</span></td>
                         <td className="px-5 py-3.5"><StatusBadge status={s.badge} label={t(`status.analysis.${s.status}`)} /></td>

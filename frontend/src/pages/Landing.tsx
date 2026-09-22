@@ -21,6 +21,11 @@ interface DemoRow {
   detail: string;
 }
 
+/** Lower-case only the first letter, so acronyms such as "LLM" survive. */
+function lowerFirst(label: string): string {
+  return label.charAt(0).toLowerCase() + label.slice(1);
+}
+
 function runDemo(text: string): DemoRow[] {
   const u = analyzeUnicode(text);
   const s = analyzeStatistics(text);
@@ -32,7 +37,7 @@ function runDemo(text: string): DemoRow[] {
       detail:
         ai.signals.length === 0
           ? t('landing.demo.rows.aiTooShort')
-          : `${ai.probability}% · ${ai.signals[0].label.toLowerCase()}${ai.reliable ? '' : t('landing.demo.rows.lowReliability')}`,
+          : `${ai.probability}% · ${lowerFirst(ai.signals[0].label)}${ai.reliable ? '' : t('landing.demo.rows.lowReliability')}`,
     },
     {
       label: t('landing.demo.rows.invisible'),
@@ -124,7 +129,7 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-6 text-center text-lg text-muted max-w-2xl mx-auto"
+            className="mt-6 text-center text-base sm:text-lg text-muted max-w-2xl mx-auto"
           >
             {t('landing.hero.subtitle')}
           </motion.p>
@@ -133,18 +138,18 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4"
           >
             <Link
               to="/app/analyze"
-              className="group inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors glow-primary"
+              className="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors glow-primary"
             >
               {t('landing.hero.cta')}
               <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
               to="/how-it-works"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-default text-content font-medium hover:bg-surface-2 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-default text-content font-medium hover:bg-surface-2 transition-colors"
             >
               {t('landing.hero.secondary')}
             </Link>
@@ -169,7 +174,7 @@ export default function Landing() {
             <p className="mt-2 text-muted">{t('landing.demo.subtitle')}</p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Input */}
             <div className="surface p-5">
               <div className="flex items-center justify-between mb-4">
@@ -205,7 +210,7 @@ export default function Landing() {
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-semibold text-muted">{t('landing.demo.output')}</span>
                 {showResults && (
-                  <span className="text-xs text-subtle">{t('landing.demo.preview')}</span>
+                  <span className="hidden sm:inline text-xs text-subtle">{t('landing.demo.preview')}</span>
                 )}
               </div>
 
@@ -284,7 +289,7 @@ export default function Landing() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {whyCards.map((card, i) => (
               <motion.div
                 key={card.key}
@@ -346,7 +351,7 @@ export default function Landing() {
       {/* Privacy */}
       <section className="py-20 border-t border-default">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 mb-4">
                 <Lock className="h-3.5 w-3.5" />

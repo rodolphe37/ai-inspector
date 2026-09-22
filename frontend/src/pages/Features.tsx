@@ -58,7 +58,7 @@ export default function Features() {
           </motion.p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-20">
           {features.map((feature, i) => (
             <motion.div
               key={feature.key}
@@ -83,7 +83,7 @@ export default function Features() {
           <p className="text-muted text-center max-w-xl mx-auto mb-10">{t('features.pipeline.subtitle')}</p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
           {pipeline.map((step, i) => (
             <motion.div
               key={step.key}
@@ -93,7 +93,7 @@ export default function Features() {
               transition={{ delay: i * 0.08 }}
               className="surface p-5 relative"
             >
-              <span className="absolute top-4 right-4 text-3xl font-bold text-surface-2 tabular-nums">
+              <span className="absolute top-4 right-4 text-3xl font-bold text-primary/15 tabular-nums">
                 {String(i + 1).padStart(2, '0')}
               </span>
               <div className="p-2.5 rounded-xl bg-surface-2 text-primary w-fit mb-4">

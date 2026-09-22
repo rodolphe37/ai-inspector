@@ -117,7 +117,7 @@ export function PublicLayout() {
 
       <footer className="border-t border-default">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid gap-8 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-1.5 rounded-lg bg-primary/10 text-primary">

@@ -32,7 +32,7 @@ export function StatusBadge({ status, label, size = 'sm', animate = true }: Stat
 
   const content = (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border ${c.bg} ${c.border} ${c.color} ${padding} ${textSize} font-medium`}
+      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border ${c.bg} ${c.border} ${c.color} ${padding} ${textSize} font-medium`}
     >
       <Icon className={size === 'sm' ? 'h-3 w-3' : 'h-4 w-4'} />
       {label ?? t(`status.detection.${status}`)}

@@ -67,27 +67,27 @@ export default function FingerprintDetail() {
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div className="surface p-5">
             <h3 className="text-sm font-semibold text-muted mb-3">{t('fingerprints.properties')}</h3>
             <div className="space-y-2.5">
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between gap-4 text-sm">
                 <span className="text-muted">{t('common.table.type')}</span>
                 <span className="font-medium uppercase">{t(`status.method.${fp.type}`, { defaultValue: fp.type })}</span>
               </div>
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between gap-4 text-sm">
                 <span className="text-muted">{t('fingerprints.version')}</span>
                 <span className="font-medium">{fp.version}</span>
               </div>
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between gap-4 text-sm">
                 <span className="text-muted">{t('fingerprints.target')}</span>
                 <span className="font-medium capitalize">{t(`status.type.${fp.targetContent}`, { defaultValue: fp.targetContent })}</span>
               </div>
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between gap-4 text-sm">
                 <span className="text-muted">{t('fingerprints.coverage')}</span>
-                <span className="font-medium">{fp.coverage}</span>
+                <span className="font-medium text-right">{fp.coverage}</span>
               </div>
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between gap-4 text-sm">
                 <span className="text-muted">{t('fingerprints.updated')}</span>
                 <span className="font-medium">{fp.lastUpdated}</span>
               </div>
@@ -128,7 +128,7 @@ export default function FingerprintDetail() {
 
         <div className="surface p-5">
           <h3 className="text-sm font-semibold text-muted mb-4">{t('fingerprints.capabilities')}</h3>
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <h4 className="text-sm font-medium text-success mb-2 flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4" />

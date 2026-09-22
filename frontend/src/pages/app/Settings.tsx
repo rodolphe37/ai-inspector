@@ -59,7 +59,7 @@ export default function Settings() {
           <p className="mt-1 text-muted">{t('settings.subtitle')}</p>
         </div>
 
-        <div className="grid lg:grid-cols-[200px_1fr] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-6">
           <nav className="hidden lg:block">
             <div className="space-y-1 sticky top-20">
               {sections.map((section) => (

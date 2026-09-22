@@ -100,24 +100,25 @@ export default function Results() {
               {result.name} · {new Date(result.date).toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <button
               onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-default text-sm font-medium hover:bg-surface-2 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-default text-sm font-medium whitespace-nowrap hover:bg-surface-2 transition-colors"
             >
-              <Download className="h-4 w-4" />
-              {t('results.export')}
+              <Download className="h-4 w-4 shrink-0" />
+              <span className="sm:hidden">{t('results.exportShort')}</span>
+              <span className="hidden sm:inline">{t('results.export')}</span>
             </button>
             <Link
               to="/app/clean"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-default text-sm font-medium hover:bg-surface-2 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-default text-sm font-medium whitespace-nowrap hover:bg-surface-2 transition-colors"
             >
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-4 w-4 shrink-0" />
               {t('nav.app.clean')}
             </Link>
             <Link
               to="/app/analyze"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
+              className="col-span-2 order-first sm:order-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium whitespace-nowrap hover:bg-primary-hover transition-colors"
             >
               <Search className="h-4 w-4" />
               {t('results.again')}
@@ -138,7 +139,7 @@ export default function Results() {
         </div>
 
         {/* Result cards */}
-        <div className="grid sm:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {/* Unicode */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -275,12 +276,12 @@ export default function Results() {
                 </p>
               ) : (
                 result.fingerprints.map((fp) => (
-                  <div key={fp.id} className="flex items-center justify-between" title={fp.method}>
-                    <div>
-                      <span className="text-sm font-medium">{fp.name}</span>
-                      <span className="text-xs text-subtle ml-2">{fp.provider}</span>
+                  <div key={fp.id} className="flex items-center justify-between gap-3" title={fp.method}>
+                    <div className="min-w-0">
+                      <span className="block text-sm font-medium">{fp.name}</span>
+                      <span className="block text-xs text-subtle">{fp.provider}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                       <span className="text-xs tabular-nums text-muted">{fp.confidence}%</span>
                       <StatusBadge status={fp.status} />
                     </div>
@@ -294,17 +295,17 @@ export default function Results() {
         {/* Statistical analysis */}
         {result.statistical.distribution.length > 0 ? (
         <div className="surface p-6 mb-6">
-          <div className="flex items-center gap-2 mb-6">
-            <BarChart3 className="h-5 w-5 text-primary" />
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 mb-6">
+            <BarChart3 className="h-5 w-5 shrink-0 text-primary" />
             <h3 className="text-lg font-semibold">{t('results.stats.title')}</h3>
             {result.statistical.language && (
-              <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-surface-2 border border-default text-muted">
+              <span className="sm:ml-auto whitespace-nowrap text-xs px-2 py-0.5 rounded-full bg-surface-2 border border-default text-muted">
                 {t('results.stats.reference', { lang: t(`results.stats.languages.${result.statistical.language}`) })}
               </span>
             )}
           </div>
 
-          <div className="grid sm:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
             <div className="surface-2 p-4 rounded-lg">
               <p className="text-xs text-muted mb-1">{t('results.stats.chi2')}</p>
               <p className="text-2xl font-bold tabular-nums">{result.statistical.observedScore}</p>
@@ -374,9 +375,9 @@ export default function Results() {
                   className="flex gap-4 pb-6 last:pb-0 relative"
                 >
                   {i < result.timeline.length - 1 && (
-                    <div className="absolute left-5 top-12 bottom-0 w-px bg-border-hover" />
+                    <div className="absolute left-[18px] top-10 bottom-0 w-px bg-border-hover" />
                   )}
-                  <div className={`p-2.5 rounded-full flex-shrink-0 z-10 ${
+                  <div className={`flex h-9 w-9 shrink-0 self-start items-center justify-center rounded-full z-10 ${
                     event.status === 'warning' ? 'bg-warning/20 text-warning' :
                     event.status === 'info' ? 'bg-info/20 text-info' :
                     'bg-success/20 text-success'

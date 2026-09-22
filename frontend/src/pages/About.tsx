@@ -49,7 +49,7 @@ export default function About() {
         </div>
 
         {/* Values */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16">
           {values.map((value, i) => (
             <motion.div
               key={value.key}

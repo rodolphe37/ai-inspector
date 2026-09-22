@@ -63,7 +63,7 @@ export default function HowItWorks() {
                 </div>
                 <div className="flex-1 pb-2">
                   <div className="flex items-center gap-3 mb-1">
-                    <span className="text-2xl font-bold text-surface-2 tabular-nums">{step.num}</span>
+                    <span className="text-2xl font-bold text-primary/40 tabular-nums">{step.num}</span>
                     <h3 className="text-xl font-semibold">{t(`howItWorks.steps.${step.key}.title`)}</h3>
                   </div>
                   <p className="text-muted max-w-2xl">{t(`howItWorks.steps.${step.key}.description`)}</p>
@@ -80,7 +80,7 @@ export default function HowItWorks() {
           </h2>
           <p className="text-muted text-center max-w-xl mx-auto mb-10">{t('howItWorks.limits.subtitle')}</p>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="surface p-6 border-success/20">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-success mb-4">
                 <CheckCircle2 className="h-5 w-5" />

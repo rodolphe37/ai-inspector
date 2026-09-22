@@ -76,6 +76,7 @@ export const results: typeof en.results = {
   notAvailable: 'Résultat indisponible.',
   backToHistory: 'Retour à l’historique',
   export: 'Exporter le rapport',
+  exportShort: 'Exporter',
   again: 'Nouvelle analyse',
   signalLevel: {
     title: 'Niveau de signal de provenance',

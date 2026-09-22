@@ -43,7 +43,7 @@ export default function Fingerprints() {
           <p className="mt-1 text-muted">{t('fingerprints.subtitle')}</p>
         </div>
 
-        <div className="relative max-w-xs mb-6">
+        <div className="relative w-full sm:max-w-xs mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle" />
           <input
             value={search}
@@ -54,7 +54,7 @@ export default function Fingerprints() {
         </div>
 
         {loading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="surface p-5 animate-pulse">
                 <div className="h-5 w-32 bg-surface-2 rounded mb-3" />
@@ -69,7 +69,7 @@ export default function Fingerprints() {
             description={t('fingerprints.emptyDesc')}
           />
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((fp, i) => {
               return (
                 <motion.div
