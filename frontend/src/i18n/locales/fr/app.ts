@@ -103,7 +103,7 @@ export const results: typeof en.results = {
   },
   fingerprints: {
     title: 'Empreintes connues',
-    none: 'Aucune empreinte connue ne s’applique à ce contenu (ou le catalogue n’a pas pu être chargé).',
+    none: 'Aucune empreinte connue ne s’applique à ce contenu.',
   },
   stats: {
     title: 'Analyse statistique',
@@ -135,7 +135,7 @@ export const fingerprints: typeof en.fingerprints = {
   subtitle: 'Méthodes de détection utilisées pour identifier des signaux de provenance connus.',
   search: 'Rechercher une empreinte…',
   empty: 'Aucune empreinte trouvée',
-  emptyDesc: 'Essayez une autre recherche, ou vérifiez que l’API est joignable.',
+  emptyDesc: 'Essayez une autre recherche.',
   details: 'Voir le détail',
   notFound: 'Empreinte introuvable.',
   back: 'Retour aux empreintes',

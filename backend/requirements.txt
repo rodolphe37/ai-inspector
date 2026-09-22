@@ -1,9 +1,0 @@
-# Runtime dependencies for the AI Inspector API.
-# Pinned to the latest stable releases at time of writing (Sept 2026).
-fastapi==0.141.1
-uvicorn[standard]==0.52.4
-SQLAlchemy==2.0.52
-alembic==1.19.1
-psycopg[binary]==3.3.5
-pydantic==2.13.5
-pydantic-settings==2.15.0

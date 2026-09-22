@@ -62,8 +62,7 @@ export interface RunAnalysisResult {
 }
 
 export async function runAnalysis(input: AnalyzeInput): Promise<RunAnalysisResult> {
-  // The catalogue only enriches the report; analysis still runs offline.
-  const catalog: Fingerprint[] = await getCatalog().catch(() => []);
+  const catalog: Fingerprint[] = await getCatalog();
   const result = await analyzeContent(input, { catalog });
   await saveLocalAnalysis(result);
   return { result, persistedId: result.id };

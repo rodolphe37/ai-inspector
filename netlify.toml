@@ -1,6 +1,6 @@
 # Netlify: https://docs.netlify.com/configure-builds/file-based-configuration/
-# Set VITE_API_URL (e.g. https://ai-inspector-api.onrender.com/api) in
-# Site configuration > Environment variables before the first deploy.
+# The app is fully static (analysis and catalogue run in the browser):
+# no environment variable is needed.
 [build]
   base = "frontend"
   command = "npm ci && npm run build"

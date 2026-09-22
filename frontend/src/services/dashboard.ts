@@ -17,7 +17,7 @@ const SIGNAL = new Set(['possible_signal', 'signal_detected', 'c2pa_found']);
 
 export async function getDashboard(days = 30): Promise<DashboardData> {
   const list = await listLocalAnalyses();
-  const catalog = await getCatalog().catch(() => []);
+  const catalog = await getCatalog();
   const full = await Promise.all(list.map((a) => getLocalAnalysis(a.id)));
 
   const today = new Date();

@@ -20,10 +20,10 @@ export const security = {
     localFirst: {
       title: 'Local-first architecture',
       description:
-        'The analysis engine runs entirely in the browser. The server only publishes the public catalogue of known detection methods.',
+        'The analysis engine and the catalogue of known detection methods ship with the app and run entirely in the browser. There is no application server.',
     },
     noServerData: {
-      title: 'No server-side user data',
+      title: 'No user data anywhere but your device',
       description:
         'History and settings live in your browser (IndexedDB) and can be wiped at any time. The code is open source, so you can verify it.',
     },
@@ -38,7 +38,7 @@ export const security = {
     browser: 'Browser',
     engine: 'Local analysis engine',
     report: 'Report',
-    backend: 'Server: public detection-method catalogue only',
+    backend: 'No application server: a static site, nothing to receive your data',
     storage: 'Local storage only',
   },
   commitments: {

@@ -81,35 +81,27 @@ la liste des signaux qui y ont contribué.
 
 ## Confidentialité
 
-- **Toute l'analyse s'exécute dans le navigateur.** Les fichiers et textes ne sont jamais envoyés.
-- **Ni compte, ni pistage.** L'historique et les réglages sont stockés dans IndexedDB, sur votre appareil.
-- **Le serveur publie uniquement un catalogue public** des méthodes de détection connues
-  (lecture seule, débit limité, aucune donnée utilisateur). L'application continue de
-  fonctionner s'il est injoignable.
+- **Tout s'exécute dans le navigateur.** Les fichiers et textes ne sont jamais envoyés ;
+  le catalogue des méthodes de détection est intégré à l'application.
+- **Ni serveur, ni compte, ni pistage.** AI Inspector est un site statique. L'historique
+  et les réglages sont stockés dans IndexedDB, sur votre appareil, et s'effacent depuis
+  les Réglages.
 
 ## Démarrage rapide
 
-Prérequis : **Node.js 22+** et **Python 3.11+**.
+Prérequis : **Node.js 22+**.
 
 ```bash
 git clone https://github.com/rodolphe37/ai-inspector.git
-cd ai-inspector
-
-# 1. API (SQLite par défaut, aucun service externe requis)
-cd backend
-make install && make seed && make dev        # http://localhost:8000
-
-# 2. Application web (dans un autre terminal)
-cd frontend
-npm install && cp .env.example .env
-npm run dev                                   # http://localhost:5173
+cd ai-inspector/frontend
+npm install
+npm run dev          # http://localhost:5173
 ```
 
 Lancer les vérifications :
 
 ```bash
-cd backend  && make test && make lint
-cd frontend && npm run typecheck && npm run lint && npm run build
+npm run typecheck && npm run lint && npm run build
 ```
 
 ## Structure du projet
@@ -119,32 +111,25 @@ ai-inspector/
 ├── frontend/          React 19 · Vite · Tailwind 4 · i18next (PWA)
 │   └── src/
 │       ├── engine/    modules d'analyse (c2pa, metadata, aiImage, aiText, aiCode, assess…)
+│       ├── data/      catalogue intégré des méthodes de détection (EN + FR)
 │       ├── i18n/      dictionnaires anglais + français, détection de la langue
 │       ├── pages/     pages publiques et espace /app
-│       └── lib/       stockage IndexedDB, client API
-├── backend/           FastAPI · SQLAlchemy · Alembic (API du catalogue public)
-├── docs/              guides d'architecture et de déploiement
-├── render.yaml        Blueprint Render (API)
-└── netlify.toml       configuration Netlify (application web)
+│       └── lib/       stockage IndexedDB, utilitaires
+├── docs/              guide d'architecture
+└── netlify.toml       configuration Netlify
 ```
 
 ## Auto-hébergement
 
-- **Application web** : un build statique (`npm run build` dans `frontend/`) servi par
-  n'importe quel hébergeur statique. Définissez `VITE_API_URL` au moment du build.
-  [`netlify.toml`](netlify.toml) est fourni.
-- **API** : l'image Docker de `backend/` (applique les migrations puis écoute sur
-  `$PORT`) avec une `DATABASE_URL` PostgreSQL. Un Blueprint Render est fourni dans
-  [`render.yaml`](render.yaml). Définissez `ENVIRONMENT=production` et `CORS_ORIGINS`
-  avec l'origine de l'application web.
-
-Tous les réglages de l'API sont décrits dans [`backend/README.md`](backend/README.md#configuration).
+AI Inspector est un site statique : `npm run build` dans `frontend/` produit `dist/`,
+que n'importe quel hébergeur statique peut servir (avec un repli sur `index.html` pour
+les routes côté client). Un [`netlify.toml`](netlify.toml) prêt à l'emploi est fourni.
+Aucune variable d'environnement, base de données ni serveur n'est nécessaire.
 
 ## Documentation
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) : l'assemblage des différentes parties
-- [`frontend/README.md`](frontend/README.md) : application web, moteur, traductions
-- [`backend/README.md`](backend/README.md) : API, configuration, sécurité
+- [`frontend/README.md`](frontend/README.md) : application web, moteur, catalogue, traductions
 - [`CHANGELOG.md`](CHANGELOG.md) : notes de version
 
 ## Contribuer

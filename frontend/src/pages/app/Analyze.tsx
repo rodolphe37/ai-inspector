@@ -76,7 +76,6 @@ export default function Analyze() {
       clearInterval(stepTimer);
       setAnalyzing(false);
       setCurrentStep(-1);
-      // Analysis is fully local; the API is only an optional catalogue source.
       setError(t('analyze.error'));
       console.error(err);
     }

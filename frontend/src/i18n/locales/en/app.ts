@@ -99,7 +99,7 @@ export const results = {
   },
   fingerprints: {
     title: 'Known fingerprints',
-    none: 'No known fingerprint applies to this content (or the catalogue could not be loaded).',
+    none: 'No known fingerprint applies to this content.',
   },
   stats: {
     title: 'Statistical analysis',
@@ -131,7 +131,7 @@ export const fingerprints = {
   subtitle: 'Detection methods used to identify known provenance signals in content.',
   search: 'Search fingerprints…',
   empty: 'No fingerprints found',
-  emptyDesc: 'Try a different search query, or check that the API is reachable.',
+  emptyDesc: 'Try a different search query.',
   details: 'View details',
   notFound: 'Fingerprint not found.',
   back: 'Back to fingerprints',

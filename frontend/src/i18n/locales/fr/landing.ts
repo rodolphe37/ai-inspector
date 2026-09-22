@@ -89,7 +89,7 @@ export const landing: typeof en = {
       browser: 'Navigateur',
       local: 'Analyse locale',
       report: 'Rapport',
-      backend: 'Le serveur publie uniquement le catalogue public des méthodes de détection',
+      backend: 'Aucun serveur applicatif : tout est intégré à l’application',
     },
   },
   cta: {

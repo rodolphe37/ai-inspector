@@ -87,7 +87,7 @@ export const landing = {
       browser: 'Browser',
       local: 'Local analysis',
       report: 'Report',
-      backend: 'The server only publishes the public catalogue of detection methods',
+      backend: 'No application server: everything ships with the app',
     },
   },
   cta: {

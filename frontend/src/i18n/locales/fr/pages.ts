@@ -22,10 +22,10 @@ export const security: typeof enSecurity = {
     localFirst: {
       title: 'Architecture locale d’abord',
       description:
-        'Le moteur d’analyse tourne entièrement dans le navigateur. Le serveur publie uniquement le catalogue public des méthodes de détection connues.',
+        'Le moteur d’analyse et le catalogue des méthodes de détection connues sont intégrés à l’application et tournent entièrement dans le navigateur. Il n’y a aucun serveur applicatif.',
     },
     noServerData: {
-      title: 'Aucune donnée utilisateur côté serveur',
+      title: 'Aucune donnée utilisateur ailleurs que sur votre appareil',
       description:
         'L’historique et les réglages restent dans votre navigateur (IndexedDB) et peuvent être effacés à tout moment. Le code est open source : vous pouvez le vérifier.',
     },
@@ -40,7 +40,7 @@ export const security: typeof enSecurity = {
     browser: 'Navigateur',
     engine: 'Moteur d’analyse local',
     report: 'Rapport',
-    backend: 'Serveur : uniquement le catalogue public des méthodes de détection',
+    backend: 'Aucun serveur applicatif : un site statique, rien pour recevoir vos données',
     storage: 'Stockage local uniquement',
   },
   commitments: {

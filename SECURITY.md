@@ -15,18 +15,16 @@ you will be credited in the release notes unless you prefer to stay anonymous.
 
 ## Security model
 
-- **Content never leaves the browser.** All analysis runs client-side; the API
-  has no endpoint that accepts user content.
-- **No accounts, no user data server-side.** History and settings are stored in
-  the browser (IndexedDB).
-- **The API is public and read-only.** It only serves the fingerprint catalogue
-  and is hardened accordingly:
-  - only `GET`, `HEAD` and `OPTIONS` are accepted (anything else returns `405`);
-  - per-IP rate limiting (`RATE_LIMIT_PER_MINUTE`, `429` with `Retry-After`);
-  - strict response headers (CSP `default-src 'none'`, `nosniff`, `DENY` framing,
-    HSTS in production, no `Server` header);
-  - CORS restricted to the configured web-app origins;
-  - path parameters validated, interactive docs disabled in production;
-  - optional `Host` allow-list (`ALLOWED_HOSTS`).
-- Dependencies are pinned and monitored by Dependabot; CI runs tests and linters
-  on every pull request.
+- **No application server.** AI Inspector is a static site: there is no API,
+  no database and no account system to attack or to leak.
+- **Content never leaves the browser.** Analysis, the catalogue of detection
+  methods, history and settings all run or live on the user's device
+  (IndexedDB), and can be wiped from Settings.
+- **Hosting headers** (`netlify.toml`): `X-Content-Type-Options: nosniff`,
+  `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`.
+- **Supply chain:** dependencies are pinned in `package-lock.json`, monitored by
+  Dependabot, and CI runs the type checker, linter and build on every pull request.
+
+Relevant reports include, for example: a way to make the app send content or
+results off the device, script injection through analysed files or metadata, or
+a malicious file that crashes or hijacks the analysis engine.

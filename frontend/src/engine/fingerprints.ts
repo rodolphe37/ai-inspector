@@ -2,7 +2,7 @@
  * Heuristic fingerprint matcher.
  *
  * Given the raw signals from the other engine modules and the catalogue of
- * known methods (from the API), decide (transparently) whether each method's
+ * known methods (the embedded catalogue), decide (transparently) whether each method's
  * signal is present, absent, or unverifiable in this browser tier.
  */
 import type {

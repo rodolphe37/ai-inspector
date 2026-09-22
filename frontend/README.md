@@ -14,13 +14,10 @@ Zustand · Framer Motion · Recharts · `idb` · `exifr` · `c2pa` · vite-plugi
 
 ```bash
 npm install
-cp .env.example .env     # VITE_API_URL (default http://localhost:8000/api)
 npm run dev              # http://localhost:5173
 ```
 
-Run the [API](../backend) alongside it for the fingerprint catalogue
-(`cd ../backend && make dev`). Without it, analysis still works; only the
-"Known fingerprints" section stays empty.
+No server or environment variable is needed: the app is fully static.
 
 ```bash
 npm run typecheck        # tsc, also checks that every French key exists
@@ -34,9 +31,10 @@ npm run build            # production build + service worker
 src/
 ├── engine/      analysis modules, pure functions (see docs/ARCHITECTURE.md)
 ├── i18n/        i18next setup, locales/en/* and locales/fr/*
-├── services/    runAnalysis, history and settings (IndexedDB), catalogue client
+├── data/        embedded catalogue of detection methods (EN + FR)
+├── services/    runAnalysis, history and settings (IndexedDB), catalogue access
 ├── stores/      Zustand stores (settings, history)
-├── lib/         apiClient, localDb, constants (repo URL, app version)
+├── lib/         localDb, analysisStatus, constants (repo URL, app version)
 ├── components/  layout, UI kit, language switcher
 └── pages/       public pages and the /app workspace
 ```
@@ -62,6 +60,13 @@ src/
 
 See [`../CONTRIBUTING.md`](../CONTRIBUTING.md#adding-a-language) to add a language.
 
+## Catalogue
+
+The known detection methods live in [`src/data/catalog.ts`](src/data/catalog.ts):
+metadata plus English text, and an optional `fr` block with the French wording.
+`localizedCatalog(lang)` returns them in the active language (English fallback).
+To add or update a method, edit that file and open a pull request.
+
 ## Storage
 
 Everything user-related stays in the browser (IndexedDB database `ai-inspector`):
@@ -75,5 +80,6 @@ injected at build time (`__APP_VERSION__`).
 
 ## Deploy
 
-Static build on Netlify, configured by [`../netlify.toml`](../netlify.toml).
-Set `VITE_API_URL` in the Netlify environment (it is read at build time).
+Static build (`dist/`) on any static host. [`../netlify.toml`](../netlify.toml)
+configures Netlify (SPA fallback, cache and security headers); no environment
+variable is needed.

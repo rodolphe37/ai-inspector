@@ -14,4 +14,5 @@ export interface Fingerprint {
   detectionMethod: string;
   targetContent: 'text' | 'image' | 'audio' | 'files';
   coverage: string;
+  references?: string[];
 }

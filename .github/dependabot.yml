@@ -1,21 +1,24 @@
+# One grouped pull request per ecosystem, once a month.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /frontend
     schedule:
-      interval: weekly
-    groups:
-      minor-and-patch:
-        update-types: [minor, patch]
-  - package-ecosystem: pip
-    directory: /backend
-    schedule:
-      interval: weekly
-  - package-ecosystem: docker
-    directory: /backend
-    schedule:
       interval: monthly
+    open-pull-requests-limit: 1
+    ignore:
+      # typescript-eslint only supports TypeScript < 6.1 for now: stay on 5.x
+      # until it supports newer majors, then remove this rule.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+    groups:
+      all-npm:
+        patterns: ["*"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    open-pull-requests-limit: 1
+    groups:
+      all-actions:
+        patterns: ["*"]
