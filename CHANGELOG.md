@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-09-22
+
+### Added
+- Install banner for the PWA: native "Install" button on Android and desktop
+  (Chromium), Share > Add to Home Screen instructions on iPhone and iPad
+  (Safari). Bilingual, follows the light / dark theme, sits above the bottom
+  bar on phones, and disappears once the app is installed or the banner is
+  closed (remembered on the device).
+
 ## [1.3.4] - 2026-09-22
 
 ### Fixed
@@ -168,6 +177,7 @@ First open-source release.
 - Renamed the project from "IA Inspector" to **AI Inspector** (English product name).
 - The em dash character is banned from code, UI copy and docs (checked in CI).
 
+[1.4.0]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.4...v1.4.0
 [1.3.4]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.1...v1.3.2

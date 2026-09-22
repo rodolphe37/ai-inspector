@@ -61,7 +61,7 @@ L'absence de signal n'est jamais présentée comme une preuve d'origine humaine.
 | **Statistiques de lettres** | Test du χ² par rapport aux fréquences de référence anglaises ou françaises, entropie, p-value. |
 | **Catalogue de détection** | 23 méthodes connues, chacune avec son statut, sa confiance et ses références : voir [Catalogue de détection](#catalogue-de-détection). |
 | **Nettoyage de contenu** | Suppression locale de l'Unicode invisible et des métadonnées de tous les formats pris en charge, puis téléchargement. Conservé dans l'historique. |
-| **PWA bilingue** | Interface en anglais et en français, installable, fonctionne hors ligne une fois chargée. |
+| **PWA bilingue** | Interface en anglais et en français, fonctionne hors ligne une fois chargée. Un bandeau propose l'installation native sur Android et ordinateur, et indique les étapes Partager > Sur l'écran d'accueil sur iPhone et iPad. |
 | **Sans compte, sans limite** | Tout est gratuit. L'historique et les réglages restent dans votre navigateur. |
 
 ## Formats pris en charge

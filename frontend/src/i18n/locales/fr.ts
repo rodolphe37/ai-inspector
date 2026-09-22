@@ -1,7 +1,7 @@
 import type { Messages } from './en';
 import { common } from './fr/common';
 import { engine } from './fr/engine';
-import { footer, nav } from './fr/layout';
+import { footer, nav, pwa } from './fr/layout';
 import { landing } from './fr/landing';
 import { features, notFound } from './fr/features';
 import { howItWorks } from './fr/howItWorks';
@@ -14,6 +14,7 @@ export const fr: Messages = {
   common,
   nav,
   footer,
+  pwa,
   landing,
   features,
   howItWorks,

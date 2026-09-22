@@ -1,4 +1,4 @@
-import type { footer as enFooter, nav as enNav } from '../en/layout';
+import type { footer as enFooter, nav as enNav, pwa as enPwa } from '../en/layout';
 
 export const nav: typeof enNav = {
   public: {
@@ -44,4 +44,16 @@ export const footer: typeof enFooter = {
     '© 2026 AI Inspector. Libre & open source (MIT). L’absence de signal ne constitue pas une preuve d’origine humaine.',
   local:
     'Le contenu est analysé localement dans votre navigateur. Fondé sur des preuves : chaque verdict montre sa base.',
+};
+
+export const pwa: typeof enPwa = {
+  region: 'Installer l’application',
+  title: 'Installer AI Inspector',
+  text: 'Accès rapide depuis votre écran d’accueil, fonctionne hors ligne.',
+  install: 'Installer',
+  iosBefore: 'Appuyez sur',
+  iosAfter: 'puis',
+  iosAction: '«\u00a0Sur l’écran d’accueil\u00a0»',
+  share: 'Partager',
+  close: 'Fermer',
 };

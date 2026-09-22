@@ -61,7 +61,7 @@ An absence of signal is never presented as proof of human origin.
 | **Letter statistics** | χ² test against English or French reference frequencies, entropy, p-value. |
 | **Detection catalogue** | 23 known methods, each with its status, confidence and references: see [Detection catalogue](#detection-catalogue). |
 | **Content cleaning** | Strip invisible Unicode and the metadata of every supported format locally, then download. Kept in the history. |
-| **Bilingual PWA** | English and French interface, installable, works offline once loaded. |
+| **Bilingual PWA** | English and French interface, works offline once loaded. An install banner offers the native install on Android and desktop, and shows the Share > Add to Home Screen steps on iPhone and iPad. |
 | **No account, no limits** | Everything is free. History and settings stay in your browser. |
 
 ## Supported formats

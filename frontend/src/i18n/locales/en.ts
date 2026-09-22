@@ -1,6 +1,6 @@
 import { common } from './en/common';
 import { engine } from './en/engine';
-import { footer, nav } from './en/layout';
+import { footer, nav, pwa } from './en/layout';
 import { landing } from './en/landing';
 import { features, notFound } from './en/features';
 import { howItWorks } from './en/howItWorks';
@@ -13,6 +13,7 @@ export const en = {
   common,
   nav,
   footer,
+  pwa,
   landing,
   features,
   howItWorks,

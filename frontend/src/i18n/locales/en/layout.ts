@@ -43,3 +43,15 @@ export const footer = {
     '© 2026 AI Inspector. Free & open source (MIT). An absence of signal does not constitute proof of human origin.',
   local: 'Content is analysed locally in your browser. Evidence-based: every verdict shows its basis.',
 };
+
+export const pwa = {
+  region: 'Install the app',
+  title: 'Install AI Inspector',
+  text: 'Quick access from your home screen, works offline.',
+  install: 'Install',
+  iosBefore: 'Tap',
+  iosAfter: 'then',
+  iosAction: '“Add to Home Screen”',
+  share: 'Share',
+  close: 'Close',
+};

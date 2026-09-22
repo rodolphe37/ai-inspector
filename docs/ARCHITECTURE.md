@@ -46,7 +46,8 @@ frontend/src/
 ├── i18n/              i18next setup + dictionaries (locales/en/*, locales/fr/*)
 ├── services/          runAnalysis, history / settings (IndexedDB), catalogue access
 ├── stores/            Zustand: settings, history
-├── lib/               localDb (idb), analysisStatus, constants
+├── hooks/             usePwaInstall (install banner)
+├── lib/               localDb (idb), analysisStatus, constants, textLanguages
 └── pages/             public pages + /app workspace
 ```
 
@@ -100,7 +101,12 @@ request; the next deploy ships it.
 
 ## PWA and hosting
 
-`vite-plugin-pwa` precaches the build, so the app works offline once loaded. The
+`vite-plugin-pwa` precaches the build, so the app works offline once loaded.
+After a deploy, the new service worker takes over and the page reloads once
+(`registerSW` in `main.tsx`). `PwaInstallPrompt` (with the `usePwaInstall`
+hook) shows an install banner: the native prompt on Chromium, Share > Add to
+Home Screen instructions on iOS Safari; it is hidden once the app is installed
+or the banner is closed (remembered in `localStorage`). The
 site is fully static. The Docker image serves it with nginx
 ([`frontend/nginx.conf`](../frontend/nginx.conf)): SPA fallback, cache headers
 (immutable hashed assets, no-cache service worker) and security headers. See
