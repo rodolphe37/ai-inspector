@@ -59,7 +59,7 @@ export const history: typeof en.history = {
 export const analyze: typeof en.analyze = {
   title: 'Analyser un contenu',
   subtitle:
-    'Inspectez un texte, du code ou un fichier à la recherche de signaux d’origine IA et de provenance, dans votre navigateur.',
+    'Inspectez un texte, du code, une image, un document, un son ou une vidéo à la recherche de signaux d’origine IA et de provenance, dans votre navigateur.',
   sample:
     "L'évolution rapide des modèles d'apprentissage automatique a profondément transformé notre rapport aux contenus numériques. Comprendre la provenance de l'information est essentiel pour préserver la confiance dans l'écosystème médiatique.\n\nLes signaux de provenance, les métadonnées et la détection de filigranes offrent une base technique à l'attribution des contenus, sans dépendre de classifieurs d'IA faillibles. En examinant les caractères Unicode, les champs de métadonnées, les manifestes C2PA et les distributions statistiques, on peut dresser un portrait transparent de l'histoire d'un contenu.",
   plainText: 'Texte brut',

@@ -1,9 +1,10 @@
 # AI Inspector web app
 
 The installable, bilingual (English / French) PWA that answers **"was this made
-by AI?"** for text, code and images. All analysis runs **in the browser**:
-C2PA signature validation (WASM), image forensics (FFT, noise residual),
-metadata extraction and text / code stylometry.
+by AI?"** for text, code, images, PDF and Word documents, audio and video. All analysis
+and cleaning runs **in the browser**: C2PA signature validation (WASM), image
+forensics (FFT, noise residual), metadata extraction for every supported
+format, PDF / DOCX text extraction and text / code stylometry.
 
 ## Stack
 

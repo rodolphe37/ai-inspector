@@ -3,7 +3,7 @@ export const common = {
   meta: {
     title: 'AI Inspector: was this made by AI?',
     description:
-      'Free, open-source AI-origin analysis for text, code and images: C2PA Content Credentials, generator metadata, watermark markers and forensic detection. Every verdict comes with its evidence. Runs in your browser.',
+      'Free, open-source AI-origin analysis for text, code, images, PDF and Word documents, audio and video: C2PA Content Credentials, generator metadata, watermark markers and forensic detection. Every verdict comes with its evidence. Runs in your browser.',
   },
   analysedLocally: 'Analysed locally in your browser',
   absenceNotProof: 'An absence of signal does not constitute proof of human origin.',

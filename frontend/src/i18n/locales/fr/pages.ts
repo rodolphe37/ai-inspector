@@ -61,7 +61,7 @@ export const security: typeof enSecurity = {
 export const about: typeof enAbout = {
   title: 'À propos d’AI Inspector',
   subtitle:
-    'Un analyseur indépendant d’origine IA pour le texte, le code et les images. Fondé sur des preuves, pas une boîte noire.',
+    'Un analyseur indépendant d’origine IA pour le texte, le code, les images, les documents PDF et Word, l’audio et la vidéo. Fondé sur des preuves, pas une boîte noire.',
   mission: {
     title: 'Notre mission',
     p1: 'AI Inspector répond à « est-ce que ça a été fait par une IA ? » comme il se doit : en montrant son travail. Content Credentials cryptographiques, métadonnées de générateur, marqueurs de filigrane et analyse forensique : chaque verdict liste les preuves qui le fondent et indique son niveau de confiance.',

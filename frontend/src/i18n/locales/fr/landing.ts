@@ -5,7 +5,7 @@ export const landing: typeof en = {
     badge: 'Analyse d’origine IA & de provenance',
     title: 'Est-ce que ça a été fait par une IA ?',
     subtitle:
-      'Une analyse d’origine IA pour le texte, le code et les images : Content Credentials cryptographiques, métadonnées de générateur, marqueurs de filigrane et détection forensique. Chaque verdict est accompagné de ses preuves et d’un niveau de confiance honnête.',
+      'Une analyse d’origine IA pour le texte, le code, les images, les documents PDF et Word, l’audio et la vidéo : Content Credentials cryptographiques, métadonnées de générateur, marqueurs de filigrane et détection forensique. Chaque verdict est accompagné de ses preuves et d’un niveau de confiance honnête.',
     cta: 'Analyser un contenu',
     secondary: 'Comment ça marche',
     tags: 'Gratuit · Open source · Dans le navigateur · Sans LLM · Chaque verdict montre ses preuves',

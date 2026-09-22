@@ -55,7 +55,7 @@ export const history = {
 
 export const analyze = {
   title: 'Analyze content',
-  subtitle: 'Inspect text, code or files for AI-origin and provenance signals, in your browser.',
+  subtitle: 'Inspect text, code, images, documents, audio or video for AI-origin and provenance signals, in your browser.',
   sample:
     "The rapid advancement of machine learning models has transformed how we interact with digital content. Understanding the provenance of information is essential for maintaining trust in media ecosystems.\n\nProvenance signals, metadata, and watermark detection provide a technical foundation for content attribution that does not rely on fallible AI classifiers. By examining Unicode characters, metadata fields, C2PA manifests, and statistical distributions, we can build a transparent picture of a piece of content's history.",
   plainText: 'Plain text',

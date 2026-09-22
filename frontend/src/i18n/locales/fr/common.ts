@@ -5,7 +5,7 @@ export const common: typeof en = {
   meta: {
     title: 'AI Inspector : est-ce fait par une IA ?',
     description:
-      'Analyse d’origine IA libre et open source pour le texte, le code et les images : Content Credentials C2PA, métadonnées de générateur, filigranes et détection forensique. Chaque verdict montre ses preuves. Tout se passe dans votre navigateur.',
+      'Analyse d’origine IA libre et open source pour le texte, le code, les images, les documents PDF et Word, l’audio et la vidéo : Content Credentials C2PA, métadonnées de générateur, filigranes et détection forensique. Chaque verdict montre ses preuves. Tout se passe dans votre navigateur.',
   },
   analysedLocally: 'Analysé localement dans votre navigateur',
   absenceNotProof: 'L’absence de signal ne constitue pas une preuve d’origine humaine.',

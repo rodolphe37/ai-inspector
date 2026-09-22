@@ -58,7 +58,7 @@ export const security = {
 
 export const about = {
   title: 'About AI Inspector',
-  subtitle: 'An independent AI-origin analyser for text, code and images. Evidence-based, not a black box.',
+  subtitle: 'An independent AI-origin analyser for text, code, images, PDF and Word documents, audio and video. Evidence-based, not a black box.',
   mission: {
     title: 'Our mission',
     p1: 'AI Inspector answers “was this made by AI?” the way it should be answered: by showing its work. Cryptographic Content Credentials, generator metadata, watermark markers and forensic analysis: each verdict lists the evidence behind it and states how confident it is.',

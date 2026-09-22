@@ -3,7 +3,7 @@ export const landing = {
     badge: 'AI-origin & provenance analysis',
     title: 'Was this made by AI?',
     subtitle:
-      'An AI-origin analysis for text, code and images: cryptographic Content Credentials, generator metadata, watermark markers and forensic detection. Every verdict comes with its evidence and an honest confidence level.',
+      'An AI-origin analysis for text, code, images, PDF and Word documents, audio and video: cryptographic Content Credentials, generator metadata, watermark markers and forensic detection. Every verdict comes with its evidence and an honest confidence level.',
     cta: 'Analyze content',
     secondary: 'How it works',
     tags: 'Free · Open source · In-browser · No LLM · Every verdict shows its evidence',

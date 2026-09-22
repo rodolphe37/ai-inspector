@@ -22,7 +22,7 @@ export default defineConfig({
       // The app is bilingual (EN/FR, detected from the browser), so the
       // manifest carries both languages rather than a single `lang`.
       description:
-        "AI-origin analysis for text, code and images: C2PA Content Credentials, generator metadata, watermarks and forensic detection. Every verdict shows its evidence. / Analyse d'origine IA pour texte, code et images : Content Credentials C2PA, métadonnées de générateur, filigranes et analyse forensique. Chaque verdict montre ses preuves.",
+        "AI-origin analysis for text, code, images, PDF and Word documents, audio and video: C2PA Content Credentials, generator metadata, watermarks and forensic detection. Every verdict shows its evidence. / Analyse d'origine IA pour texte, code, images, documents PDF et Word, audio et vidéo : Content Credentials C2PA, métadonnées de générateur, filigranes et analyse forensique. Chaque verdict montre ses preuves.",
       start_url: '/',
       id: "/",
       scope: '/',

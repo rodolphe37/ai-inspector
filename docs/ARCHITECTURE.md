@@ -3,8 +3,10 @@
 ## Principle: everything runs in the browser
 
 AI Inspector is a **static, local-first PWA**. There is no application server.
-Every check (Unicode, metadata, C2PA, image forensics, stylometry, statistics,
-fingerprint matching) runs in the browser in `frontend/src/engine`, and the
+It handles text, code, images, PDF and Word documents, audio and video. Every
+check (Unicode, metadata, C2PA, image forensics, stylometry, statistics,
+fingerprint matching) and every cleaning runs in the browser in
+`frontend/src/engine`, and the
 catalogue of known detection methods ships with the app (`frontend/src/data`).
 Nothing about the user or their content ever leaves the device.
 
@@ -14,7 +16,7 @@ flowchart TB
         UI[Pages + i18n EN/FR] --> S[services]
         S --> E[engine]
         S --> K[data/catalog<br/>embedded, EN + FR]
-        S --> DB[(IndexedDB<br/>history + settings)]
+        S --> DB[(IndexedDB<br/>history, cleanings, settings)]
     end
     Host[nginx container<br/>behind Traefik] -. serves HTML/JS/WASM .-> Browser
 ```

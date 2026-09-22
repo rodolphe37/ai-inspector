@@ -6,7 +6,7 @@
 
 **Was this made by AI? An evidence-based answer, computed in your browser.**
 
-Free and open-source AI-origin analysis for text, code and images.
+Free and open-source AI-origin analysis for text, code, images, PDF and Word documents, audio and video.
 Every verdict comes with its evidence and an honest confidence level.
 
 [![CI](https://github.com/rodolphe37/ai-inspector/actions/workflows/ci.yml/badge.svg)](https://github.com/rodolphe37/ai-inspector/actions/workflows/ci.yml)

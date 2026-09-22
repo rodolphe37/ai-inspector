@@ -6,7 +6,7 @@
 
 **Est-ce que ça a été fait par une IA ? Une réponse fondée sur des preuves, calculée dans votre navigateur.**
 
-Analyse d'origine IA libre et open source pour le texte, le code et les images.
+Analyse d'origine IA libre et open source pour le texte, le code, les images, les documents PDF et Word, l'audio et la vidéo.
 Chaque verdict est accompagné de ses preuves et d'un niveau de confiance honnête.
 
 [![CI](https://github.com/rodolphe37/ai-inspector/actions/workflows/ci.yml/badge.svg)](https://github.com/rodolphe37/ai-inspector/actions/workflows/ci.yml)
