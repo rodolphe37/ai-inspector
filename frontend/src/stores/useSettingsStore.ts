@@ -16,7 +16,7 @@ interface SettingsState {
 
 function persistRemote(settings: UserSettings) {
   void settingsApi.update(settings).catch(() => {
-    /* offline / anonymous — kept locally */
+    /* storage unavailable, keep in memory */
   });
 }
 
@@ -71,7 +71,7 @@ export const useSettingsStore = create<SettingsState>()(
       },
     }),
     {
-      name: 'ia-settings',
+      name: 'ai-settings',
       partialize: (s) => ({ settings: { appearance: s.settings.appearance } }),
       merge: (persisted, current) => {
         const p = persisted as { settings?: { appearance?: UserSettings['appearance'] } };

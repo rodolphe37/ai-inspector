@@ -1,13 +1,18 @@
 /**
  * Deterministic statistical text analysis.
  *
- * One statistical signal that feeds the AI-origin verdict — not a verdict on its
+ * One statistical signal that feeds the AI-origin verdict, not a verdict on its
  * own. Reports language-model-agnostic distribution statistics: character
  * entropy, letter-frequency deviation from a reference corpus (chi-square), and
  * lexical repetition. Large deviations can indicate templated text, translation,
  * obfuscation or watermarking.
+ *
+ * The reference distribution matches the detected language of the text
+ * (English or French); diacritics are folded (é→e, ç→c, œ→oe) first.
  */
 import type { StatisticalResult } from '@/types/analysis';
+import { t } from '@/i18n';
+import { detectLanguage, foldLetters, type ContentLanguage } from './language';
 
 // Reference English letter frequencies (%), Norvig / Google Books corpus.
 const ENGLISH: Record<string, number> = {
@@ -17,7 +22,22 @@ const ENGLISH: Record<string, number> = {
   q: 0.12, z: 0.09,
 };
 
-const CHART_LETTERS = ['e', 't', 'a', 'o', 'i', 'n', 's', 'h', 'r', 'd', 'l', 'u'];
+// Reference French letter frequencies (%), accents folded into the base
+// letter (é/è/ê/ë→e, à/â→a, ç→c, î/ï→i, ô→o, ù/û→u). Source: Wikipedia
+// "Letter frequency" (French corpus).
+const FRENCH: Record<string, number> = {
+  e: 16.72, a: 8.17, s: 7.95, i: 7.58, t: 7.24, n: 7.1, r: 6.69, u: 6.43,
+  o: 5.82, l: 5.46, d: 3.67, c: 3.35, p: 3.02, m: 2.97, v: 1.84, q: 1.36,
+  f: 1.07, b: 0.9, g: 0.87, h: 0.74, j: 0.61, x: 0.43, z: 0.33, y: 0.13,
+  k: 0.07, w: 0.05,
+};
+
+const REFERENCE: Record<ContentLanguage, Record<string, number>> = { en: ENGLISH, fr: FRENCH };
+
+const CHART_LETTERS: Record<ContentLanguage, string[]> = {
+  en: ['e', 't', 'a', 'o', 'i', 'n', 's', 'h', 'r', 'd', 'l', 'u'],
+  fr: ['e', 'a', 's', 'i', 't', 'n', 'r', 'u', 'o', 'l', 'd', 'c'],
+};
 
 function shannonEntropy(counts: Map<string, number>, total: number): number {
   let h = 0;
@@ -29,7 +49,7 @@ function shannonEntropy(counts: Map<string, number>, total: number): number {
   return h;
 }
 
-// Lower regularised incomplete gamma via series / continued fraction — enough
+// Lower regularised incomplete gamma via series / continued fraction, enough
 // precision for a chi-square survival function.
 function gammaP(s: number, x: number): number {
   if (x <= 0) return 0;
@@ -84,7 +104,9 @@ function chiSquarePValue(chi2: number, df: number): number {
 }
 
 export function analyzeStatistics(text: string): StatisticalResult {
-  const letters = text.toLowerCase().replace(/[^a-z]/g, '');
+  const language = detectLanguage(text);
+  const reference = REFERENCE[language];
+  const letters = foldLetters(text).replace(/[^a-z]/g, '');
   const letterCount = letters.length;
 
   // Character-level entropy over the raw text.
@@ -92,13 +114,13 @@ export function analyzeStatistics(text: string): StatisticalResult {
   for (const ch of text) charCounts.set(ch, (charCounts.get(ch) ?? 0) + 1);
   const entropy = text.length ? shannonEntropy(charCounts, text.length) : 0;
 
-  // Letter frequency + chi-square vs English.
+  // Letter frequency + chi-square vs the reference language.
   const obs = new Map<string, number>();
   for (const ch of letters) obs.set(ch, (obs.get(ch) ?? 0) + 1);
 
   let chi2 = 0;
   let absDeviation = 0;
-  for (const [letter, expPct] of Object.entries(ENGLISH)) {
+  for (const [letter, expPct] of Object.entries(reference)) {
     const expected = (expPct / 100) * letterCount;
     const observed = obs.get(letter) ?? 0;
     if (expected >= 1) chi2 += ((observed - expected) ** 2) / expected;
@@ -115,7 +137,7 @@ export function analyzeStatistics(text: string): StatisticalResult {
   const uniqueWords = new Set(words).size;
   const ttr = words.length ? uniqueWords / words.length : 1;
 
-  // A transparent 0–10 "signal" heuristic. High deviation + unusually low or
+  // A transparent 0 to 10 "signal" heuristic. High deviation + unusually low or
   // high entropy + low lexical diversity push it up.
   const deviationScore = Math.min(6, frequencyDeviation * 60);
   const entropyPenalty = entropy > 0 && entropy < 3.2 ? 2 : entropy > 4.6 ? 1.5 : 0;
@@ -126,27 +148,26 @@ export function analyzeStatistics(text: string): StatisticalResult {
 
   let status: StatisticalResult['status'];
   let conclusion: string;
+  const lang = t(`engine.languageName.${language}`);
   if (letterCount < 200) {
     status = 'inconclusive';
-    conclusion =
-      'Sample too short for a reliable statistical comparison (need ~200+ letters).';
+    conclusion = t('engine.statistics.tooShort');
   } else if (chi2 > threshold && pValue < 0.01) {
     status = 'possible';
-    conclusion =
-      `Letter distribution deviates significantly from reference English ` +
-      `(χ²=${chi2.toFixed(1)}, p≈${pValue.toExponential(1)}). This is compatible with ` +
-      `templated, translated, obfuscated or watermarked text — it does not identify a source.`;
+    conclusion = t('engine.statistics.deviates', {
+      lang, chi2: chi2.toFixed(1), p: pValue.toExponential(1),
+    });
   } else {
     status = 'clean';
-    conclusion =
-      `Letter distribution is statistically consistent with reference English ` +
-      `(χ²=${chi2.toFixed(1)}, p≈${pValue.toFixed(2)}). No distributional anomaly detected.`;
+    conclusion = t('engine.statistics.consistent', {
+      lang, chi2: chi2.toFixed(1), p: pValue.toFixed(2),
+    });
   }
 
-  const distribution = CHART_LETTERS.map((letter) => ({
+  const distribution = CHART_LETTERS[language].map((letter) => ({
     label: letter.toUpperCase(),
     observed: Number((((obs.get(letter) ?? 0) / Math.max(1, letterCount)) * 100).toFixed(2)),
-    expected: ENGLISH[letter],
+    expected: reference[letter],
   }));
 
   return {
@@ -159,5 +180,6 @@ export function analyzeStatistics(text: string): StatisticalResult {
     frequencyDeviation,
     watermarkSignal,
     distribution,
+    language,
   };
 }

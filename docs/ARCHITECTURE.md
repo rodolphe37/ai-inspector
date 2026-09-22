@@ -1,123 +1,119 @@
 # Architecture
 
-## Principle: analysis is local, the account is remote
+## Principle: analysis is local, the server is a public catalogue
 
-The product promise is *local-first*. Every provenance check — Unicode, metadata,
-C2PA, statistics, fingerprint matching — runs in the browser in `frontend/src/engine`.
-The FastAPI service never receives the content being inspected. It exists for:
+AI Inspector is **local-first**. Every check (Unicode, metadata, C2PA, image
+forensics, stylometry, statistics, fingerprint matching) runs in the browser in
+`frontend/src/engine`. The FastAPI service never receives the content being
+inspected and stores nothing about users. Its only job is to publish the
+**fingerprint catalogue**: the list of known detection methods, in English and
+French.
 
-- **Identity** — email/password + OAuth + magic links
-- **Quota** — anonymous and pro scan limits, enforced server-side so they can't
-  be bypassed by clearing local state alone
-- **Persistence** — synced analysis history and settings for pro/premium
-- **Reference data** — the fingerprint catalogue
-- **Billing** — a simulated `upgrade` endpoint (Stripe-ready)
-
-```
-┌───────────────────────── Browser (SPA) ─────────────────────────┐
-│                                                                 │
-│  Pages ── stores (auth · quota · settings · history) ── services│
-│                                          │                      │
-│                                   ┌──────┴───────┐              │
-│                                   ▼              ▼              │
-│                           src/engine        lib/apiClient       │
-│                    (Unicode, metadata,      (bearer + X-Anon-Id,│
-│                     C2PA, statistics,        silent refresh)    │
-│                     fingerprints, score)         │              │
-│                                   │              │              │
-│                          ┌────────┴───┐          │              │
-│                          ▼            ▼          │              │
-│                    IndexedDB     (anon: local)   │              │
-│                    (idb)                         │              │
-└─────────────────────────────────────────────────┼──────────────┘
-                                                  │ VITE_API_URL
-                              ┌───────────────────┴───────────────────┐
-                              │            FastAPI (backend)          │
-                              │  routers: auth · oauth · users ·      │
-                              │  settings · scans · analyses ·        │
-                              │  dashboard · fingerprints · billing   │
-                              │            │              │           │
-                              │      SQLAlchemy 2     Authlib         │
-                              │            │                          │
-                              │     SQLite (dev) / PostgreSQL (prod)  │
-                              └──────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Browser["Browser (PWA)"]
+        UI[Pages + i18n EN/FR] --> S[services]
+        S --> E[engine]
+        S --> DB[(IndexedDB<br/>history + settings)]
+        S --> C[lib/apiClient]
+    end
+    C -- "GET /api/fingerprints?lang=" --> API
+    subgraph Server["FastAPI (Render)"]
+        API[Public read-only API<br/>rate-limited] --> PG[(PostgreSQL<br/>Neon)]
+    end
 ```
 
-## Request flow: running an analysis
+If the API is unreachable, analysis still works: the catalogue only enriches the
+"Known fingerprints" section of a report.
+
+## Frontend
+
+```
+frontend/src/
+├── engine/        pure analysis modules (no React)
+│   ├── index.ts        orchestrator: runs every module, builds the AnalysisResult
+│   ├── c2pa.ts         official c2pa WASM: manifest + signature validation (lazy-loaded)
+│   ├── metadata.ts     text metadata, EXIF / XMP / IPTC / PNG chunks (exifr)
+│   ├── aiImage.ts      FFT up-sampling artifacts, noise residual, generator dimensions
+│   ├── aiText.ts       prose stylometry, English and French profiles
+│   ├── aiCode.ts       code stylometry
+│   ├── language.ts     EN / FR detection of the analysed text, diacritic folding
+│   ├── statistics.ts   χ² letter test against the detected language's reference
+│   ├── unicode.ts      invisible chars, bidi controls, homoglyphs (Trojan Source)
+│   ├── fingerprints.ts matches engine signals against the catalogue
+│   ├── assess.ts       combines everything into one AI-origin verdict
+│   ├── score.ts        provenance signal level + summary
+│   └── clean.ts        Unicode / metadata stripping
+├── i18n/          i18next setup + dictionaries (locales/en/*, locales/fr/*)
+├── services/      runAnalysis, history / settings (IndexedDB), catalogue client
+├── stores/        Zustand: settings, history
+├── lib/           apiClient, localDb (idb), analysisStatus, constants
+└── pages/         public pages + /app workspace
+```
+
+### Running an analysis
 
 1. `Analyze.tsx` calls `runAnalysis(input)` (`src/services/index.ts`).
-2. `assertContentAllowed` checks file size / type against `planFor(tier)`.
-3. `useQuotaStore.consume('analysis')` → `POST /api/scans/consume`.
-   - `200` → proceed. `429` → `QuotaError`; the store records `blockedUntil`
-     and opens `SignUpModal`; `runAnalysis` throws `QuotaBlockedError` which the
-     page swallows.
-4. The engine runs the modules the tier allows (`can(tier, feature)`):
-   - `c2pa.ts` — the official `c2pa` WASM library: parse the manifest store,
-     validate the signature chain, read generative-AI assertions. Lazy-loaded.
-   - `aiImage.ts` — 2D FFT radial power spectrum (up-sampling peaks), noise
-     residual (missing/flat sensor noise), generator-native dimensions.
-   - `aiText.ts` — prose stylometry: burstiness, register, LLM-favoured vocabulary.
-   - `aiCode.ts` — code stylometry: comment density/uniformity, tutorial comments,
-     docstring coverage, assistant scaffolding leftovers, generic identifiers.
-     For `type === 'code'` the English letter-frequency test is skipped and the
-     summary leads with a "Trojan Source" warning when the Unicode module found
-     bidi overrides or homoglyphs in the source.
-   - `assess.ts` — combines all of the above into one `AiAssessment`
-     (`verdict`, `probability`, `confidence` basis, `signals[]`, `caveat`).
-   Then builds the `AnalysisResult` (AI assessment, score, signal level, timeline).
-   The confidence ladder is **cryptographic** (valid C2PA) > **metadata**
-   (generator tags / IPTC / watermark) > **statistical** (forensic estimate).
-5. Persist: signed-in + `server_history` → `POST /api/analyses`; otherwise
-   `saveLocalAnalysis` (IndexedDB, capped at 30).
-6. Navigate to `/app/results/:id`. `Results.tsx` reads it back via
-   `analysisApi.getAnalysis` (server or local).
+2. The catalogue is fetched (cached per language); a failure is non-fatal.
+3. `analyzeContent` runs every engine module. There are no tiers or quotas.
+4. `assess.ts` produces the verdict (`verdict`, `probability`, `confidence`
+   basis, `signals[]`, `caveat`). Confidence ladder: **cryptographic** (valid
+   C2PA) > **metadata** (generator tags, IPTC, watermark) > **statistical**
+   (forensic estimate).
+5. The result is saved in IndexedDB and `/app/results/:id` reads it back.
 
-## Auth flow
+### Internationalisation
 
-- **Password**: `POST /auth/register|login` → `{ accessToken, refreshToken, user }`.
-  Access token (JWT, 30 min) kept in memory + `localStorage`; refresh token
-  (opaque, rotating, 30 days) in `localStorage`.
-- **Silent refresh**: any `401` triggers one `POST /auth/refresh`; on success the
-  original request retries, on failure tokens are cleared and an `onAuthEvent`
-  fires.
-- **OAuth**: `GET /auth/oauth/{provider}/login?plan=` → provider →
-  `GET /auth/oauth/{provider}/callback` → SPA `/auth/callback?code=` →
-  `POST /auth/oauth/exchange` → token pair. Only providers with configured
-  credentials are offered.
-- **Magic link**: `POST /auth/magic/request` emails (or, without SMTP, logs) a
-  link to `/auth/magic?token=` → `POST /auth/magic/consume`.
-- **Anonymous**: `POST /auth/anon` issues an id stored in `localStorage` and sent
-  as `X-Anon-Id`; the server records soft `ip_hash`/`ua_hash` as abuse signals.
+- `src/i18n/locales/en/*` is the source of truth; `fr/*` is typed against it, so
+  a missing French key fails `npm run typecheck`.
+- Language: saved choice (`localStorage`), else the browser language.
+  `document.title`, `<html lang>` and the meta description follow it.
+- The engine writes its explanatory text (basis, signal details, timeline) in
+  the language active **at analysis time**; that text is stored with the result.
+  Verdict labels, caveats and status badges are keyed and therefore re-translated
+  on display.
+- The analysed text's own language is detected separately (`engine/language.ts`)
+  to pick the right stylometric profile and letter-frequency reference.
 
-## Quota mechanics
+## Backend
 
-Fixed window per owner (`anon:<id>` or `user:<id>`), tracked in `quota_windows`.
-First `consume` opens a window; when `window_hours` elapse the counter resets on
-the next `consume`. `premium` skips the check (`scan_limit is None`). Clean
-operations consume from the same budget (`kind: "clean"`). See
-[`PLANS.md`](PLANS.md).
+```
+backend/app/
+├── main.py            app factory, middleware stack, /api/health
+├── config.py          settings (env / .env), Neon URL normalisation
+├── hardening.py       rate limiter, security headers, safe-methods filter
+├── db.py              engine / session (psycopg 3, pooler-friendly)
+├── models.py          Fingerprint (with `translations` JSON)
+├── routers/fingerprints.py   GET list / detail, ?lang=en|fr
+├── seed.py            idempotent catalogue seeding (runs at startup)
+├── seed_data.py       catalogue (English)
+└── seed_data_fr.py    French translations
+```
 
-## Keeping the plan matrix in sync
+### Middleware stack (outermost first)
 
-`docs/PLANS.md` is authoritative. `backend/app/plans.py` and
-`frontend/src/lib/plans.ts` are hand-kept mirrors; the frontend also refreshes
-from `GET /api/meta/plans` at runtime (`setPlanMatrix`). If you change a limit,
-change all three.
+1. **CORS**: only the configured web-app origins, `GET` only.
+2. **Rate limiter**: fixed window per client IP (`RATE_LIMIT_PER_MINUTE`).
+3. **Security headers + method filter**: CSP `default-src 'none'`, `nosniff`,
+   `DENY` framing, HSTS in production; non-safe methods get `405`.
+4. **GZip**, then optional **TrustedHost** (`ALLOWED_HOSTS`).
 
-## Databases
+### Database
 
-- **SQLite** (default): `init_db()` runs `create_all()` on startup; `make seed`
-  loads the catalogue. Good for dev and the test suite (isolated temp file).
-- **PostgreSQL**: driven by Alembic (`alembic/versions/`). `render_as_batch` is
-  on so the same migrations apply to SQLite too.
+- **SQLite** by default (`init_db()` creates tables at startup). Used for local
+  development and the test suite.
+- **PostgreSQL** in production, driven by Alembic. The Docker image runs
+  `alembic upgrade head` before starting. `render_as_batch` keeps the same
+  migrations compatible with SQLite.
+- Plain `postgres://` / `postgresql://` URLs (Neon) are rewritten to the
+  psycopg 3 driver, and server-side prepared statements are disabled so the
+  Neon pooled endpoint (PgBouncer) works.
 
-## Tests
+## Tests and CI
 
-- `backend/tests` — pytest against an isolated SQLite file, no network. Covers
-  auth + refresh rotation, magic links, anon sessions, the quota lifecycle,
-  analysis CRUD + tenant isolation, dashboard aggregation, the catalogue and the
-  plan matrix.
-- `backend/scripts/smoke.py` — end-to-end HTTP check against a running server.
-- Frontend correctness is currently covered by `typecheck` + `lint` + `build`
-  and manual verification; the engine modules are pure functions and unit-test
-  friendly if a runner is added later.
+- `backend/tests`: pytest on an isolated SQLite file, no network. Catalogue,
+  French translations, security headers, rate limiting, method filtering,
+  configuration.
+- Frontend: `typecheck` (including translation completeness), `lint`, `build`.
+- `.github/workflows/ci.yml` runs all of it on every push and pull request, and
+  rejects the em dash character anywhere in the repository.

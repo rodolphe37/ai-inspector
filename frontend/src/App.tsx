@@ -2,20 +2,13 @@ import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { SignUpModal } from '@/components/auth/SignUpModal';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-import { useAuthStore } from '@/stores/useAuthStore';
-import { useQuotaStore } from '@/stores/useQuotaStore';
 
 const Landing = lazy(() => import('@/pages/Landing'));
 const Features = lazy(() => import('@/pages/Features'));
 const HowItWorks = lazy(() => import('@/pages/HowItWorks'));
 const Security = lazy(() => import('@/pages/Security'));
-const Pricing = lazy(() => import('@/pages/Pricing'));
 const About = lazy(() => import('@/pages/About'));
-const Login = lazy(() => import('@/pages/Login'));
-const Signup = lazy(() => import('@/pages/Signup'));
-const AuthCallback = lazy(() => import('@/pages/AuthCallback'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 const Dashboard = lazy(() => import('@/pages/app/Dashboard'));
@@ -36,25 +29,10 @@ function PageLoader() {
 }
 
 function useBootstrap() {
-  const initAuth = useAuthStore((s) => s.init);
-  const bootstrapQuota = useQuotaStore((s) => s.bootstrap);
   const loadSettings = useSettingsStore((s) => s.load);
-  const status = useAuthStore((s) => s.status);
-
   useEffect(() => {
-    void initAuth().then(() => {
-      void bootstrapQuota();
-      void loadSettings();
-    });
-  }, [initAuth, bootstrapQuota, loadSettings]);
-
-  // reload user-scoped data whenever auth state flips
-  useEffect(() => {
-    if (status !== 'loading') {
-      void loadSettings();
-      void useQuotaStore.getState().refresh();
-    }
-  }, [status, loadSettings]);
+    void loadSettings();
+  }, [loadSettings]);
 }
 
 function useTheme() {
@@ -89,14 +67,8 @@ function App() {
             <Route path="/features" element={<Features />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/security" element={<Security />} />
-            <Route path="/pricing" element={<Pricing />} />
             <Route path="/about" element={<About />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
           </Route>
-
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/auth/magic" element={<AuthCallback />} />
 
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Dashboard />} />
@@ -112,7 +84,6 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-      <SignUpModal />
     </BrowserRouter>
   );
 }

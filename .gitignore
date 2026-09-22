@@ -13,3 +13,5 @@
 .env.*
 !.env.example
 .claude
+# local-only notes (deployment runbooks, personal config)
+*.local.md

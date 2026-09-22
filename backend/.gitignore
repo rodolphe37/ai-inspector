@@ -13,7 +13,9 @@ __pycache__/
 # local database
 *.sqlite3
 *.db
+ai_inspector.db*
 ia_inspector.db*
+*.bak
 
 # env
 .env

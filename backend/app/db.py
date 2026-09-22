@@ -9,7 +9,12 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from .config import settings
 
-_connect_args = {"check_same_thread": False} if settings.is_sqlite else {}
+# SQLite needs cross-thread access for FastAPI's threadpool. For Postgres,
+# disable psycopg's automatic prepared statements so the app also works behind
+# a transaction-mode pooler (e.g. Neon's ``-pooler`` endpoint / PgBouncer).
+_connect_args = (
+    {"check_same_thread": False} if settings.is_sqlite else {"prepare_threshold": None}
+)
 
 engine = create_engine(
     settings.database_url,

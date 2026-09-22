@@ -1,8 +1,8 @@
 /**
- * Client-side persistence for anonymous users (IndexedDB via `idb`).
+ * Client-side persistence (IndexedDB via `idb`).
  *
- * Anonymous history / results / settings live only in the current browser and
- * are never sent to the server. Signed-in users use the API instead.
+ * History, results and settings live only in the current browser and are
+ * never sent to the server.
  */
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type { AnalysisResult, Analysis } from '@/types/analysis';
@@ -20,9 +20,8 @@ interface IaInspectorDB extends DBSchema {
   };
 }
 
-const DB_NAME = 'ia-inspector';
+const DB_NAME = 'ai-inspector';
 const DB_VERSION = 1;
-const MAX_LOCAL_ANALYSES = 30;
 
 let dbp: Promise<IDBPDatabase<IaInspectorDB>> | null = null;
 
@@ -45,17 +44,8 @@ export async function saveLocalAnalysis(result: AnalysisResult): Promise<void> {
   try {
     const d = await db();
     await d.put('analyses', { ...result, createdAt: result.date || new Date().toISOString() });
-    // trim to the most recent N
-    const keys = await d.getAllKeysFromIndex('analyses', 'by-date');
-    if (keys.length > MAX_LOCAL_ANALYSES) {
-      const tx = d.transaction('analyses', 'readwrite');
-      await Promise.all(
-        keys.slice(0, keys.length - MAX_LOCAL_ANALYSES).map((k) => tx.store.delete(k)),
-      );
-      await tx.done;
-    }
   } catch {
-    /* storage unavailable — non-fatal */
+    /* storage unavailable, non-fatal */
   }
 }
 
@@ -105,7 +95,7 @@ export async function clearLocalAnalyses(): Promise<void> {
   }
 }
 
-// --- key/value (settings, quota cache, blocked-until) ------------------
+// --- key/value (settings) ----------------------------------------------
 
 export async function kvGet<T>(key: string): Promise<T | null> {
   try {

@@ -1,13 +1,6 @@
-import type { PlanTier } from './user';
-
 export type ThemeMode = 'dark' | 'light' | 'system';
 
 export interface UserSettings {
-  account: {
-    email: string;
-    name: string;
-    plan: PlanTier;
-  };
   appearance: {
     theme: ThemeMode;
     density: 'comfortable' | 'compact';
@@ -24,7 +17,6 @@ export interface UserSettings {
     showTechnicalInfo: boolean;
   };
   notifications: {
-    emailAlerts: boolean;
     analysisComplete: boolean;
     securityAlerts: boolean;
   };

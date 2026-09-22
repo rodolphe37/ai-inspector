@@ -2,7 +2,7 @@
  * Heuristic fingerprint matcher.
  *
  * Given the raw signals from the other engine modules and the catalogue of
- * known methods (from the API), decide — transparently — whether each method's
+ * known methods (from the API), decide (transparently) whether each method's
  * signal is present, absent, or unverifiable in this browser tier.
  */
 import type {
@@ -14,6 +14,7 @@ import type {
   UnicodeResult,
 } from '@/types/analysis';
 import type { Fingerprint } from '@/types/fingerprint';
+import { t } from '@/i18n';
 
 export interface EngineSignals {
   contentType: 'text' | 'code' | 'image' | 'audio' | 'file';
@@ -58,7 +59,7 @@ export function matchFingerprints(
           status = signer.includes(provider) || fp.id === 'c2pa-content-credentials'
             ? 'found'
             : 'possible';
-          method = 'Embedded JUMBF/C2PA manifest located (signature not verified client-side)';
+          method = t('engine.fingerprints.jumbf');
         } else {
           status = 'not_found';
         }
@@ -66,12 +67,12 @@ export function matchFingerprints(
       }
       case 'unicode-invisible-characters': {
         status = signals.unicode.invisibleCharacters > 0 ? 'found' : 'not_found';
-        method = `${signals.unicode.invisibleCharacters} invisible/tag character(s) found`;
+        method = t('engine.fingerprints.invisible', { count: signals.unicode.invisibleCharacters });
         break;
       }
       case 'homoglyph-substitution': {
         status = signals.unicode.homoglyphs > 0 ? 'found' : 'not_found';
-        method = `${signals.unicode.homoglyphs} cross-script homoglyph(s) found`;
+        method = t('engine.fingerprints.homoglyphs', { count: signals.unicode.homoglyphs });
         break;
       }
       case 'iptc-digital-source-type': {
@@ -99,7 +100,7 @@ export function matchFingerprints(
               ? 'inconclusive'
               : 'not_found';
         confidence = s ? Math.round(Math.min(95, 40 + s.watermarkSignal * 5)) : 40;
-        method = s ? s.conclusion : 'No statistical sample available';
+        method = s ? s.conclusion : t('engine.fingerprints.noSample');
         break;
       }
       case 'synthid-text':
@@ -107,13 +108,13 @@ export function matchFingerprints(
         const s = signals.statistical;
         status = s && s.status === 'possible' ? 'inconclusive' : 'not_found';
         confidence = 30;
-        method = 'Cannot be verified without the provider detector / watermark key';
+        method = t('engine.fingerprints.needsKey');
         break;
       }
       case 'synthid-image': {
         status = 'inconclusive';
         confidence = 25;
-        method = 'Invisible generative watermark — verifiable only with the provider detector';
+        method = t('engine.fingerprints.synthidImage');
         break;
       }
       default: {

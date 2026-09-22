@@ -6,6 +6,8 @@
  */
 import type { AiAssessment, AnalysisStatus, FingerprintMatch, SignalLevel } from '@/types/analysis';
 import type { EngineSignals } from './fingerprints';
+import { isBidiFinding } from './unicode';
+import { t } from '@/i18n';
 
 function clamp(n: number, lo = 0, hi = 100): number {
   return Math.max(lo, Math.min(hi, n));
@@ -23,7 +25,7 @@ export function scoreSignals(
   score += Math.min(15, u.controlCharacters * 5);
 
   if (signals.c2pa.manifest) {
-    const aiClaim = (signals.c2pa.claims ?? []).some((c) => /ai|trained|generat/i.test(c));
+    const aiClaim = Boolean(signals.c2pa.isAiGenerated);
     score += aiClaim ? 42 : 26;
   }
 
@@ -73,29 +75,28 @@ export function buildSummary(signals: EngineSignals, ai: AiAssessment): string {
   }.`;
 
   const u = signals.unicode;
-  const bidi = u.details.some((d) => /bidirectional/i.test(d.description));
+  const bidi = u.details.some(isBidiFinding);
   if (signals.contentType === 'code' && (bidi || u.homoglyphs > 0)) {
-    return (
-      `⚠ Possible "Trojan Source" tampering: this code contains ` +
-      `${bidi ? 'bidirectional control override(s)' : ''}${bidi && u.homoglyphs ? ' and ' : ''}` +
-      `${u.homoglyphs ? `${u.homoglyphs} cross-script homoglyph(s)` : ''}, which can make ` +
-      `source read differently from how it compiles. Review the Unicode section. ` +
-      `AI-origin: ${ai.label}${ai.confidence === 'statistical' ? ` (${ai.probability}%)` : ''}.`
-    );
+    const what = [
+      bidi ? t('engine.summary.bidi') : '',
+      u.homoglyphs ? t('engine.summary.homoglyphs', { count: u.homoglyphs }) : '',
+    ].filter(Boolean).join(t('engine.summary.and'));
+    const label = `${ai.label}${ai.confidence === 'statistical' ? ` (${ai.probability}%)` : ''}`;
+    return t('engine.summary.trojan', { what, label });
   }
 
   const extra: string[] = [];
-  if (u.invisibleCharacters) extra.push(`${u.invisibleCharacters} invisible/tag character(s)`);
-  if (u.homoglyphs) extra.push(`${u.homoglyphs} homoglyph(s)`);
+  if (u.invisibleCharacters) extra.push(t('engine.summary.invisible', { count: u.invisibleCharacters }));
+  if (u.homoglyphs) extra.push(t('engine.summary.homoglyphsShort', { count: u.homoglyphs }));
   if (signals.c2pa.manifest && !signals.c2pa.isAiGenerated) {
-    extra.push('an embedded C2PA provenance manifest');
+    extra.push(t('engine.summary.c2pa'));
   }
 
-  const tail = extra.length ? ` Also found: ${extra.join(', ')}.` : '';
+  const tail = extra.length ? t('engine.summary.alsoFound', { items: extra.join(', ') }) : '';
   return `${head} ${ai.basis[0] ?? ''}.${tail}`.replace(/\.\./g, '.');
 }
 
-export const DISCLAIMER =
-  'An absence of signal does not constitute proof of human origin, and a detected ' +
-  'signal does not constitute proof of machine generation. This analysis inspects ' +
-  'for known technical signals only.';
+/** Disclaimer in the current language (stored with each result). */
+export function disclaimer(): string {
+  return t('engine.disclaimer');
+}

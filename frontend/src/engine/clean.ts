@@ -1,5 +1,6 @@
-/** Real content cleaning — runs in the browser, no upload. */
+/** Real content cleaning: runs in the browser, no upload. */
 import { stripUnicodeArtifacts } from './unicode';
+import { t } from '@/i18n';
 
 export interface CleanTextResult {
   text: string;
@@ -19,12 +20,12 @@ export function cleanText(
   if (ops.unicode) {
     const r = stripUnicodeArtifacts(text);
     text = r.text;
-    removed.push({ type: 'Invisible / homoglyph characters', count: r.removed });
+    removed.push({ type: t('engine.clean.unicode'), count: r.removed });
   }
   if (ops.normalizeNewlines) {
     const before = (text.match(/\r\n|\r/g) ?? []).length;
     text = text.replace(/\r\n?/g, '\n');
-    if (before) removed.push({ type: 'Non-LF line endings normalised', count: before });
+    if (before) removed.push({ type: t('engine.clean.newlines'), count: before });
   }
   if (ops.trimWhitespace) {
     const lines = text.split('\n');
@@ -35,7 +36,7 @@ export function cleanText(
       return t;
     });
     text = out.join('\n').replace(/\n{3,}/g, '\n\n');
-    if (trimmed) removed.push({ type: 'Trailing whitespace stripped (lines)', count: trimmed });
+    if (trimmed) removed.push({ type: t('engine.clean.trailing'), count: trimmed });
   }
 
   return { text, removed, beforeSize, afterSize: new Blob([text]).size };
@@ -53,13 +54,13 @@ export interface CleanImageResult {
 export async function cleanImage(file: File): Promise<CleanImageResult> {
   const beforeSize = file.size;
   const bitmap = await createImageBitmap(file).catch(() => null);
-  if (!bitmap) throw new Error('Could not decode this image.');
+  if (!bitmap) throw new Error(t('engine.clean.decode'));
 
   const canvas = document.createElement('canvas');
   canvas.width = bitmap.width;
   canvas.height = bitmap.height;
   const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas is not available.');
+  if (!ctx) throw new Error(t('engine.clean.canvas'));
   ctx.drawImage(bitmap, 0, 0);
   bitmap.close();
 
@@ -79,7 +80,7 @@ export async function cleanImage(file: File): Promise<CleanImageResult> {
     blob,
     beforeSize,
     afterSize: blob.size,
-    removed: [{ type: 'All EXIF / XMP / IPTC / C2PA metadata', count: 1 }],
+    removed: [{ type: t('engine.clean.metadata'), count: 1 }],
     filename: `${base}.cleaned.${ext}`,
   };
 }

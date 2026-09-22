@@ -1,77 +1,79 @@
-# IA Inspector — Web app
+# AI Inspector web app
 
-React SPA that answers **"was this made by AI?"** for text, code and images,
-with a verdict + its evidence: C2PA Content Credentials, generator metadata,
-forensic image analysis, and text / code stylometry (which also flags
-"Trojan Source" Unicode tampering in code).
-
-All analysis runs **in the browser** (`src/engine`) — including full C2PA
-signature validation (WASM) and the FFT-based image forensics. The
-[API](../backend) is only used for accounts, scan quotas and (for signed-in
-users) synced history.
+The installable, bilingual (English / French) PWA that answers **"was this made
+by AI?"** for text, code and images. All analysis runs **in the browser**:
+C2PA signature validation (WASM), image forensics (FFT, noise residual),
+metadata extraction and text / code stylometry.
 
 ## Stack
 
-React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · React Router 7 ·
-Zustand · Framer Motion · Recharts · `idb` · `exifr`
+React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · React Router 7 · i18next ·
+Zustand · Framer Motion · Recharts · `idb` · `exifr` · `c2pa` · vite-plugin-pwa
 
 ## Develop
 
 ```bash
 npm install
-cp .env.example .env          # VITE_API_URL, defaults to http://localhost:8000/api
-npm run dev                   # http://localhost:5173
+cp .env.example .env     # VITE_API_URL (default http://localhost:8000/api)
+npm run dev              # http://localhost:5173
 ```
 
-Run the [API](../backend) alongside it (`cd ../backend && make dev`).
-
-To try the Pro / Premium UI, create local test accounts with
-`cd ../backend && make seed-demo` (`pro@demo.ia-inspector.app` /
-`demo-pro-pass`, `premium@demo.ia-inspector.app` / `demo-premium-pass`),
-or register and upgrade from Settings (billing is simulated).
+Run the [API](../backend) alongside it for the fingerprint catalogue
+(`cd ../backend && make dev`). Without it, analysis still works; only the
+"Known fingerprints" section stays empty.
 
 ```bash
-npm run typecheck             # tsc --noEmit
-npm run lint                  # eslint
-npm run build                 # production build (+ PWA)
+npm run typecheck        # tsc, also checks that every French key exists
+npm run lint             # eslint
+npm run build            # production build + service worker
 ```
 
-## How it fits together
+## Structure
 
 ```
- Browser (SPA)
- ├── src/engine/            analysis — c2pa (WASM signature validation),
- │                          metadata (exifr), aiImage (FFT + noise forensics),
- │                          aiText (prose), aiCode (code + Trojan Source),
- │                          assess (AI-origin verdict),
- │                          unicode, statistics, fingerprints, score
- ├── src/services/          HTTP when signed in · IndexedDB when anonymous
- │     └── runAnalysis()    enforce plan limits → consume quota → analyse → persist
- ├── src/stores/            auth · quota · settings · history (Zustand)
- └── src/lib/
-       ├── apiClient.ts     bearer + X-Anon-Id, silent token refresh, typed errors
-       └── plans.ts         capability matrix — mirror of backend/app/plans.py
-                            │
-                            ▼  VITE_API_URL
-                     ../backend (FastAPI)
+src/
+├── engine/      analysis modules, pure functions (see docs/ARCHITECTURE.md)
+├── i18n/        i18next setup, locales/en/* and locales/fr/*
+├── services/    runAnalysis, history and settings (IndexedDB), catalogue client
+├── stores/      Zustand stores (settings, history)
+├── lib/         apiClient, localDb, constants (repo URL, app version)
+├── components/  layout, UI kit, language switcher
+└── pages/       public pages and the /app workspace
 ```
-
-## Plans
-
-Three tiers — `anonymous` (no account), `pro`, `premium` — defined in
-[`../docs/PLANS.md`](../docs/PLANS.md) and enforced both client-side (instant UI
-gating via `src/lib/plans.ts`) and server-side (quota + capability checks).
-
-Anonymous users get 5 scans / 48 h, Unicode + basic metadata, and local-only
-history (IndexedDB). Hitting the quota opens the sign-up modal; closing it
-blocks further scans until the window resets.
 
 ## Routes
 
-Public: `/`, `/features`, `/how-it-works`, `/security`, `/pricing`, `/about`,
-`/login`, `/signup`, `/auth/callback` (OAuth / magic link).
+- Public: `/`, `/features`, `/how-it-works`, `/security`, `/about`
+- App (no account needed): `/app`, `/app/analyze`, `/app/results/:id`,
+  `/app/history`, `/app/fingerprints`, `/app/fingerprints/:id`, `/app/clean`,
+  `/app/settings`
 
-App (`/app`, no login required — anonymous tier works): `/app`, `/app/analyze`,
-`/app/results/:id`, `/app/history`, `/app/fingerprints`, `/app/fingerprints/:id`,
-`/app/clean`, `/app/settings`. Pro/Premium-only capabilities render an inline
-upgrade prompt.
+## Translations
+
+- English (`src/i18n/locales/en/*`) is the source of truth. French files are
+  typed with `typeof en`, so a missing or misspelled key is a type error.
+- Components use `useTranslation()`; non-React code (engine, services) imports
+  `t` from `@/i18n`.
+- The language comes from the saved choice (`localStorage` key `ai.lang`), else
+  from the browser. Users switch it from the header or **Settings**.
+- Text analysis detects the language of the analysed content independently
+  (English or French) and uses the matching stylometric profile and
+  letter-frequency reference.
+
+See [`../CONTRIBUTING.md`](../CONTRIBUTING.md#adding-a-language) to add a language.
+
+## Storage
+
+Everything user-related stays in the browser (IndexedDB database `ai-inspector`):
+analysis results, history, settings. There is no account and no limit;
+**Settings > Your data** clears the history.
+
+## Version
+
+The version shown in the footer and sidebar is `package.json`'s `version`,
+injected at build time (`__APP_VERSION__`).
+
+## Deploy
+
+Static build on Netlify, configured by [`../netlify.toml`](../netlify.toml).
+Set `VITE_API_URL` in the Netlify environment (it is read at build time).

@@ -3,19 +3,26 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath, URL } from 'node:url';
+import { readFileSync } from 'node:fs';
+
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')) as { version: string };
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [react(), tailwindcss(),
   VitePWA({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.png', 'apple-touch-icon.png'],
     manifest: {
-      name: 'IA Inspector',
-      short_name: 'IA Inspector',
+      name: 'AI Inspector',
+      short_name: 'AI Inspector',
+      // The app is bilingual (EN/FR, detected from the browser), so the
+      // manifest carries both languages rather than a single `lang`.
       description:
-        "Analyse d'origine IA pour texte et images : Content Credentials C2PA, métadonnées de générateur, filigranes et analyse forensique — chaque verdict avec ses preuves. Sans LLM, dans le navigateur.",
-      lang: 'fr',
+        "AI-origin analysis for text, code and images: C2PA Content Credentials, generator metadata, watermarks and forensic detection. Every verdict shows its evidence. / Analyse d'origine IA pour texte, code et images : Content Credentials C2PA, métadonnées de générateur, filigranes et analyse forensique. Chaque verdict montre ses preuves.",
       start_url: '/',
       id: "/",
       scope: '/',

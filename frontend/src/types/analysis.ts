@@ -112,6 +112,8 @@ export interface StatisticalResult {
   entropy: number;
   frequencyDeviation: number;
   watermarkSignal: number;
+  /** Reference language of the letter-frequency test (absent on older results). */
+  language?: 'en' | 'fr';
 }
 
 export interface AnalysisStep {

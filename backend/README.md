@@ -1,160 +1,90 @@
-# IA Inspector — API
+# AI Inspector API
 
-FastAPI service that provides **accounts, authentication, scan quotas, simulated
-billing, per-user history and the fingerprint catalogue** for the IA Inspector SPA.
+A small FastAPI service that publishes the **public fingerprint catalogue**
+(known AI-provenance detection methods) in English and French.
 
-It does **not** analyse content. All provenance analysis (Unicode, metadata,
-C2PA, statistics) runs client-side in the browser — see `../frontend`. This
-service only stores what a signed-in user chooses to keep.
+It has **no accounts, no user data and never receives analysed content**: all
+analysis runs in the browser (see [`../frontend`](../frontend)). Because it is
+public and unauthenticated, it is read-only and hardened (see [Security](#security)).
 
 ## Stack
 
-- Python 3.11+ · FastAPI · SQLAlchemy 2 (sync) · Alembic
-- SQLite by default (zero config) · PostgreSQL in production
-- JWT access tokens + rotating refresh tokens · bcrypt
-- OAuth via Authlib (Google, GitHub, Microsoft, Facebook, Apple, X, LinkedIn,
-  Discord) · passwordless magic links
+Python 3.11+ · FastAPI · SQLAlchemy 2 · Alembic · psycopg 3 ·
+SQLite (development) / PostgreSQL (production, e.g. Neon)
 
 ## Quick start
 
 ```bash
-cd backend
-make install         # venv + deps + .env from .env.example
-make seed            # create tables (SQLite) and load the fingerprint catalogue
-make seed-demo       # optional: create local Pro + Premium test accounts
-make dev             # http://localhost:8000  ·  docs at /docs
+make install     # venv + dev dependencies + .env from .env.example
+make seed        # create tables (SQLite) and load the catalogue
+make dev         # http://localhost:8000, interactive docs at /docs
 ```
 
-### Test accounts (local dev)
+| Command | Purpose |
+|---|---|
+| `make test` | pytest on an isolated SQLite file, no network |
+| `make lint` / `make fmt` | ruff check / fix + format |
+| `make migrate` | `alembic upgrade head` (PostgreSQL) |
+| `make makemigration m="..."` | autogenerate a migration |
+| `make db-up` / `make db-down` | local PostgreSQL via Docker Compose |
+| `make smoke` | end-to-end check against a running server (`API=... make smoke`) |
 
-Anonymous use needs no account. To try the **Pro** and **Premium** tiers,
-`make seed-demo` creates:
+## API
 
-| Email | Password | Plan |
+| Method | Path | Description |
 |---|---|---|
-| `pro@demo.ia-inspector.app` | `demo-pro-pass` | pro |
-| `premium@demo.ia-inspector.app` | `demo-premium-pass` | premium |
+| `GET` | `/api/health` | liveness probe, `{"status": "ok", "version": ...}` |
+| `GET` | `/api/fingerprints?lang=en\|fr` | full catalogue |
+| `GET` | `/api/fingerprints/{id}?lang=en\|fr` | one entry (`id`: `[a-z0-9-]{1,64}`) |
 
-It refuses to run outside `ENVIRONMENT=development` / `test` / `local`. You can
-also just register normally (you land on Pro) and switch to Premium from
-**Settings → Upgrade to Premium** — billing is simulated (`POST /billing/upgrade`).
-
-`make test` runs the pytest suite, `make smoke` runs an end-to-end check against
-a already-running server, `make lint` runs ruff.
-
-## Database
-
-**SQLite (default)** — nothing to do. Tables are created on startup and by
-`make seed`.
-
-**PostgreSQL**
-
-```bash
-make db-up            # docker compose up -d db  (postgres:16 on :5432)
-# in backend/.env:
-#   DATABASE_URL=postgresql+psycopg://ia_inspector:ia_inspector@localhost:5432/ia_inspector
-make migrate          # alembic upgrade head
-make seed
-```
-
-Or run the whole thing in containers: `docker compose --profile api up`.
-
-### Migrations
-
-```bash
-make makemigration m="add widget table"   # autogenerate
-make migrate                              # apply
-```
-
-`init_db()` (used for SQLite/dev/tests) calls `create_all()`; Postgres should be
-driven by Alembic.
+`lang` localizes `name`, `provider`, `description`, `detection_method` and
+`coverage`; untranslated fields fall back to English. Responses are cacheable
+for 5 minutes.
 
 ## Configuration
 
-Every setting has a dev default. See [`.env.example`](.env.example) for the full
-list. The important ones:
+Every setting has a working default for local development
+(see [`.env.example`](.env.example)).
 
 | Variable | Default | Notes |
 |---|---|---|
-| `DATABASE_URL` | `sqlite:///./ia_inspector.db` | Postgres: `postgresql+psycopg://…` |
-| `JWT_SECRET` / `SESSION_SECRET` | dev values | **must** be changed in production |
-| `CORS_ORIGINS` | `http://localhost:5173,…` | comma-separated |
-| `FRONTEND_URL` | `http://localhost:5173` | OAuth / magic-link redirect target |
-| `API_BASE_URL` | `http://localhost:8000` | used to build OAuth callback URLs |
-| `ANON_SCAN_LIMIT` / `ANON_WINDOW_HOURS` | `5` / `48` | anonymous quota |
-| `PRO_SCAN_LIMIT` / `PRO_WINDOW_HOURS` | `300` / `24` | pro quota (premium is unlimited) |
+| `ENVIRONMENT` | `development` | `production` enables HSTS and disables `/docs` |
+| `DATABASE_URL` | `sqlite:///./ai_inspector.db` | `postgres://` and `postgresql://` URLs are accepted |
+| `CORS_ORIGINS` | `http://localhost:5173,...` | comma-separated web-app origins |
+| `CORS_ORIGIN_REGEX` | empty | extra origins, e.g. Netlify deploy previews |
+| `RATE_LIMIT_PER_MINUTE` | `120` | per client IP, `0` disables |
+| `ALLOWED_HOSTS` | empty | optional `Host` header allow-list |
+| `ENABLE_DOCS` | auto | force `/docs` on or off |
 
-## OAuth setup
+## Security
 
-A provider's button only appears in the SPA once its `*_CLIENT_ID` **and**
-`*_CLIENT_SECRET` are set. For each provider, register an app on its developer
-console and set the **redirect / callback URL** to:
+- Only `GET`, `HEAD` and `OPTIONS` are served; other methods get `405`.
+- Per-IP fixed-window rate limiting with `RateLimit-*` and `Retry-After` headers.
+- Strict headers: `Content-Security-Policy: default-src 'none'`, `nosniff`,
+  `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, HSTS in production,
+  no `Server` header.
+- CORS limited to the configured origins, `GET` only, no credentials.
+- Path parameters validated; interactive docs off in production.
 
-```
-{API_BASE_URL}/api/auth/oauth/{provider}/callback
-```
+Implementation: [`app/hardening.py`](app/hardening.py). Report vulnerabilities
+as described in [`../SECURITY.md`](../SECURITY.md).
 
-e.g. `http://localhost:8000/api/auth/oauth/google/callback`.
+## Catalogue
 
-| Provider | Console | Scopes used |
-|---|---|---|
-| `google` | https://console.cloud.google.com/apis/credentials | `openid email profile` |
-| `github` | https://github.com/settings/developers | `read:user user:email` |
-| `microsoft` | https://portal.azure.com → App registrations | `openid email profile` |
-| `facebook` | https://developers.facebook.com/apps | `email public_profile` |
-| `apple` | https://developer.apple.com → Identifiers | `name email` (secret is a JWT) |
-| `twitter` | https://developer.twitter.com | `users.read tweet.read` (no email) |
-| `linkedin` | https://www.linkedin.com/developers/apps | `openid profile email` |
-| `discord` | https://discord.com/developers/applications | `identify email` |
+Entries live in [`app/seed_data.py`](app/seed_data.py) (English) and
+[`app/seed_data_fr.py`](app/seed_data_fr.py) (French, keyed by id). Seeding is
+idempotent and runs at every startup, so editing these files and redeploying is
+enough to update production.
 
-The OAuth callback issues a short-lived one-time `code`; the SPA calls
-`POST /api/auth/oauth/exchange` to swap it for a token pair.
+## Database
 
-## API surface
+- **SQLite** (default): tables are created at startup.
+- **PostgreSQL**: migrations via Alembic; the Docker image runs
+  `alembic upgrade head` before serving.
 
-```
-GET    /api/health
-GET    /api/meta/plans                     capability matrix for the 3 tiers
+## Deployment
 
-POST   /api/auth/register                  { email, name, password, plan }
-POST   /api/auth/login
-POST   /api/auth/refresh                   rotating refresh tokens
-POST   /api/auth/logout
-GET    /api/auth/me
-POST   /api/auth/anon                      issue / reuse an anonymous session id
-POST   /api/auth/magic/request             passwordless — emails (or logs) a link
-POST   /api/auth/magic/consume
-
-GET    /api/auth/oauth/providers           enabled providers only
-GET    /api/auth/oauth/{provider}/login    ?plan=pro|premium
-GET|POST /api/auth/oauth/{provider}/callback
-POST   /api/auth/oauth/exchange            { code } -> token pair
-
-GET    /api/scans/quota                    current window status
-POST   /api/scans/consume                  { kind: analysis|clean } -> 200 | 429
-
-GET    /api/settings                       auth
-PUT    /api/settings
-
-GET    /api/analyses                       auth — server-side history (pro/premium)
-POST   /api/analyses
-GET    /api/analyses/{id}
-DELETE /api/analyses/{id}
-GET    /api/dashboard                      aggregates computed from real analyses
-
-GET    /api/fingerprints                   public catalogue
-GET    /api/fingerprints/{id}
-
-GET    /api/billing/plans
-POST   /api/billing/upgrade                { plan } — simulated, Stripe-ready
-```
-
-## Tests
-
-```bash
-make test        # pytest, isolated SQLite temp DB, no network
-```
-
-Covers register/login/refresh rotation, magic links, anon sessions, the quota
-lifecycle (exhaust → 429 → reset), analysis CRUD + tenant isolation, dashboard
-aggregation, the seeded catalogue and the plan matrix.
+The [`Dockerfile`](Dockerfile) runs `alembic upgrade head`, then serves on `$PORT`
+behind a proxy. A Render Blueprint is provided in [`../render.yaml`](../render.yaml);
+any container host with a PostgreSQL database (for example Neon, whose plain
+`postgresql://...` pooled URL works as is) will do.

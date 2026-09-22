@@ -1,18 +1,19 @@
 import { type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle2, AlertTriangle, XCircle, HelpCircle, Info, MinusCircle } from 'lucide-react';
 import type { DetectionStatus } from '@/types/analysis';
 import { motion } from 'framer-motion';
 
 const config: Record<
   DetectionStatus,
-  { label: string; color: string; bg: string; border: string; icon: typeof CheckCircle2 }
+  { color: string; bg: string; border: string; icon: typeof CheckCircle2 }
 > = {
-  clean: { label: 'Clean', color: 'text-success', bg: 'bg-success/10', border: 'border-success/20', icon: CheckCircle2 },
-  found: { label: 'Found', color: 'text-info', bg: 'bg-info/10', border: 'border-info/20', icon: Info },
-  not_found: { label: 'Not found', color: 'text-subtle', bg: 'bg-surface-2', border: 'border-default', icon: MinusCircle },
-  possible: { label: 'Possible', color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/20', icon: AlertTriangle },
-  inconclusive: { label: 'Inconclusive', color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/20', icon: HelpCircle },
-  failed: { label: 'Failed', color: 'text-error', bg: 'bg-error/10', border: 'border-error/20', icon: XCircle },
+  clean: { color: 'text-success', bg: 'bg-success/10', border: 'border-success/20', icon: CheckCircle2 },
+  found: { color: 'text-info', bg: 'bg-info/10', border: 'border-info/20', icon: Info },
+  not_found: { color: 'text-subtle', bg: 'bg-surface-2', border: 'border-default', icon: MinusCircle },
+  possible: { color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/20', icon: AlertTriangle },
+  inconclusive: { color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/20', icon: HelpCircle },
+  failed: { color: 'text-error', bg: 'bg-error/10', border: 'border-error/20', icon: XCircle },
 };
 
 interface StatusBadgeProps {
@@ -23,6 +24,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, label, size = 'sm', animate = true }: StatusBadgeProps) {
+  const { t } = useTranslation();
   const c = config[status];
   const Icon = c.icon;
   const padding = size === 'sm' ? 'px-2.5 py-1' : 'px-3 py-1.5';
@@ -33,7 +35,7 @@ export function StatusBadge({ status, label, size = 'sm', animate = true }: Stat
       className={`inline-flex items-center gap-1.5 rounded-full border ${c.bg} ${c.border} ${c.color} ${padding} ${textSize} font-medium`}
     >
       <Icon className={size === 'sm' ? 'h-3 w-3' : 'h-4 w-4'} />
-      {label ?? c.label}
+      {label ?? t(`status.detection.${status}`)}
     </span>
   );
 

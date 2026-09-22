@@ -113,8 +113,8 @@ FINGERPRINTS: list[dict] = [
         "target_content": "text",
         "coverage": "All Unicode text",
         "detection_method": (
-            "Scan for zero-width characters (U+200B–U+200D, U+2060, U+FEFF), "
-            "Unicode Tags block (U+E0000–U+E007F), bidi controls and unusual "
+            "Scan for zero-width characters (U+200B to U+200D, U+2060, U+FEFF), "
+            "Unicode Tags block (U+E0000 to U+E007F), bidi controls and unusual "
             "variation selectors; report counts and positions."
         ),
         "description": (

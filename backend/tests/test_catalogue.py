@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+import pytest
+
+
+def test_health(client):
+    assert client.get("/api/health").json()["status"] == "ok"
+
 
 def test_fingerprint_catalogue_is_seeded(client):
     rows = client.get("/api/fingerprints").json()
@@ -14,38 +20,64 @@ def test_fingerprint_catalogue_is_seeded(client):
     assert client.get("/api/fingerprints/does-not-exist").status_code == 404
 
 
-def test_plans_meta(client):
-    plans = client.get("/api/meta/plans").json()["plans"]
-    by_tier = {p["tier"]: p for p in plans}
-    assert set(by_tier) == {"anonymous", "pro", "premium"}
-    assert by_tier["anonymous"]["features"]["c2pa"] is True  # AI-origin core, all tiers
-    assert by_tier["anonymous"]["features"]["statistical_analysis"] is False
-    assert by_tier["pro"]["features"]["statistical_analysis"] is True
-    assert by_tier["premium"]["scanLimit"] is None
-    assert by_tier["anonymous"]["requiresAccount"] is False
-    assert by_tier["pro"]["requiresAccount"] is True
+def test_catalogue_in_french_with_english_fallback(client):
+    fr = {r["id"]: r for r in client.get("/api/fingerprints?lang=fr").json()}
+    en = {r["id"]: r for r in client.get("/api/fingerprints").json()}
+    assert fr["homoglyph-substitution"]["name"] == "Substitution d'homoglyphes"
+    assert en["homoglyph-substitution"]["name"] == "Homoglyph substitution"
+    # untranslated fields (provider, ids, numbers) are identical
+    assert fr["synthid-text"]["provider"] == en["synthid-text"]["provider"]
+    one = client.get("/api/fingerprints/synthid-text?lang=fr").json()
+    assert "filigrane" in one["description"].lower()
+    assert client.get("/api/fingerprints?lang=de").status_code == 422
 
 
-def test_settings_roundtrip(client, account):
-    auth = account["auth"]
-    base = client.get("/api/settings", headers=auth).json()
-    assert base["account"]["plan"] == "pro"
-    assert base["appearance"]["theme"] == "dark"
+def test_every_entry_has_a_french_translation():
+    from app.seed_data import FINGERPRINTS
+    from app.seed_data_fr import FINGERPRINTS_FR
 
-    client.put(
+    assert {f["id"] for f in FINGERPRINTS} == set(FINGERPRINTS_FR)
+
+
+def test_seed_is_idempotent(client):
+    from app.db import SessionLocal
+    from app.seed import seed_fingerprints
+
+    before = len(client.get("/api/fingerprints").json())
+    with SessionLocal() as db:
+        assert seed_fingerprints(db) == 0
+    assert len(client.get("/api/fingerprints").json()) == before
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/auth/me",
+        "/api/auth/register",
+        "/api/scans/quota",
+        "/api/billing/plans",
+        "/api/meta/plans",
+        "/api/analyses",
         "/api/settings",
-        headers=auth,
-        json={"privacy": {"localProcessing": False, "storeHistory": True,
-                          "telemetry": True, "showDemoLabels": False}},
+        "/api/dashboard",
+    ],
+)
+def test_no_accounts_quotas_or_user_data(client, path):
+    # Open-source build: free access, no accounts, nothing user-related server-side.
+    assert client.get(path).status_code == 404
+
+
+def test_cors_allows_configured_origin(client):
+    res = client.get("/api/fingerprints", headers={"Origin": "http://localhost:5173"})
+    assert res.headers["access-control-allow-origin"] == "http://localhost:5173"
+
+
+def test_database_url_is_normalised_for_psycopg():
+    from app.config import Settings
+
+    neon = "postgresql://u:p@ep-x-pooler.eu-central-1.aws.neon.tech/db?sslmode=require"
+    assert Settings(database_url=neon).database_url.startswith("postgresql+psycopg://u:p@ep-x")
+    assert Settings(database_url="postgres://u:p@h/db").database_url == (
+        "postgresql+psycopg://u:p@h/db"
     )
-    after = client.get("/api/settings", headers=auth).json()
-    assert after["privacy"]["telemetry"] is True
-    assert after["appearance"]["theme"] == "dark"  # untouched section preserved
-
-
-def test_oauth_providers_endpoint(client):
-    body = client.get("/api/auth/oauth/providers").json()
-    assert "providers" in body
-    # none configured in tests
-    assert body["providers"] == []
-    assert client.get("/api/auth/oauth/google/login").status_code == 404
+    assert Settings(database_url="sqlite:///./x.db").database_url == "sqlite:///./x.db"

@@ -1,10 +1,12 @@
 /**
- * Real metadata extraction — text heuristics + EXIF/XMP/IPTC for images
+ * Real metadata extraction: text heuristics + EXIF/XMP/IPTC for images
  * (via `exifr`), plus a lightweight PDF info-dictionary reader and PNG text
  * chunk scan for generator signatures.
  */
 import exifr from 'exifr';
 import type { MetadataEntry, MetadataResult } from '@/types/analysis';
+import { currentLocale, t } from '@/i18n';
+import { detectLanguage } from './language';
 
 const AI_SIGNATURES = [
   'stable diffusion', 'stablediffusion', 'automatic1111', 'comfyui', 'invokeai',
@@ -33,29 +35,37 @@ export function analyzeTextMetadata(
   const crlf = (body.match(/\r\n/g) ?? []).length;
   const loneLf = (body.match(/(?<!\r)\n/g) ?? []).length;
   const loneCr = (body.match(/\r(?!\n)/g) ?? []).length;
-  let lineEnding = 'none';
+  let lineEnding = t('engine.meta.none');
   if (crlf && !loneLf && !loneCr) lineEnding = 'CRLF (Windows)';
   else if (loneLf && !crlf && !loneCr) lineEnding = 'LF (Unix)';
   else if (loneCr && !crlf && !loneLf) lineEnding = 'CR (classic Mac)';
-  else if (crlf || loneLf || loneCr) lineEnding = 'mixed';
+  else if (crlf || loneLf || loneCr) lineEnding = t('engine.meta.mixed');
 
   const lines = body.split(/\r\n|\r|\n/);
   const trailingWs = lines.filter((l) => /[ \t]+$/.test(l)).length;
   const maxLine = lines.reduce((m, l) => Math.max(m, l.length), 0);
 
-  entries.push({ key: 'Format', value: language === 'plaintext' ? 'Plain text' : language });
-  entries.push({ key: 'Character count', value: body.length.toLocaleString('en-US') });
+  const loc = currentLocale();
+  const isProse = !language || language === 'plaintext';
+  entries.push({ key: t('engine.meta.format'), value: isProse ? t('engine.meta.plainText') : language });
+  if (isProse && body.trim()) {
+    entries.push({
+      key: t('engine.meta.language'),
+      value: t(`engine.languageName.${detectLanguage(body)}`),
+    });
+  }
+  entries.push({ key: t('engine.meta.chars'), value: body.length.toLocaleString(loc) });
   entries.push({
-    key: 'Word count',
-    value: (body.trim() ? body.trim().split(/\s+/).length : 0).toLocaleString('en-US'),
+    key: t('engine.meta.words'),
+    value: (body.trim() ? body.trim().split(/\s+/).length : 0).toLocaleString(loc),
   });
-  entries.push({ key: 'Line count', value: lines.length.toLocaleString('en-US') });
-  entries.push({ key: 'Line endings', value: lineEnding });
-  entries.push({ key: 'Byte order mark', value: hasBOM ? 'present (UTF-8 BOM)' : 'none' });
+  entries.push({ key: t('engine.meta.lines'), value: lines.length.toLocaleString(loc) });
+  entries.push({ key: t('engine.meta.lineEndings'), value: lineEnding });
+  entries.push({ key: t('engine.meta.bom'), value: hasBOM ? t('engine.meta.bomPresent') : t('engine.meta.none') });
   const isAscii = !Array.from(body).some((c) => c.charCodeAt(0) > 127);
-  entries.push({ key: 'Encoding', value: isAscii ? 'ASCII / UTF-8' : 'UTF-8 (non-ASCII)' });
-  if (trailingWs) entries.push({ key: 'Lines with trailing whitespace', value: String(trailingWs) });
-  entries.push({ key: 'Longest line', value: `${maxLine} chars` });
+  entries.push({ key: t('engine.meta.encoding'), value: isAscii ? 'ASCII / UTF-8' : t('engine.meta.nonAscii') });
+  if (trailingWs) entries.push({ key: t('engine.meta.trailing'), value: String(trailingWs) });
+  entries.push({ key: t('engine.meta.longest'), value: t('engine.meta.longestValue', { count: maxLine }) });
 
   return { status: 'found', format: name.split('.').pop()?.toUpperCase() || 'TXT', entries };
 }
@@ -111,12 +121,12 @@ function readPdfInfo(buf: ArrayBuffer): MetadataEntry[] {
 export async function analyzeFileMetadata(file: File): Promise<MetadataResult> {
   const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
   const entries: MetadataEntry[] = [
-    { key: 'File name', value: file.name },
-    { key: 'MIME type', value: file.type || 'unknown' },
-    { key: 'Size', value: `${(file.size / 1024).toFixed(1)} KB` },
+    { key: t('engine.meta.fileName'), value: file.name },
+    { key: t('engine.meta.mime'), value: file.type || t('engine.meta.unknown') },
+    { key: t('engine.meta.size'), value: `${(file.size / 1024).toFixed(1)} KB` },
     {
-      key: 'Last modified',
-      value: file.lastModified ? new Date(file.lastModified).toISOString().slice(0, 10) : 'unknown',
+      key: t('engine.meta.modified'),
+      value: file.lastModified ? new Date(file.lastModified).toISOString().slice(0, 10) : t('engine.meta.unknown'),
     },
   ];
 

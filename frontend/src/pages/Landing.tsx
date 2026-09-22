@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Search, BarChart3, FileText, Lock, ArrowRight,
@@ -12,75 +13,74 @@ import { analyzeUnicode } from '@/engine/unicode';
 import { analyzeStatistics } from '@/engine/statistics';
 import { analyzeTextAi } from '@/engine/aiText';
 import type { DetectionStatus } from '@/types/analysis';
+import { t } from '@/i18n';
 
-const demoText = `In today's rapidly evolving digital landscape, understanding the provenance of information has become increasingly crucial. It is important to note that content attribution plays a pivotal role in fostering trust across modern media ecosystems. Furthermore, by leveraging robust analytical frameworks, organizations can navigate the complexities of an ever-changing environment. Additionally, this holistic approach underscores the significance of transparency and accountability. Consequently, stakeholders are better equipped to make informed decisions. In conclusion, provenance analysis represents a game-changing paradigm that will continue to shape the future of digital content verification.`;
+interface DemoRow {
+  label: string;
+  status: DetectionStatus;
+  detail: string;
+}
 
-function runDemo(text: string): { label: string; status: DetectionStatus; detail: string }[] {
+function runDemo(text: string): DemoRow[] {
   const u = analyzeUnicode(text);
   const s = analyzeStatistics(text);
   const ai = analyzeTextAi(text);
-  const rows: { label: string; status: DetectionStatus; detail: string }[] = [
+  return [
     {
-      label: 'AI-origin estimate',
+      label: t('landing.demo.rows.ai'),
       status: ai.probability >= 62 ? 'possible' : ai.probability >= 40 ? 'inconclusive' : 'clean',
       detail:
         ai.signals.length === 0
-          ? 'sample too short for a stylometric estimate'
-          : `${ai.probability}% — ${ai.signals[0].label.toLowerCase()}${ai.reliable ? '' : ' (low reliability)'}`,
+          ? t('landing.demo.rows.aiTooShort')
+          : `${ai.probability}% · ${ai.signals[0].label.toLowerCase()}${ai.reliable ? '' : t('landing.demo.rows.lowReliability')}`,
     },
     {
-      label: 'Invisible Unicode',
+      label: t('landing.demo.rows.invisible'),
       status: u.invisibleCharacters > 0 ? 'found' : 'clean',
-      detail: u.invisibleCharacters > 0 ? `${u.invisibleCharacters} character(s)` : 'none detected',
+      detail: u.invisibleCharacters > 0
+        ? t('landing.demo.rows.invisibleFound', { count: u.invisibleCharacters })
+        : t('landing.demo.rows.none'),
     },
     {
-      label: 'Homoglyphs',
+      label: t('landing.demo.rows.homoglyphs'),
       status: u.homoglyphs > 0 ? 'found' : 'clean',
-      detail: u.homoglyphs > 0 ? `${u.homoglyphs} cross-script letter(s)` : 'none detected',
+      detail: u.homoglyphs > 0
+        ? t('landing.demo.rows.homoglyphsFound', { count: u.homoglyphs })
+        : t('landing.demo.rows.none'),
     },
     {
-      label: 'Letter distribution',
+      label: t('landing.demo.rows.letters'),
       status: s.status,
-      detail: `χ²=${s.observedScore} · entropy ${s.entropy} bits/char`,
+      detail: t('landing.demo.rows.lettersDetail', { chi2: s.observedScore, entropy: s.entropy }),
     },
   ];
-  return rows;
 }
 
 const whyCards = [
-  {
-    icon: Search,
-    title: 'Inspect',
-    description: 'Metadata, Unicode, provenance, signatures. Examine the technical layers of digital content.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Measure',
-    description: 'Statistics, probabilities and known signals. Quantify what you observe with transparent metrics.',
-  },
-  {
-    icon: FileText,
-    title: 'Explain',
-    description: 'Every result is accompanied by a technical explanation. No black boxes, no opaque scores.',
-  },
-];
+  { icon: Search, key: 'inspect' },
+  { icon: BarChart3, key: 'measure' },
+  { icon: FileText, key: 'explain' },
+] as const;
 
 const pipelineSteps = [
-  { icon: FileText, label: 'Content' },
-  { icon: Cpu, label: 'Normalization' },
-  { icon: Search, label: 'Analysis Engine' },
-  { icon: Type, label: 'Unicode' },
-  { icon: FileCheck, label: 'Metadata' },
-  { icon: Shield, label: 'C2PA' },
-  { icon: BarChart3, label: 'Statistical tests' },
-  { icon: Fingerprint, label: 'Known fingerprints' },
-  { icon: FileText, label: 'Report' },
-];
+  { icon: FileText, key: 'content' },
+  { icon: Cpu, key: 'normalization' },
+  { icon: Search, key: 'engine' },
+  { icon: Type, key: 'unicode' },
+  { icon: FileCheck, key: 'metadata' },
+  { icon: Shield, key: 'c2pa' },
+  { icon: BarChart3, key: 'statistics' },
+  { icon: Fingerprint, key: 'fingerprints' },
+  { icon: FileText, key: 'report' },
+] as const;
 
 export default function Landing() {
+  const { t, i18n } = useTranslation();
   const [analyzing, setAnalyzing] = useState(false);
-  const [text, setText] = useState(demoText);
-  const [results, setResults] = useState<ReturnType<typeof runDemo> | null>(null);
+  // `null` = untouched → follow the UI language's sample text.
+  const [edited, setEdited] = useState<string | null>(null);
+  const [results, setResults] = useState<DemoRow[] | null>(null);
+  const text = edited ?? t('landing.demo.sample', { lng: i18n.language });
 
   const handleAnalyze = () => {
     setAnalyzing(true);
@@ -107,7 +107,7 @@ export default function Landing() {
           >
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-surface-2 border border-default text-muted">
               <Shield className="h-3.5 w-3.5 text-primary" />
-              AI-origin & provenance analysis
+              {t('landing.hero.badge')}
             </span>
           </motion.div>
 
@@ -117,7 +117,7 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-center text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-4xl mx-auto"
           >
-            Was this made by AI?
+            {t('landing.hero.title')}
           </motion.h1>
 
           <motion.p
@@ -126,9 +126,7 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-6 text-center text-lg text-muted max-w-2xl mx-auto"
           >
-            An AI-origin analysis for text, code and images: cryptographic Content Credentials,
-            generator metadata, watermark markers and forensic detection — every verdict comes
-            with its evidence and an honest confidence level.
+            {t('landing.hero.subtitle')}
           </motion.p>
 
           <motion.div
@@ -141,14 +139,14 @@ export default function Landing() {
               to="/app/analyze"
               className="group inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors glow-primary"
             >
-              Analyze content
+              {t('landing.hero.cta')}
               <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
               to="/how-it-works"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-default text-content font-medium hover:bg-surface-2 transition-colors"
             >
-              How it works
+              {t('landing.hero.secondary')}
             </Link>
           </motion.div>
 
@@ -158,7 +156,7 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="mt-6 text-center text-sm text-subtle"
           >
-            Private · In-browser · No LLM · Every verdict shows its evidence
+            {t('landing.hero.tags')}
           </motion.p>
         </div>
       </section>
@@ -167,22 +165,20 @@ export default function Landing() {
       <section className="relative py-16 border-t border-default">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Live demo</h2>
-            <p className="mt-2 text-muted">
-              A real analysis running in your browser — AI-origin estimate plus provenance signals. Edit the text and run it.
-            </p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('landing.demo.title')}</h2>
+            <p className="mt-2 text-muted">{t('landing.demo.subtitle')}</p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Input */}
             <div className="surface p-5">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-semibold text-muted">INPUT</span>
-                <span className="text-xs text-subtle">plaintext</span>
+                <span className="text-sm font-semibold text-muted">{t('landing.demo.input')}</span>
+                <span className="text-xs text-subtle">{t('landing.demo.plaintext')}</span>
               </div>
               <textarea
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => setEdited(e.target.value)}
                 className="w-full h-48 bg-surface-2 rounded-lg p-4 text-sm font-mono text-content resize-none border border-default focus:outline-none focus:border-primary transition-colors"
               />
               <button
@@ -193,12 +189,12 @@ export default function Landing() {
                 {analyzing ? (
                   <>
                     <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                    Analyzing...
+                    {t('landing.demo.analyzing')}
                   </>
                 ) : (
                   <>
                     <Search className="h-4 w-4" />
-                    Analyze demo
+                    {t('landing.demo.run')}
                   </>
                 )}
               </button>
@@ -207,22 +203,22 @@ export default function Landing() {
             {/* Output */}
             <div className="surface p-5">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-semibold text-muted">OUTPUT</span>
+                <span className="text-sm font-semibold text-muted">{t('landing.demo.output')}</span>
                 {showResults && (
-                  <span className="text-xs text-subtle">preview · full pipeline in the app</span>
+                  <span className="text-xs text-subtle">{t('landing.demo.preview')}</span>
                 )}
               </div>
 
               {!showResults && !analyzing && (
                 <div className="h-48 flex items-center justify-center text-sm text-subtle">
-                  Results will appear here after analysis
+                  {t('landing.demo.empty')}
                 </div>
               )}
 
               {analyzing && (
                 <div className="h-48 flex items-center justify-center">
                   <div className="space-y-3 w-full">
-                    {['Normalizing', 'Inspecting Unicode', 'Matching fingerprints'].map((step, i) => (
+                    {(t('landing.demo.steps', { returnObjects: true }) as string[]).map((step, i) => (
                       <motion.div
                         key={step}
                         initial={{ opacity: 0, x: -10 }}
@@ -266,7 +262,7 @@ export default function Landing() {
                       transition={{ delay: 0.6 }}
                       className="pt-2"
                     >
-                      <PrivacyBadge label="Analysed locally in your browser" />
+                      <PrivacyBadge label={t('common.analysedLocally')} />
                     </motion.div>
                   </motion.div>
                 </AnimatePresence>
@@ -281,17 +277,17 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-              Evidence, not a black box
+              {t('landing.why.badge')}
             </span>
             <h2 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight">
-              A different approach to AI detection
+              {t('landing.why.title')}
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {whyCards.map((card, i) => (
               <motion.div
-                key={card.title}
+                key={card.key}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -301,8 +297,8 @@ export default function Landing() {
                 <div className="p-3 rounded-xl bg-primary/10 text-primary w-fit mb-4">
                   <card.icon className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-semibold">{card.title}</h3>
-                <p className="mt-2 text-sm text-muted">{card.description}</p>
+                <h3 className="text-lg font-semibold">{t(`landing.why.cards.${card.key}.title`)}</h3>
+                <p className="mt-2 text-sm text-muted">{t(`landing.why.cards.${card.key}.description`)}</p>
               </motion.div>
             ))}
           </div>
@@ -313,14 +309,14 @@ export default function Landing() {
       <section className="py-20 border-t border-default">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Analysis pipeline</h2>
-            <p className="mt-2 text-muted">How content flows through the inspection engine</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('landing.pipeline.title')}</h2>
+            <p className="mt-2 text-muted">{t('landing.pipeline.subtitle')}</p>
           </div>
 
           <div className="surface p-8">
             <div className="flex flex-col items-center gap-3">
               {pipelineSteps.map((step, i) => (
-                <div key={step.label} className="flex flex-col items-center">
+                <div key={step.key} className="flex flex-col items-center">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     whileInView={{ opacity: 1, scale: 1 }}
@@ -329,7 +325,7 @@ export default function Landing() {
                     className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-surface-2 border border-default"
                   >
                     <step.icon className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium">{step.label}</span>
+                    <span className="text-sm font-medium">{t(`landing.pipeline.steps.${step.key}`)}</span>
                   </motion.div>
                   {i < pipelineSteps.length - 1 && (
                     <motion.div
@@ -354,24 +350,14 @@ export default function Landing() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 mb-4">
                 <Lock className="h-3.5 w-3.5" />
-                Privacy first
+                {t('landing.privacy.badge')}
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Your content should remain yours.
+                {t('landing.privacy.title')}
               </h2>
-              <p className="mt-4 text-muted">
-                IA Inspector is designed for local-first analysis. No content is sent to
-                external servers. No LLM is involved. No training on your data.
-              </p>
+              <p className="mt-4 text-muted">{t('landing.privacy.body')}</p>
               <ul className="mt-6 space-y-3">
-                {[
-                  'Local analysis possible',
-                  'No LLM involved',
-                  'No training on user data',
-                  'No content tracking',
-                  'Optional server-side storage',
-                  'Architecture built for local processing',
-                ].map((item, i) => (
+                {(t('landing.privacy.items', { returnObjects: true }) as string[]).map((item, i) => (
                   <motion.li
                     key={item}
                     initial={{ opacity: 0, x: -10 }}
@@ -391,20 +377,20 @@ export default function Landing() {
               <div className="flex flex-col items-center gap-4">
                 <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-surface-2 border border-default">
                   <Eye className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">Browser</span>
+                  <span className="text-sm font-medium">{t('landing.privacy.diagram.browser')}</span>
                 </div>
                 <div className="w-px h-8 bg-border-hover" />
                 <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary/10 border border-primary/20">
                   <Cpu className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-primary">Local analysis</span>
+                  <span className="text-sm font-medium text-primary">{t('landing.privacy.diagram.local')}</span>
                 </div>
                 <div className="w-px h-8 bg-border-hover" />
                 <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-surface-2 border border-default">
                   <FileText className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">Report</span>
+                  <span className="text-sm font-medium">{t('landing.privacy.diagram.report')}</span>
                 </div>
                 <div className="mt-4 text-xs text-subtle text-center">
-                  Backend (optional) — only when required
+                  {t('landing.privacy.diagram.backend')}
                 </div>
               </div>
             </div>
@@ -417,20 +403,18 @@ export default function Landing() {
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <Sparkles className="h-8 w-8 text-primary mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Start inspecting your content
+            {t('landing.cta.title')}
           </h2>
-          <p className="mt-3 text-muted max-w-xl mx-auto">
-            No account required to start. The full analysis pipeline runs in your browser.
-          </p>
+          <p className="mt-3 text-muted max-w-xl mx-auto">{t('landing.cta.body')}</p>
           <Link
             to="/app/analyze"
             className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors"
           >
-            Launch application
+            {t('landing.cta.button')}
             <ArrowRight className="h-4 w-4" />
           </Link>
           <p className="mt-6 text-xs text-subtle">
-            An absence of signal does not constitute proof of human origin.
+            {t('common.absenceNotProof')}
           </p>
         </div>
       </section>

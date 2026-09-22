@@ -12,10 +12,11 @@
  *  - occasionally carrying leftover chat scaffolding ("Here's the…", "// ... rest
  *    of the code", "# Example usage:", placeholder keys)
  *
- * Same contract as `analyzeTextAi`. An ESTIMATE — refactored, formatted or
+ * Same contract as `analyzeTextAi`. An ESTIMATE: refactored, formatted or
  * linted human code trips several of these, and short snippets are unreliable.
  */
 import type { TextAiResult, TextAiSignal } from './aiText';
+import { t } from '@/i18n';
 
 const LEFTOVER_MARKERS = [
   "here's the", 'here is the', 'certainly!', 'sure!', "i've ", 'i have added',
@@ -58,8 +59,8 @@ export function analyzeCodeAi(code: string, _language?: string): TextAiResult {
   const commentRatio = comments / Math.max(1, codeLines.length);
   const sComments = sigmoid((commentRatio - 0.28) * 12);
   signals.push({
-    label: 'Comment density',
-    detail: `${Math.round(commentRatio * 100)}% of lines are comments (heavy, uniform commenting is AI-leaning)`,
+    label: t('engine.code.comments'),
+    detail: t('engine.code.commentsDetail', { value: Math.round(commentRatio * 100) }),
     weight: sComments,
   });
 
@@ -70,8 +71,8 @@ export function analyzeCodeAi(code: string, _language?: string): TextAiResult {
   const explRate = (explanatory / Math.max(1, comments || 1));
   const sExpl = sigmoid((explRate - 0.35) * 5);
   signals.push({
-    label: 'Tutorial-style comments',
-    detail: `${explanatory} comment(s) narrate what the next line does`,
+    label: t('engine.code.tutorial'),
+    detail: t('engine.code.tutorialDetail', { count: explanatory }),
     weight: sExpl * 0.8,
   });
 
@@ -81,8 +82,8 @@ export function analyzeCodeAi(code: string, _language?: string): TextAiResult {
   if (funcs >= 2) {
     const docRatio = docstrings / funcs;
     signals.push({
-      label: 'Docstring coverage',
-      detail: `${docstrings} docstring(s) for ${funcs} function-like definition(s)`,
+      label: t('engine.code.docstrings'),
+      detail: t('engine.code.docstringsDetail', { docs: docstrings, funcs }),
       weight: sigmoid((docRatio - 0.7) * 5) * 0.7,
     });
   }
@@ -92,8 +93,8 @@ export function analyzeCodeAi(code: string, _language?: string): TextAiResult {
   const personalNotes = (src.match(/\b(TODO|FIXME|HACK|XXX|WTF|NOTE\s*TO\s*SELF)\b/g) ?? []).length;
   if (comments >= 4 && deadCode === 0 && personalNotes === 0) {
     signals.push({
-      label: 'No dead code or personal notes',
-      detail: 'No commented-out lines, no TODO/FIXME/HACK — unusually tidy',
+      label: t('engine.code.tidy'),
+      detail: t('engine.code.tidyDetail'),
       weight: 0.45,
     });
   }
@@ -109,8 +110,8 @@ export function analyzeCodeAi(code: string, _language?: string): TextAiResult {
   const trailingWs = lines.filter((l) => /[ \t]+$/.test(l)).length;
   if (!mixedIndent && quoteConsistent && trailingWs === 0 && loc > 25) {
     signals.push({
-      label: 'Formatting consistency',
-      detail: 'Uniform indentation and quote style, zero trailing whitespace',
+      label: t('engine.code.formatting'),
+      detail: t('engine.code.formattingDetail'),
       weight: 0.3,
     });
   }
@@ -119,8 +120,8 @@ export function analyzeCodeAi(code: string, _language?: string): TextAiResult {
   const leftovers = LEFTOVER_MARKERS.filter((m) => lower.includes(m));
   if (leftovers.length) {
     signals.push({
-      label: 'Assistant scaffolding',
-      detail: `leftover phrase(s): ${leftovers.slice(0, 3).join(', ')}`,
+      label: t('engine.code.scaffolding'),
+      detail: t('engine.code.scaffoldingDetail', { items: leftovers.slice(0, 3).join(', ') }),
       weight: Math.min(0.95, 0.55 + leftovers.length * 0.15),
     });
   }
@@ -131,8 +132,8 @@ export function analyzeCodeAi(code: string, _language?: string): TextAiResult {
   const genericRate = (genericHits / Math.max(1, idents.length)) * 100;
   if (genericRate > 3) {
     signals.push({
-      label: 'Generic identifiers',
-      detail: `${genericRate.toFixed(1)} per 100 identifiers are generic (data, result, item, process_data…)`,
+      label: t('engine.code.generic'),
+      detail: t('engine.code.genericDetail', { value: genericRate.toFixed(1) }),
       weight: sigmoid((genericRate - 4) * 0.7) * 0.6,
     });
   }

@@ -3,10 +3,11 @@
  *
  * Uses the official `c2pa` library (WASM, from the Content Authenticity
  * Initiative) to parse the manifest store, validate the signature chain and
- * extract generative-AI assertions. Lazy-loaded — the WASM only downloads when
+ * extract generative-AI assertions. Lazy-loaded: the WASM only downloads when
  * an image is analysed.
  */
 import type { C2PAResult } from '@/types/analysis';
+import { t } from '@/i18n';
 
 // c2pa ships its wasm + worker as separate assets; Vite serves them via ?url.
 type C2paApi = {
@@ -79,7 +80,7 @@ export async function analyzeC2PA(file: File): Promise<C2PAResult> {
       softwareAgents = c2paMod.selectGenerativeSoftwareAgents?.(genInfo) ?? [];
     }
   } catch {
-    /* selector unavailable — fall through */
+    /* selector unavailable, fall through */
   }
 
   // Fallback: scan assertions for a generative digitalSourceType / action.
@@ -108,13 +109,13 @@ export async function analyzeC2PA(file: File): Promise<C2PAResult> {
   if (isAi) {
     claims.push(
       generativeType === 'compositeWithTrainedAlgorithmicMedia'
-        ? 'Declares AI-assisted composition (some elements AI-generated)'
-        : 'Declares an AI-generated / trained-algorithm source',
+        ? t('engine.c2pa.composite')
+        : t('engine.c2pa.generated'),
     );
   } else {
-    claims.push('Provenance manifest present (no AI-generation assertion)');
+    claims.push(t('engine.c2pa.noAi'));
   }
-  if (softwareAgents.length) claims.push(`Software: ${softwareAgents.join(', ')}`);
+  if (softwareAgents.length) claims.push(t('engine.c2pa.software', { agents: softwareAgents.join(', ') }));
 
   return {
     status: 'found',

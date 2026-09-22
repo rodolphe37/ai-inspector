@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,76 +13,50 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
-    # --- Core -------------------------------------------------------------
-    app_name: str = "IA Inspector API"
+    app_name: str = "AI Inspector API"
     environment: str = "development"
-    debug: bool = True
 
     # Comma-separated list of allowed browser origins.
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    # Optional regex for extra origins, e.g. Netlify deploy previews:
+    # https://.*--your-site\.netlify\.app
+    cors_origin_regex: str = ""
 
     # SQLAlchemy URL. Defaults to a local SQLite file so the API runs with
-    # zero external services. Point at Postgres in production, e.g.
-    # postgresql+psycopg://user:pass@localhost:5432/ia_inspector
-    database_url: str = "sqlite:///./ia_inspector.db"
+    # zero external services. Point at Postgres in production. Plain
+    # ``postgres://`` / ``postgresql://`` URLs (Neon, Render, Heroku...) are
+    # rewritten to the psycopg 3 driver automatically.
+    database_url: str = "sqlite:///./ai_inspector.db"
 
-    # Public URL of the SPA, used for OAuth / magic-link redirects.
-    frontend_url: str = "http://localhost:5173"
-    # Public base URL of this API (used to build OAuth callback URLs).
-    api_base_url: str = "http://localhost:8000"
+    # --- Hardening (the API is public and unauthenticated) -----------------
+    # Requests allowed per client IP per minute (0 disables the limiter).
+    rate_limit_per_minute: int = 120
+    # Comma-separated Host header allow-list, e.g. "ai-inspector-api.onrender.com".
+    # Empty = accept any host (fine locally; set it in production).
+    allowed_hosts: str = ""
+    # Interactive API docs (/docs, /redoc, /openapi.json). Default: on in
+    # development, off in production.
+    enable_docs: bool | None = None
 
-    # --- Auth -----------------------------------------------------------
-    jwt_secret: str = "dev-only-change-me-in-production"
-    jwt_algorithm: str = "HS256"
-    access_token_ttl_min: int = 30
-    refresh_token_ttl_days: int = 30
-    magic_link_ttl_min: int = 15
-    # Random secret for the OAuth session middleware.
-    session_secret: str = "dev-only-session-secret-change-me"
+    @field_validator("database_url")
+    @classmethod
+    def _psycopg_driver(cls, v: str) -> str:
+        for prefix in ("postgres://", "postgresql://"):
+            if v.startswith(prefix):
+                return "postgresql+psycopg://" + v[len(prefix):]
+        return v
 
-    # --- Quotas -------------------------------------------------------
-    anon_scan_limit: int = 5
-    anon_window_hours: int = 48
-    pro_scan_limit: int = 300
-    pro_window_hours: int = 24
-    # premium is unlimited (no config needed)
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
 
-    # --- File limits (bytes) — enforced client-side, echoed to the UI ---
-    anon_max_file_bytes: int = 2 * 1024 * 1024
-    pro_max_file_bytes: int = 50 * 1024 * 1024
-    premium_max_file_bytes: int = 200 * 1024 * 1024
+    @property
+    def docs_enabled(self) -> bool:
+        return not self.is_production if self.enable_docs is None else self.enable_docs
 
-    # --- OAuth providers ------------------------------------------------
-    # A provider is "enabled" as soon as both id and secret are present.
-    google_client_id: str = ""
-    google_client_secret: str = ""
-    github_client_id: str = ""
-    github_client_secret: str = ""
-    microsoft_client_id: str = ""
-    microsoft_client_secret: str = ""
-    microsoft_tenant: str = "common"
-    facebook_client_id: str = ""
-    facebook_client_secret: str = ""
-    apple_client_id: str = ""
-    apple_client_secret: str = ""
-    twitter_client_id: str = ""
-    twitter_client_secret: str = ""
-    linkedin_client_id: str = ""
-    linkedin_client_secret: str = ""
-    discord_client_id: str = ""
-    discord_client_secret: str = ""
-
-    # --- SMTP (optional) — if unset, magic-link URLs are logged instead --
-    smtp_host: str = ""
-    smtp_port: int = 587
-    smtp_user: str = ""
-    smtp_password: str = ""
-    smtp_from: str = "no-reply@ia-inspector.local"
-
-    quota_debug_header: bool = Field(
-        default=True,
-        description="Expose X-Quota-* response headers (handy in dev).",
-    )
+    @property
+    def allowed_host_list(self) -> list[str]:
+        return [h.strip() for h in self.allowed_hosts.split(",") if h.strip()]
 
     @property
     def cors_origin_list(self) -> list[str]:

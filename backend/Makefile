@@ -1,11 +1,11 @@
-.PHONY: install dev seed seed-demo test lint fmt migrate makemigration db-up db-down smoke
+.PHONY: install dev seed test lint fmt migrate makemigration db-up db-down smoke
 
 VENV := .venv/bin
 
 install:
 	python3 -m venv .venv
 	$(VENV)/pip install -U pip
-	$(VENV)/pip install -r requirements.txt
+	$(VENV)/pip install -r requirements-dev.txt
 	cp -n .env.example .env || true
 
 dev:
@@ -13,9 +13,6 @@ dev:
 
 seed:
 	$(VENV)/python -m app.seed
-
-seed-demo:
-	$(VENV)/python -m scripts.seed_demo
 
 test:
 	$(VENV)/python -m pytest

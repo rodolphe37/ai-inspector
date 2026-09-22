@@ -8,36 +8,26 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { getDashboard, type DashboardData } from '@/services/dashboard';
-import { useAuthStore } from '@/stores/useAuthStore';
-import type { AnalysisStatus } from '@/types/analysis';
-
-const statusMap: Record<AnalysisStatus, { status: 'clean' | 'found' | 'not_found' | 'possible' | 'inconclusive'; label: string }> = {
-  clean: { status: 'clean', label: 'Clean' },
-  possible_signal: { status: 'possible', label: 'Signal detected' },
-  signal_detected: { status: 'possible', label: 'Signal detected' },
-  inconclusive: { status: 'inconclusive', label: 'Inconclusive' },
-  c2pa_found: { status: 'found', label: 'C2PA found' },
-  failed: { status: 'not_found', label: 'Failed' },
-};
+import { useTranslation } from 'react-i18next';
+import { badgeFor } from '@/lib/analysisStatus';
+import { currentLocale, t as translate } from '@/i18n';
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   const today = new Date();
   const yest = new Date();
   yest.setDate(yest.getDate() - 1);
-  if (date.toDateString() === today.toDateString()) return 'Today';
-  if (date.toDateString() === yest.toDateString()) return 'Yesterday';
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (date.toDateString() === today.toDateString()) return translate('common.today');
+  if (date.toDateString() === yest.toDateString()) return translate('common.yesterday');
+  return date.toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric' });
 }
 
 export default function Dashboard() {
-  const user = useAuthStore((s) => s.user);
-  const status = useAuthStore((s) => s.status);
+  const { t } = useTranslation();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'loading') return;
     let alive = true;
     getDashboard()
       .then((d) => {
@@ -50,7 +40,7 @@ export default function Dashboard() {
     return () => {
       alive = false;
     };
-  }, [status]);
+  }, []);
 
   const stats = data?.stats;
   const activity = data?.activity ?? [];
@@ -60,32 +50,26 @@ export default function Dashboard() {
     <PageTransition>
       <div className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">
-            {user ? `Welcome back, ${user.name.split(' ')[0]}` : 'Welcome'}
-          </h1>
-          <p className="mt-1 text-muted">
-            {data?.scope === 'local'
-              ? 'Your analyses are stored in this browser only. Create an account to sync and unlock the full pipeline.'
-              : 'Deterministic provenance analysis, run in your browser.'}
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.title')}</h1>
+          <p className="mt-1 text-muted">{t('dashboard.subtitle')}</p>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <MetricCard icon={<FileSearch className="h-5 w-5" />} label="Analyses" value={loading ? '—' : (stats?.analyses ?? 0)} />
-          <MetricCard icon={<Fingerprint className="h-5 w-5" />} label="Signals detected" value={loading ? '—' : (stats?.signalsDetected ?? 0)} color="text-warning" />
-          <MetricCard icon={<CheckCircle2 className="h-5 w-5" />} label="Clean results" value={loading ? '—' : (stats?.cleanFiles ?? 0)} color="text-success" />
-          <MetricCard icon={<Sparkles className="h-5 w-5" />} label="Known fingerprints" value={loading ? '—' : (stats?.knownFingerprints ?? 0)} color="text-info" />
+          <MetricCard icon={<FileSearch className="h-5 w-5" />} label={t('dashboard.metrics.analyses')} value={loading ? '…' : (stats?.analyses ?? 0)} />
+          <MetricCard icon={<Fingerprint className="h-5 w-5" />} label={t('dashboard.metrics.signals')} value={loading ? '…' : (stats?.signalsDetected ?? 0)} color="text-warning" />
+          <MetricCard icon={<CheckCircle2 className="h-5 w-5" />} label={t('dashboard.metrics.clean')} value={loading ? '…' : (stats?.cleanFiles ?? 0)} color="text-success" />
+          <MetricCard icon={<Sparkles className="h-5 w-5" />} label={t('dashboard.metrics.fingerprints')} value={loading ? '…' : (stats?.knownFingerprints ?? 0)} color="text-info" />
         </div>
 
         <div className="surface p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-semibold">Analysis activity</h2>
-              <p className="text-sm text-muted">Last 30 days</p>
+              <h2 className="text-lg font-semibold">{t('dashboard.activity.title')}</h2>
+              <p className="text-sm text-muted">{t('dashboard.activity.period')}</p>
             </div>
             <div className="flex items-center gap-4 text-xs">
-              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-primary" />Analyses</span>
-              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-warning" />Signals</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-primary" />{t('dashboard.activity.analyses')}</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-warning" />{t('dashboard.activity.signals')}</span>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={240}>
@@ -103,26 +87,26 @@ export default function Dashboard() {
               <XAxis dataKey="date" tick={{ fill: 'rgb(var(--color-text-subtle))', fontSize: 11 }} tickFormatter={(v) => v.slice(5).replace('-', '/')} axisLine={{ stroke: 'rgb(var(--color-border))' }} tickLine={false} />
               <YAxis tick={{ fill: 'rgb(var(--color-text-subtle))', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip contentStyle={{ backgroundColor: 'rgb(var(--color-surface))', border: '1px solid rgb(var(--color-border))', borderRadius: '8px', fontSize: '12px' }} labelStyle={{ color: 'rgb(var(--color-text-muted))' }} />
-              <Area type="monotone" dataKey="analyses" stroke="rgb(var(--color-primary))" strokeWidth={2} fill="url(#analysesGrad)" />
-              <Area type="monotone" dataKey="signals" stroke="rgb(var(--color-warning))" strokeWidth={2} fill="url(#signalsGrad)" />
+              <Area type="monotone" dataKey="analyses" name={t('dashboard.activity.analyses')} stroke="rgb(var(--color-primary))" strokeWidth={2} fill="url(#analysesGrad)" />
+              <Area type="monotone" dataKey="signals" name={t('dashboard.activity.signals')} stroke="rgb(var(--color-warning))" strokeWidth={2} fill="url(#signalsGrad)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         <div className="surface">
           <div className="flex items-center justify-between p-5 border-b border-default">
-            <h2 className="text-lg font-semibold">Recent analyses</h2>
+            <h2 className="text-lg font-semibold">{t('dashboard.recent.title')}</h2>
             <Link to="/app/history" className="text-sm text-primary hover:text-primary-hover flex items-center gap-1">
-              View all <ArrowRight className="h-3.5 w-3.5" />
+              {t('dashboard.recent.viewAll')} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           {recent.length === 0 && !loading ? (
             <div className="p-8">
               <EmptyState
                 icon={<Search className="h-8 w-8" />}
-                title="No analyses yet"
-                description="Run your first analysis to see it here."
-                action={<Link to="/app/analyze" className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium">New analysis</Link>}
+                title={t('common.noAnalyses')}
+                description={t('dashboard.recent.emptyDesc')}
+                action={<Link to="/app/analyze" className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium">{t('common.newAnalysis')}</Link>}
               />
             </div>
           ) : (
@@ -130,26 +114,26 @@ export default function Dashboard() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-default">
-                    <th className="text-left text-xs font-medium text-subtle uppercase tracking-wider px-5 py-3">Name</th>
-                    <th className="text-left text-xs font-medium text-subtle uppercase tracking-wider px-5 py-3 hidden sm:table-cell">Type</th>
-                    <th className="text-left text-xs font-medium text-subtle uppercase tracking-wider px-5 py-3 hidden md:table-cell">Date</th>
-                    <th className="text-left text-xs font-medium text-subtle uppercase tracking-wider px-5 py-3">Result</th>
-                    <th className="text-right text-xs font-medium text-subtle uppercase tracking-wider px-5 py-3">Actions</th>
+                    <th className="text-left text-xs font-medium text-subtle uppercase tracking-wider px-5 py-3">{t('common.table.name')}</th>
+                    <th className="text-left text-xs font-medium text-subtle uppercase tracking-wider px-5 py-3 hidden sm:table-cell">{t('common.table.type')}</th>
+                    <th className="text-left text-xs font-medium text-subtle uppercase tracking-wider px-5 py-3 hidden md:table-cell">{t('common.table.date')}</th>
+                    <th className="text-left text-xs font-medium text-subtle uppercase tracking-wider px-5 py-3">{t('common.table.result')}</th>
+                    <th className="text-right text-xs font-medium text-subtle uppercase tracking-wider px-5 py-3">{t('common.table.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recent.map((analysis, i) => {
-                    const s = statusMap[analysis.status] ?? statusMap.clean;
+                    const s = badgeFor(analysis.status);
                     return (
                       <motion.tr key={analysis.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} className="border-b border-default last:border-0 hover:bg-surface-2/50 transition-colors">
                         <td className="px-5 py-3.5"><span className="text-sm font-medium">{analysis.name}</span></td>
-                        <td className="px-5 py-3.5 hidden sm:table-cell"><span className="text-xs text-muted uppercase">{analysis.type}</span></td>
+                        <td className="px-5 py-3.5 hidden sm:table-cell"><span className="text-xs text-muted uppercase">{t(`status.type.${analysis.type}`)}</span></td>
                         <td className="px-5 py-3.5 hidden md:table-cell"><span className="text-sm text-muted">{formatDate(analysis.date)}</span></td>
-                        <td className="px-5 py-3.5"><StatusBadge status={s.status} label={s.label} /></td>
+                        <td className="px-5 py-3.5"><StatusBadge status={s.badge} label={t(`status.analysis.${s.status}`)} /></td>
                         <td className="px-5 py-3.5 text-right">
                           <Link to={`/app/results/${analysis.id}`} className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-hover">
                             <Search className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">View</span>
+                            <span className="hidden sm:inline">{t('common.view')}</span>
                           </Link>
                         </td>
                       </motion.tr>

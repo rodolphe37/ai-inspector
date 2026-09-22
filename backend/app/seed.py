@@ -7,11 +7,14 @@ from sqlalchemy.orm import Session
 from .db import SessionLocal, init_db
 from .models import Fingerprint
 from .seed_data import FINGERPRINTS
+from .seed_data_fr import FINGERPRINTS_FR
 
 
 def seed_fingerprints(db: Session) -> int:
     changed = 0
-    for entry in FINGERPRINTS:
+    for base in FINGERPRINTS:
+        fr = FINGERPRINTS_FR.get(base["id"])
+        entry = {**base, "translations": {"fr": fr} if fr else {}}
         row = db.get(Fingerprint, entry["id"])
         if row is None:
             db.add(Fingerprint(**entry))

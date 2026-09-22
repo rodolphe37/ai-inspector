@@ -4,42 +4,20 @@ import {
   Lock, Eye, Cpu, FileText, Shield, ArrowRight,
   CheckCircle2, Server, Database,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageTransition } from '@/components/layout/PageTransition';
 
 const principles = [
-  {
-    icon: Lock,
-    title: 'Privacy first',
-    description: 'Your content should remain yours. Analysis runs in your browser — content is never uploaded for inspection. Only what you explicitly save is stored.',
-  },
-  {
-    icon: Eye,
-    title: 'No LLM',
-    description: 'IA Inspector does not use any large language model. All analysis is algorithmic and statistical — deterministic and reproducible.',
-  },
-  {
-    icon: Shield,
-    title: 'No training on your content',
-    description: 'Your data is never used for training, fine-tuning, or any machine learning purpose. There is no model improvement loop involving user content.',
-  },
-  {
-    icon: Cpu,
-    title: 'Local-first architecture',
-    description: 'The analysis engine is designed to run in the browser via Web Workers. Server-side processing is optional and only for advanced features.',
-  },
-  {
-    icon: Database,
-    title: 'Minimal data retention',
-    description: 'When server-side storage is enabled, only metadata about analyses is stored — not the content itself. History is opt-in.',
-  },
-  {
-    icon: FileText,
-    title: 'Transparent analysis',
-    description: 'Every result is accompanied by a technical explanation. Detection methods, thresholds, and p-values are visible in every report.',
-  },
-];
+  { icon: Lock, key: 'privacy' },
+  { icon: Eye, key: 'noLlm' },
+  { icon: Shield, key: 'noTraining' },
+  { icon: Cpu, key: 'localFirst' },
+  { icon: Database, key: 'noServerData' },
+  { icon: FileText, key: 'transparent' },
+] as const;
 
 export default function Security() {
+  const { t } = useTranslation();
   return (
     <PageTransition>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
@@ -56,7 +34,7 @@ export default function Security() {
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl sm:text-4xl font-bold tracking-tight"
           >
-            Security & privacy
+            {t('security.title')}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -64,7 +42,7 @@ export default function Security() {
             transition={{ delay: 0.1 }}
             className="mt-4 text-lg text-muted max-w-2xl mx-auto"
           >
-            Built from the ground up with privacy as the default, not an afterthought.
+            {t('security.subtitle')}
           </motion.p>
         </div>
 
@@ -72,7 +50,7 @@ export default function Security() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-20">
           {principles.map((principle, i) => (
             <motion.div
-              key={principle.title}
+              key={principle.key}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -83,29 +61,29 @@ export default function Security() {
               <div className="p-2.5 rounded-xl bg-primary/10 text-primary w-fit mb-4">
                 <principle.icon className="h-5 w-5" />
               </div>
-              <h3 className="font-semibold">{principle.title}</h3>
-              <p className="mt-2 text-sm text-muted">{principle.description}</p>
+              <h3 className="font-semibold">{t(`security.principles.${principle.key}.title`)}</h3>
+              <p className="mt-2 text-sm text-muted">{t(`security.principles.${principle.key}.description`)}</p>
             </motion.div>
           ))}
         </div>
 
         {/* Architecture diagram */}
         <div className="surface p-8 mb-16">
-          <h2 className="text-xl font-semibold mb-8 text-center">Local-first architecture</h2>
+          <h2 className="text-xl font-semibold mb-8 text-center">{t('security.architecture.title')}</h2>
           <div className="flex flex-col items-center gap-4">
             <div className="flex items-center gap-3 px-5 py-3 rounded-lg bg-surface-2 border border-default">
               <Eye className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">Browser</span>
+              <span className="text-sm font-medium">{t('security.architecture.browser')}</span>
             </div>
             <div className="w-px h-8 bg-border-hover" />
             <div className="flex items-center gap-3 px-5 py-3 rounded-lg bg-primary/10 border border-primary/20">
               <Cpu className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium text-primary">Local analysis engine</span>
+              <span className="text-sm font-medium text-primary">{t('security.architecture.engine')}</span>
             </div>
             <div className="w-px h-8 bg-border-hover" />
             <div className="flex items-center gap-3 px-5 py-3 rounded-lg bg-surface-2 border border-default">
               <FileText className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">Report</span>
+              <span className="text-sm font-medium">{t('security.architecture.report')}</span>
             </div>
           </div>
 
@@ -113,12 +91,12 @@ export default function Security() {
             <div className="flex flex-col items-center gap-3">
               <div className="flex items-center gap-2 text-sm text-muted">
                 <Server className="h-4 w-4" />
-                Backend — optional, only when required
+                {t('security.architecture.backend')}
               </div>
               <div className="w-px h-6 bg-border-hover" />
               <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-surface-2 border border-default border-dashed">
                 <Database className="h-4 w-4 text-subtle" />
-                <span className="text-xs text-muted">Optional storage (opt-in)</span>
+                <span className="text-xs text-muted">{t('security.architecture.storage')}</span>
               </div>
             </div>
           </div>
@@ -126,16 +104,9 @@ export default function Security() {
 
         {/* Commitments */}
         <div className="surface p-6 mb-12">
-          <h2 className="text-lg font-semibold mb-4">Our commitments</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('security.commitments.title')}</h2>
           <ul className="space-y-3">
-            {[
-              'Content is analysed locally; it is never sent to a server for inspection',
-              'No large language model is used; detection is deterministic and inspectable',
-              'No content is used for training or model improvement',
-              'No tracking of content or analysis results',
-              'All detection methods are documented and transparent',
-              'Server-side storage is opt-in and stores metadata only',
-            ].map((item, i) => (
+            {(t('security.commitments.items', { returnObjects: true }) as string[]).map((item, i) => (
               <motion.li
                 key={item}
                 initial={{ opacity: 0, x: -10 }}
@@ -156,7 +127,7 @@ export default function Security() {
             to="/app/analyze"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors"
           >
-            Start inspecting
+            {t('security.cta')}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

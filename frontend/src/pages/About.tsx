@@ -1,27 +1,18 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Shield, Target, Eye, ArrowRight } from 'lucide-react';
+import { Shield, Target, Eye, ArrowRight, Code2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageTransition } from '@/components/layout/PageTransition';
+import { REPO_URL } from '@/lib/constants';
 
 const values = [
-  {
-    icon: Eye,
-    title: 'Transparency',
-    description: 'Every result is explainable. Detection methods, thresholds, and p-values are visible. No black boxes.',
-  },
-  {
-    icon: Shield,
-    title: 'Privacy',
-    description: 'Local-first by design. Your content stays yours. No LLM, no training, no tracking.',
-  },
-  {
-    icon: Target,
-    title: 'Precision',
-    description: 'Deterministic, reproducible analysis. The same input always produces the same output.',
-  },
-];
+  { icon: Eye, key: 'transparency' },
+  { icon: Shield, key: 'privacy' },
+  { icon: Target, key: 'precision' },
+] as const;
 
 export default function About() {
+  const { t } = useTranslation();
   return (
     <PageTransition>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
@@ -38,7 +29,7 @@ export default function About() {
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl sm:text-4xl font-bold tracking-tight"
           >
-            About IA Inspector
+            {t('about.title')}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -46,33 +37,22 @@ export default function About() {
             transition={{ delay: 0.1 }}
             className="mt-4 text-lg text-muted max-w-2xl mx-auto"
           >
-            An independent AI-origin analyser for text, code and images — evidence-based,
-            not a black box.
+            {t('about.subtitle')}
           </motion.p>
         </div>
 
         {/* Mission */}
         <div className="surface p-8 mb-16 max-w-3xl mx-auto">
-          <h2 className="text-xl font-semibold mb-4">Our mission</h2>
-          <p className="text-muted leading-relaxed">
-            IA Inspector answers &ldquo;was this made by AI?&rdquo; the way it should be
-            answered: by showing its work. Cryptographic Content Credentials, generator
-            metadata, watermark markers and forensic analysis — each verdict lists the evidence
-            behind it and states how confident it is.
-          </p>
-          <p className="text-muted leading-relaxed mt-4">
-            When there is hard evidence (a signed C2PA manifest), we say so with near-certainty.
-            When there is only a statistical estimate, we say that too — and we are honest that
-            it has a real false-positive rate on edited, translated or non-native content. We
-            never dress up a guess as proof.
-          </p>
+          <h2 className="text-xl font-semibold mb-4">{t('about.mission.title')}</h2>
+          <p className="text-muted leading-relaxed">{t('about.mission.p1')}</p>
+          <p className="text-muted leading-relaxed mt-4">{t('about.mission.p2')}</p>
         </div>
 
         {/* Values */}
         <div className="grid sm:grid-cols-3 gap-4 mb-16">
           {values.map((value, i) => (
             <motion.div
-              key={value.title}
+              key={value.key}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -82,32 +62,43 @@ export default function About() {
               <div className="p-2.5 rounded-xl bg-primary/10 text-primary w-fit mb-4">
                 <value.icon className="h-5 w-5" />
               </div>
-              <h3 className="font-semibold">{value.title}</h3>
-              <p className="mt-2 text-sm text-muted">{value.description}</p>
+              <h3 className="font-semibold">{t(`about.values.${value.key}.title`)}</h3>
+              <p className="mt-2 text-sm text-muted">{t(`about.values.${value.key}.description`)}</p>
             </motion.div>
           ))}
         </div>
 
         {/* Positioning */}
         <div className="surface p-8 mb-12 max-w-3xl mx-auto">
-          <h2 className="text-xl font-semibold mb-4">What we are — and aren't</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('about.positioning.title')}</h2>
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-medium text-success mb-1">We are:</p>
-              <p className="text-sm text-muted">
-                An inspection tool for known provenance signals, metadata, Unicode artifacts,
-                C2PA manifests, and statistical watermark patterns.
-              </p>
+              <p className="text-sm font-medium text-success mb-1">{t('about.positioning.areTitle')}</p>
+              <p className="text-sm text-muted">{t('about.positioning.are')}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-warning mb-1">We are not:</p>
-              <p className="text-sm text-muted">
-                An AI detector. We do not classify content as "human" or "AI." We do not make
-                definitive claims about authorship. An absence of signal does not prove human
-                origin, and a detected signal does not prove machine generation.
-              </p>
+              <p className="text-sm font-medium text-warning mb-1">{t('about.positioning.areNotTitle')}</p>
+              <p className="text-sm text-muted">{t('about.positioning.areNot')}</p>
             </div>
           </div>
+        </div>
+
+        {/* Open source */}
+        <div className="surface p-8 mb-12 max-w-3xl mx-auto">
+          <h2 className="flex items-center gap-2 text-xl font-semibold mb-4">
+            <Code2 className="h-5 w-5 text-primary" />
+            {t('about.openSource.title')}
+          </h2>
+          <p className="text-sm text-muted leading-relaxed">{t('about.openSource.body')}</p>
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-hover"
+          >
+            {t('about.openSource.link')}
+            <ArrowRight className="h-4 w-4" />
+          </a>
         </div>
 
         <div className="text-center">
@@ -115,7 +106,7 @@ export default function About() {
             to="/app/analyze"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors"
           >
-            Start inspecting
+            {t('about.cta')}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

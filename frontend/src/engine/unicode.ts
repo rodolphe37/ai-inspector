@@ -1,5 +1,5 @@
 /**
- * Real Unicode artifact analysis — runs entirely in the browser.
+ * Real Unicode artifact analysis: runs entirely in the browser.
  *
  * Detects: invisible / zero-width characters, the Unicode Tags block (a known
  * hidden-data channel), bidirectional control overrides, unusual variation
@@ -7,6 +7,7 @@
  * otherwise-Latin words).
  */
 import type { UnicodeFinding, UnicodeResult } from '@/types/analysis';
+import { t } from '@/i18n';
 
 const INVISIBLE = new Set<number>([
   0x00a0, 0x00ad, 0x034f, 0x061c, 0x115f, 0x1160, 0x17b4, 0x17b5, 0x180e,
@@ -27,6 +28,11 @@ const HOMOGLYPHS: Record<string, string> = {
   Α: 'A', Β: 'B', Ε: 'E', Ζ: 'Z', Η: 'H', Κ: 'K', Μ: 'M', Ν: 'N', Τ: 'T',
   Υ: 'Y', Χ: 'X', ο: 'o', ν: 'v', ρ: 'p',
 };
+
+/** True when a finding is a bidi override (U+202A to U+202E, U+2066 to U+2069). */
+export function isBidiFinding(f: UnicodeFinding): boolean {
+  return BIDI_CONTROLS.has(parseInt(f.codepoint.slice(2), 16));
+}
 
 function cp(code: number): string {
   return `U+${code.toString(16).toUpperCase().padStart(4, '0')}`;
@@ -52,7 +58,7 @@ export function analyzeUnicode(text: string): UnicodeResult {
         character: ch,
         codepoint: cp(code),
         position: offset,
-        description: 'Unicode Tag character (hidden-data channel)',
+        description: t('engine.unicode.tag'),
       });
     } else if (INVISIBLE.has(code) || (code >= 0x2000 && code <= 0x200a)) {
       invisible++;
@@ -61,7 +67,7 @@ export function analyzeUnicode(text: string): UnicodeResult {
         character: ch,
         codepoint: cp(code),
         position: offset,
-        description: 'Invisible / zero-width character',
+        description: t('engine.unicode.invisible'),
       });
     } else if (BIDI_CONTROLS.has(code)) {
       control++;
@@ -70,7 +76,7 @@ export function analyzeUnicode(text: string): UnicodeResult {
         character: ch,
         codepoint: cp(code),
         position: offset,
-        description: 'Bidirectional control override',
+        description: t('engine.unicode.bidi'),
       });
     } else if (code < 0x20 && code !== 0x09 && code !== 0x0a && code !== 0x0d) {
       control++;
@@ -79,7 +85,7 @@ export function analyzeUnicode(text: string): UnicodeResult {
         character: ch,
         codepoint: cp(code),
         position: offset,
-        description: 'C0 control character',
+        description: t('engine.unicode.c0'),
       });
     } else if ((code >= 0x7f && code < 0xa0) || (code >= 0xfe00 && code <= 0xfe0f)) {
       if (code >= 0xfe00) {
@@ -89,7 +95,7 @@ export function analyzeUnicode(text: string): UnicodeResult {
           character: ch,
           codepoint: cp(code),
           position: offset,
-          description: 'Variation selector',
+          description: t('engine.unicode.variation'),
         });
       } else {
         control++;
@@ -98,7 +104,7 @@ export function analyzeUnicode(text: string): UnicodeResult {
           character: ch,
           codepoint: cp(code),
           position: offset,
-          description: 'C1 control character',
+          description: t('engine.unicode.c1'),
         });
       }
     } else if (HOMOGLYPHS[ch]) {
@@ -108,7 +114,7 @@ export function analyzeUnicode(text: string): UnicodeResult {
         character: ch,
         codepoint: cp(code),
         position: offset,
-        description: `Cross-script homoglyph — looks like "${HOMOGLYPHS[ch]}"`,
+        description: t('engine.unicode.homoglyph', { latin: HOMOGLYPHS[ch] }),
       });
     }
 

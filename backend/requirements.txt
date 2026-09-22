@@ -1,4 +1,4 @@
-# Runtime dependencies for the IA Inspector API.
+# Runtime dependencies for the AI Inspector API.
 # Pinned to the latest stable releases at time of writing (Sept 2026).
 fastapi==0.141.1
 uvicorn[standard]==0.52.4
@@ -7,15 +7,3 @@ alembic==1.19.1
 psycopg[binary]==3.3.5
 pydantic==2.13.5
 pydantic-settings==2.15.0
-bcrypt==5.0.0
-PyJWT==2.13.0
-Authlib==1.8.0
-httpx==0.28.1
-python-multipart==0.0.20
-email-validator==2.3.0
-itsdangerous==2.2.0
-
-# Dev / test only
-pytest==8.4.2
-pytest-cov==7.0.0
-ruff==0.14.6

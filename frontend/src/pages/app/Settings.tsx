@@ -1,28 +1,23 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Palette, Lock, Search, Bell, Check, LogOut, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Database, Palette, Lock, Search, Bell, Check, Trash2 } from 'lucide-react';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-import { useAuthStore } from '@/stores/useAuthStore';
-import { api } from '@/lib/apiClient';
-import { PLAN_LABELS } from '@/lib/plans';
+import { useHistoryStore } from '@/stores/useHistoryStore';
+import { clearLocalAnalyses } from '@/lib/localDb';
+import { useTranslation } from 'react-i18next';
 import type { ThemeMode } from '@/types/settings';
-import type { AuthTokens } from '@/types/user';
+import { LANGUAGES, setLanguage } from '@/i18n';
 
 const sections = [
-  { id: 'account', label: 'Account', icon: User },
-  { id: 'appearance', label: 'Appearance', icon: Palette },
-  { id: 'privacy', label: 'Privacy', icon: Lock },
-  { id: 'analysis', label: 'Analysis', icon: Search },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'data', icon: Database },
+  { id: 'appearance', icon: Palette },
+  { id: 'privacy', icon: Lock },
+  { id: 'analysis', icon: Search },
+  { id: 'notifications', icon: Bell },
 ] as const;
 
-const themes: { key: ThemeMode; label: string }[] = [
-  { key: 'dark', label: 'Dark' },
-  { key: 'light', label: 'Light' },
-  { key: 'system', label: 'System' },
-];
+const themes: ThemeMode[] = ['dark', 'light', 'system'];
 
 function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
   return (
@@ -46,40 +41,22 @@ function SettingRow({ label, description, children }: { label: string; descripti
 
 export default function Settings() {
   const { settings, setTheme, togglePrivacy, toggleAnalysis, toggleNotifications } = useSettingsStore();
-  const { user, plan, logout, applyTokens, refreshUser } = useAuthStore();
-  const navigate = useNavigate();
+  const [cleared, setCleared] = useState(false);
+  const { t, i18n } = useTranslation();
 
-  const [name, setName] = useState(user?.name ?? '');
-  const [savingName, setSavingName] = useState(false);
-  const [upgrading, setUpgrading] = useState(false);
-
-  const saveName = async () => {
-    if (!user || !name.trim() || name === user.name) return;
-    setSavingName(true);
-    try {
-      await api.patch('/users/me', { name: name.trim() });
-      await refreshUser();
-    } finally {
-      setSavingName(false);
-    }
-  };
-
-  const upgrade = async (target: 'pro' | 'premium') => {
-    setUpgrading(true);
-    try {
-      const tokens = await api.post<AuthTokens>('/billing/upgrade', { plan: target });
-      applyTokens(tokens);
-    } finally {
-      setUpgrading(false);
-    }
+  const clearHistory = async () => {
+    if (!window.confirm(t('settings.data.confirm'))) return;
+    await clearLocalAnalyses();
+    await useHistoryStore.getState().load();
+    setCleared(true);
   };
 
   return (
     <PageTransition>
       <div className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-          <p className="mt-1 text-muted">Manage your account, privacy and analysis preferences.</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('settings.title')}</h1>
+          <p className="mt-1 text-muted">{t('settings.subtitle')}</p>
         </div>
 
         <div className="grid lg:grid-cols-[200px_1fr] gap-6">
@@ -88,84 +65,51 @@ export default function Settings() {
               {sections.map((section) => (
                 <a key={section.id} href={`#${section.id}`} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted hover:text-content hover:bg-surface-2 transition-colors">
                   <section.icon className="h-4 w-4" />
-                  {section.label}
+                  {t(`settings.sections.${section.id}`)}
                 </a>
               ))}
             </div>
           </nav>
 
           <div className="space-y-6">
-            <section id="account" className="surface p-5">
+            <section id="data" className="surface p-5">
               <div className="flex items-center gap-2 mb-4">
-                <User className="h-4 w-4 text-primary" />
-                <h2 className="text-lg font-semibold">Account</h2>
+                <Database className="h-4 w-4 text-primary" />
+                <h2 className="text-lg font-semibold">{t('settings.sections.data')}</h2>
               </div>
-
-              {user ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm text-muted block mb-1.5">Name</label>
-                    <div className="flex gap-2">
-                      <input value={name} onChange={(e) => setName(e.target.value)} className="flex-1 px-3 py-2 bg-surface-2 border border-default rounded-lg text-sm text-content focus:outline-none focus:border-primary" />
-                      <button onClick={saveName} disabled={savingName || !name.trim() || name === user.name} className="px-3 py-2 rounded-lg border border-default text-sm hover:bg-surface-2 disabled:opacity-40">
-                        {savingName ? 'Saving…' : 'Save'}
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted block mb-1.5">Email</label>
-                    <input value={user.email} readOnly className="w-full px-3 py-2 bg-surface-2 border border-default rounded-lg text-sm text-muted" />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted block mb-1.5">Plan</label>
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium">
-                        {PLAN_LABELS[plan]}
-                      </span>
-                      {plan === 'pro' && (
-                        <button onClick={() => upgrade('premium')} disabled={upgrading} className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary-hover">
-                          <Sparkles className="h-3.5 w-3.5" /> Upgrade to Premium
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="pt-2">
-                    <button onClick={() => { void logout(); navigate('/'); }} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-error/20 text-sm font-medium text-error hover:bg-error/10 transition-colors">
-                      <LogOut className="h-4 w-4" />
-                      Sign out
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted">
-                    You're using IA Inspector anonymously (Free). Settings are stored in this browser.
-                  </p>
-                  <div className="flex gap-2">
-                    <button onClick={() => upgrade('pro')} disabled={upgrading} className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover">
-                      Create a Pro account
-                    </button>
-                    <button onClick={() => navigate('/pricing')} className="px-4 py-2 rounded-lg border border-default text-sm hover:bg-surface-2">
-                      Compare plans
-                    </button>
-                  </div>
-                </div>
-              )}
+              <div className="space-y-3">
+                <p className="text-sm text-muted">{t('settings.data.body')}</p>
+                <button onClick={clearHistory} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-error/20 text-sm font-medium text-error hover:bg-error/10 transition-colors">
+                  <Trash2 className="h-4 w-4" />
+                  {cleared ? t('settings.data.cleared') : t('settings.data.clear')}
+                </button>
+              </div>
             </section>
 
             <section id="appearance" className="surface p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Palette className="h-4 w-4 text-primary" />
-                <h2 className="text-lg font-semibold">Appearance</h2>
+                <h2 className="text-lg font-semibold">{t('settings.sections.appearance')}</h2>
               </div>
-              <p className="text-sm font-medium mb-3">Theme</p>
+              <p className="text-sm font-medium mb-3">{t('settings.appearance.theme')}</p>
               <div className="flex gap-2">
                 {themes.map((theme) => (
-                  <button key={theme.key} onClick={() => setTheme(theme.key)} className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                    settings.appearance.theme === theme.key ? 'border-primary bg-primary/10 text-primary' : 'border-default text-muted hover:bg-surface-2'
+                  <button key={theme} onClick={() => setTheme(theme)} className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    settings.appearance.theme === theme ? 'border-primary bg-primary/10 text-primary' : 'border-default text-muted hover:bg-surface-2'
                   }`}>
-                    {settings.appearance.theme === theme.key && <Check className="h-3.5 w-3.5" />}
-                    {theme.label}
+                    {settings.appearance.theme === theme && <Check className="h-3.5 w-3.5" />}
+                    {t(`settings.appearance.themes.${theme}`)}
+                  </button>
+                ))}
+              </div>
+              <p className="text-sm font-medium mt-5 mb-3">{t('common.language')}</p>
+              <div className="flex gap-2">
+                {LANGUAGES.map((lang) => (
+                  <button key={lang.code} onClick={() => setLanguage(lang.code)} className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    i18n.language === lang.code ? 'border-primary bg-primary/10 text-primary' : 'border-default text-muted hover:bg-surface-2'
+                  }`}>
+                    {i18n.language === lang.code && <Check className="h-3.5 w-3.5" />}
+                    {lang.label}
                   </button>
                 ))}
               </div>
@@ -174,15 +118,15 @@ export default function Settings() {
             <section id="privacy" className="surface p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Lock className="h-4 w-4 text-primary" />
-                <h2 className="text-lg font-semibold">Privacy</h2>
+                <h2 className="text-lg font-semibold">{t('settings.sections.privacy')}</h2>
               </div>
-              <SettingRow label="Local processing" description="Content is always analysed in your browser">
+              <SettingRow label={t('settings.privacy.local')} description={t('settings.privacy.localDesc')}>
                 <Toggle on={settings.privacy.localProcessing} onClick={() => togglePrivacy('localProcessing')} />
               </SettingRow>
-              <SettingRow label="Store analysis history" description={user ? 'Keep a synced record of past analyses' : 'Keep a record in this browser'}>
+              <SettingRow label={t('settings.privacy.history')} description={t('settings.privacy.historyDesc')}>
                 <Toggle on={settings.privacy.storeHistory} onClick={() => togglePrivacy('storeHistory')} />
               </SettingRow>
-              <SettingRow label="Telemetry" description="Send anonymous usage data">
+              <SettingRow label={t('settings.privacy.telemetry')} description={t('settings.privacy.telemetryDesc')}>
                 <Toggle on={settings.privacy.telemetry} onClick={() => togglePrivacy('telemetry')} />
               </SettingRow>
             </section>
@@ -190,15 +134,15 @@ export default function Settings() {
             <section id="analysis" className="surface p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Search className="h-4 w-4 text-primary" />
-                <h2 className="text-lg font-semibold">Analysis</h2>
+                <h2 className="text-lg font-semibold">{t('settings.sections.analysis')}</h2>
               </div>
-              <SettingRow label="Detailed results" description="Show expanded result information">
+              <SettingRow label={t('settings.analysis.detailed')} description={t('settings.analysis.detailedDesc')}>
                 <Toggle on={settings.analysis.detailedResults} onClick={() => toggleAnalysis('detailedResults')} />
               </SettingRow>
-              <SettingRow label="Show statistical data" description="Display statistical charts and metrics">
+              <SettingRow label={t('settings.analysis.stats')} description={t('settings.analysis.statsDesc')}>
                 <Toggle on={settings.analysis.showStatisticalData} onClick={() => toggleAnalysis('showStatisticalData')} />
               </SettingRow>
-              <SettingRow label="Show technical information" description="Display technical details in reports">
+              <SettingRow label={t('settings.analysis.technical')} description={t('settings.analysis.technicalDesc')}>
                 <Toggle on={settings.analysis.showTechnicalInfo} onClick={() => toggleAnalysis('showTechnicalInfo')} />
               </SettingRow>
             </section>
@@ -206,15 +150,12 @@ export default function Settings() {
             <section id="notifications" className="surface p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Bell className="h-4 w-4 text-primary" />
-                <h2 className="text-lg font-semibold">Notifications</h2>
+                <h2 className="text-lg font-semibold">{t('settings.sections.notifications')}</h2>
               </div>
-              <SettingRow label="Email alerts" description="Receive email notifications">
-                <Toggle on={settings.notifications.emailAlerts} onClick={() => toggleNotifications('emailAlerts')} />
-              </SettingRow>
-              <SettingRow label="Analysis complete" description="Notify when an analysis finishes">
+              <SettingRow label={t('settings.notifications.complete')} description={t('settings.notifications.completeDesc')}>
                 <Toggle on={settings.notifications.analysisComplete} onClick={() => toggleNotifications('analysisComplete')} />
               </SettingRow>
-              <SettingRow label="Security alerts" description="Get notified about security events">
+              <SettingRow label={t('settings.notifications.security')} description={t('settings.notifications.securityDesc')}>
                 <Toggle on={settings.notifications.securityAlerts} onClick={() => toggleNotifications('securityAlerts')} />
               </SettingRow>
             </section>

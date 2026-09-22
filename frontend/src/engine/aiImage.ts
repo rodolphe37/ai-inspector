@@ -1,7 +1,7 @@
 /**
  * Client-side image AI-generation detector.
  *
- * No ML model — a transparent battery of forensic signals that generative
+ * No ML model: a transparent battery of forensic signals that generative
  * images (diffusion / GAN) tend to exhibit:
  *
  *  - frequency-domain up-sampling artifacts (periodic spectral peaks)
@@ -12,8 +12,9 @@
  *
  * Each signal is weak on its own and can misfire on heavily edited, upscaled
  * or denoised real photos. They are combined into a probability with a stated
- * caveat — this is an estimate, not proof.
+ * caveat: this is an estimate, not proof.
  */
+import { t } from '@/i18n';
 
 export interface ImageAiSignal {
   label: string;
@@ -234,41 +235,41 @@ export async function analyzeImageAi(
 
   const signals: ImageAiSignal[] = [];
 
-  // 1. Up-sampling spectral peaks — diffusion/GAN decoders leave periodic peaks.
+  // 1. Up-sampling spectral peaks: diffusion/GAN decoders leave periodic peaks.
   const s1 = sigmoid((peakiness - 0.09) * 45);
   signals.push({
-    label: 'Frequency-domain up-sampling artifacts',
-    detail: `spectral peakiness ${peakiness.toFixed(3)} (natural ≈ <0.06)`,
+    label: t('engine.image.fft'),
+    detail: t('engine.image.fftDetail', { value: peakiness.toFixed(3) }),
     weight: s1,
   });
 
   // 2. Missing / flat sensor noise.
   const s2 = sigmoid((noiseUniformity - 0.55) * 6) * sigmoid((0.9 - noiseLevel) * 4);
   signals.push({
-    label: 'Sensor-noise residual',
-    detail: `noise level ${noiseLevel.toFixed(2)}, spatial uniformity ${noiseUniformity.toFixed(2)} (real photos: higher level, less uniform)`,
+    label: t('engine.image.noise'),
+    detail: t('engine.image.noiseDetail', { level: noiseLevel.toFixed(2), uniformity: noiseUniformity.toFixed(2) }),
     weight: s2,
   });
 
   // 3. Abnormally low high-frequency energy (over-smoothed).
   const s3 = sigmoid((0.34 - hfRatio) * 22);
   signals.push({
-    label: 'High-frequency detail',
-    detail: `HF energy ratio ${hfRatio.toFixed(3)} (over-smooth < 0.30)`,
+    label: t('engine.image.hf'),
+    detail: t('engine.image.hfDetail', { value: hfRatio.toFixed(3) }),
     weight: s3,
   });
 
   // 4. Generator-native dimensions.
   if (genSize) {
     signals.push({
-      label: 'Output dimensions',
-      detail: `${w}×${h} is a common generative model output size`,
+      label: t('engine.image.dims'),
+      detail: t('engine.image.dimsGen', { w, h }),
       weight: 0.7,
     });
   } else if (suspiciousRatio && !meta.hasCameraMetadata) {
     signals.push({
-      label: 'Output dimensions',
-      detail: `${w}×${h} — exact aspect ratio, no camera crop`,
+      label: t('engine.image.dims'),
+      detail: t('engine.image.dimsRatio', { w, h }),
       weight: 0.25,
     });
   }
@@ -276,13 +277,13 @@ export async function analyzeImageAi(
   // 5. Photographic-looking image with zero capture metadata.
   if (!meta.hasCameraMetadata && (s2 > 0.4 || s3 > 0.4)) {
     signals.push({
-      label: 'Capture metadata',
-      detail: 'No EXIF camera/make/model on an otherwise photographic image',
+      label: t('engine.image.capture'),
+      detail: t('engine.image.captureDetail'),
       weight: 0.3,
     });
   }
 
-  // Weighted combine — the three forensic signals carry most of the weight.
+  // Weighted combine: the three forensic signals carry most of the weight.
   const core = 0.42 * s1 + 0.34 * s2 + 0.24 * s3;
   const bonus = signals
     .slice(3)

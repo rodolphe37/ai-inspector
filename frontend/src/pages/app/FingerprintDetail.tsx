@@ -4,25 +4,21 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Fingerprint as FingerprintIcon, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useTranslation } from 'react-i18next';
 import { fingerprintApi } from '@/services';
-import type { Fingerprint, FingerprintStatus } from '@/types/fingerprint';
-
-const statusConfig: Record<FingerprintStatus, { status: 'clean' | 'found' | 'not_found' | 'possible' | 'inconclusive'; label: string }> = {
-  available: { status: 'clean', label: 'Available' },
-  experimental: { status: 'possible', label: 'Experimental' },
-  deprecated: { status: 'not_found', label: 'Deprecated' },
-  research: { status: 'inconclusive', label: 'Research' },
-};
+import { FINGERPRINT_BADGE } from '@/lib/analysisStatus';
+import type { Fingerprint } from '@/types/fingerprint';
 
 export default function FingerprintDetail() {
   const { id } = useParams<{ id: string }>();
   const [fp, setFp] = useState<Fingerprint | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     if (!id) return;
     fingerprintApi.get(id).then((f) => { setFp(f); setLoading(false); }).catch(() => setLoading(false));
-  }, [id]);
+  }, [id, i18n.language]);
 
   if (loading) {
     return (
@@ -39,23 +35,21 @@ export default function FingerprintDetail() {
     return (
       <PageTransition>
         <div className="p-8 text-center">
-          <p className="text-muted">Fingerprint not found.</p>
+          <p className="text-muted">{t('fingerprints.notFound')}</p>
           <Link to="/app/fingerprints" className="mt-4 inline-block text-primary hover:text-primary-hover">
-            Back to fingerprints
+            {t('fingerprints.back')}
           </Link>
         </div>
       </PageTransition>
     );
   }
 
-  const sc = statusConfig[fp.status];
-
   return (
     <PageTransition>
       <div className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
         <Link to="/app/fingerprints" className="inline-flex items-center gap-1 text-sm text-muted hover:text-content mb-4">
           <ArrowLeft className="h-3.5 w-3.5" />
-          Fingerprints
+          {t('nav.app.fingerprints')}
         </Link>
 
         <div className="surface p-6 mb-6">
@@ -69,43 +63,43 @@ export default function FingerprintDetail() {
                 <p className="text-sm text-muted mt-1">{fp.provider}</p>
               </div>
             </div>
-            <StatusBadge status={sc.status} label={sc.label} size="md" />
+            <StatusBadge status={FINGERPRINT_BADGE[fp.status]} label={t(`status.fingerprint.${fp.status}`)} size="md" />
           </div>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4 mb-6">
           <div className="surface p-5">
-            <h3 className="text-sm font-semibold text-muted mb-3">Properties</h3>
+            <h3 className="text-sm font-semibold text-muted mb-3">{t('fingerprints.properties')}</h3>
             <div className="space-y-2.5">
               <div className="flex justify-between text-sm">
-                <span className="text-muted">Type</span>
-                <span className="font-medium uppercase">{fp.type}</span>
+                <span className="text-muted">{t('common.table.type')}</span>
+                <span className="font-medium uppercase">{t(`status.method.${fp.type}`, { defaultValue: fp.type })}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted">Version</span>
+                <span className="text-muted">{t('fingerprints.version')}</span>
                 <span className="font-medium">{fp.version}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted">Target content</span>
-                <span className="font-medium capitalize">{fp.targetContent}</span>
+                <span className="text-muted">{t('fingerprints.target')}</span>
+                <span className="font-medium capitalize">{t(`status.type.${fp.targetContent}`, { defaultValue: fp.targetContent })}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted">Coverage</span>
+                <span className="text-muted">{t('fingerprints.coverage')}</span>
                 <span className="font-medium">{fp.coverage}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted">Last updated</span>
+                <span className="text-muted">{t('fingerprints.updated')}</span>
                 <span className="font-medium">{fp.lastUpdated}</span>
               </div>
             </div>
           </div>
 
           <div className="surface p-5">
-            <h3 className="text-sm font-semibold text-muted mb-3">Detection metrics</h3>
+            <h3 className="text-sm font-semibold text-muted mb-3">{t('fingerprints.metrics')}</h3>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-1.5">
-                  <span className="text-muted">Confidence</span>
+                  <span className="text-muted">{t('fingerprints.confidence')}</span>
                   <span className="font-medium tabular-nums">{fp.confidence}%</span>
                 </div>
                 <div className="h-2 bg-surface-2 rounded-full overflow-hidden">
@@ -120,7 +114,7 @@ export default function FingerprintDetail() {
                 </div>
               </div>
               <div>
-                <p className="text-sm text-muted mb-1">Detection method</p>
+                <p className="text-sm text-muted mb-1">{t('fingerprints.method')}</p>
                 <p className="text-sm">{fp.detectionMethod}</p>
               </div>
             </div>
@@ -128,33 +122,29 @@ export default function FingerprintDetail() {
         </div>
 
         <div className="surface p-5 mb-6">
-          <h3 className="text-sm font-semibold text-muted mb-3">Description</h3>
+          <h3 className="text-sm font-semibold text-muted mb-3">{t('fingerprints.description')}</h3>
           <p className="text-sm leading-relaxed">{fp.description}</p>
         </div>
 
         <div className="surface p-5">
-          <h3 className="text-sm font-semibold text-muted mb-4">Capabilities & limitations</h3>
+          <h3 className="text-sm font-semibold text-muted mb-4">{t('fingerprints.capabilities')}</h3>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <h4 className="text-sm font-medium text-success mb-2 flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4" />
-                Can detect
+                {t('howItWorks.can.title')}
               </h4>
               <ul className="space-y-1.5 text-sm text-muted">
-                <li>Known watermark patterns matching this signature</li>
-                <li>Statistical distribution anomalies in target content</li>
-                <li>Content matching the fingerprint's training parameters</li>
+                {(t('fingerprints.can', { returnObjects: true }) as string[]).map((item) => <li key={item}>{item}</li>)}
               </ul>
             </div>
             <div>
               <h4 className="text-sm font-medium text-warning mb-2 flex items-center gap-1.5">
                 <AlertTriangle className="h-4 w-4" />
-                Cannot guarantee
+                {t('howItWorks.cannot.title')}
               </h4>
               <ul className="space-y-1.5 text-sm text-muted">
-                <li>Detection of unknown or modified watermark schemes</li>
-                <li>Absence of all possible watermarks</li>
-                <li>Definitive attribution of content origin</li>
+                {(t('fingerprints.cannot', { returnObjects: true }) as string[]).map((item) => <li key={item}>{item}</li>)}
               </ul>
             </div>
           </div>

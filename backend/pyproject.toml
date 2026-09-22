@@ -1,7 +1,7 @@
 [project]
-name = "ia-inspector-api"
-version = "0.1.0"
-description = "IA Inspector — accounts, quotas and history API"
+name = "ai-inspector-api"
+version = "1.0.0"
+description = "AI Inspector: public fingerprint catalogue API"
 requires-python = ">=3.11"
 
 [tool.ruff]

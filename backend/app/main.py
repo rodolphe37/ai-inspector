@@ -1,33 +1,29 @@
-"""FastAPI application entry point."""
+"""FastAPI application entry point.
+
+The API only serves the public fingerprint catalogue. Content analysis,
+history and settings all live in the browser: nothing about a user or their
+content ever reaches this server.
+"""
 
 from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from . import __version__
 from .config import settings
 from .db import SessionLocal, init_db
-from .plans import describe_all
-from .routers import (
-    analyses,
-    auth,
-    billing,
-    dashboard,
-    fingerprints,
-    oauth_routes,
-    scans,
-    settings_routes,
-    users,
-)
+from .hardening import RateLimitMiddleware, SecurityHeadersMiddleware
+from .routers import fingerprints
 from .seed import seed_fingerprints
 
 logging.basicConfig(level=logging.INFO)
-log = logging.getLogger("ia_inspector")
+log = logging.getLogger("ai_inspector")
 
 
 @asynccontextmanager
@@ -35,48 +31,42 @@ async def lifespan(_: FastAPI):
     init_db()
     with SessionLocal() as db:
         seed_fingerprints(db)
-    log.info("IA Inspector API ready (env=%s, db=%s)", settings.environment,
+    log.info("AI Inspector API ready (env=%s, db=%s)", settings.environment,
              "sqlite" if settings.is_sqlite else "postgres")
     yield
 
 
+docs = settings.docs_enabled
 app = FastAPI(
     title=settings.app_name,
     version=__version__,
     lifespan=lifespan,
+    docs_url="/docs" if docs else None,
+    redoc_url="/redoc" if docs else None,
+    openapi_url="/openapi.json" if docs else None,
 )
 
+# Starlette runs the last-added middleware first: CORS answers pre-flights,
+# then the rate limiter, then headers / method filter, then host check.
+if settings.allowed_host_list:
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_host_list)
+app.add_middleware(GZipMiddleware, minimum_size=1024)
+app.add_middleware(SecurityHeadersMiddleware, hsts=settings.is_production)
+app.add_middleware(RateLimitMiddleware, limit=settings.rate_limit_per_minute)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["X-Quota-Remaining"],
+    allow_origin_regex=settings.cors_origin_regex or None,
+    allow_credentials=False,
+    allow_methods=["GET"],
+    allow_headers=["Accept", "Content-Type"],
+    max_age=86400,
 )
-app.add_middleware(SessionMiddleware, secret_key=settings.session_secret, same_site="lax")
 
-api = app  # alias
-
-for router in (
-    auth.router,
-    oauth_routes.router,
-    users.router,
-    settings_routes.router,
-    scans.router,
-    analyses.router,
-    dashboard.router,
-    fingerprints.router,
-    billing.router,
-):
-    app.include_router(router, prefix="/api")
+app.include_router(fingerprints.router, prefix="/api")
 
 
 @app.get("/api/health", tags=["meta"])
-def health() -> dict:
+def health(response: Response) -> dict:
+    response.headers["Cache-Control"] = "no-store"
     return {"status": "ok", "version": __version__}
-
-
-@app.get("/api/meta/plans", tags=["meta"])
-def plans() -> dict:
-    return {"plans": describe_all()}

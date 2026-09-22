@@ -4,17 +4,18 @@ Repo guide for AI assistants. Keep it short; link out for detail.
 
 ## What this is
 
-`IA Inspector` — an **evidence-based AI-origin analyser** for text, code and
-images. It emits one verdict (`ai_confirmed` / `ai_likely` / `ai_possible` /
-`inconclusive` / `no_evidence` / `human_declared`) with a confidence basis
-(`cryptographic` / `metadata` / `statistical`) and the list of contributing
-signals. **Never present a statistical estimate as proof** — the honest caveats
-in `engine/assess.ts` and the UI copy are load-bearing. A cryptographic verdict
-(valid C2PA manifest) is authoritative; everything else is an estimate.
+`AI Inspector`: a free, open-source (MIT), **evidence-based AI-origin analyser**
+for text, code and images, bilingual (English / French) PWA. It emits one
+verdict (`ai_confirmed` / `ai_likely` / `ai_possible` / `inconclusive` /
+`no_evidence` / `human_declared`) with a confidence basis (`cryptographic` /
+`metadata` / `statistical`) and the contributing signals. **Never present a
+statistical estimate as proof**: the caveats in `engine/assess.ts` and the UI
+copy are load-bearing. A valid C2PA manifest is authoritative; everything else
+is an estimate.
 
 Monorepo: [`frontend/`](frontend) (React SPA, runs all analysis in-browser) +
-[`backend/`](backend) (FastAPI — accounts, quotas, history, catalogue; never
-analyses content).
+[`backend/`](backend) (FastAPI, public read-only fingerprint catalogue; never
+analyses content, no user data).
 
 ## Run / verify
 
@@ -22,50 +23,49 @@ analyses content).
 cd backend  && make install && make seed && make dev     # :8000, SQLite
 cd frontend && npm install && npm run dev                 # :5173
 
-cd backend  && make test && make lint                     # pytest (16) + ruff
+cd backend  && make test && make lint                     # pytest + ruff
 cd frontend && npm run typecheck && npm run lint && npm run build
 ```
 
-PostgreSQL: `cd backend && make db-up`, set `DATABASE_URL` in `backend/.env`,
-`make migrate`.
-
 ## Ground rules
 
-- **Plans**: three tiers — `anonymous`, `pro`, `premium` (no free-account tier).
-  The matrix in [`docs/PLANS.md`](docs/PLANS.md) is authoritative and mirrored in
-  `backend/app/plans.py` **and** `frontend/src/lib/plans.ts` — change all three
-  together.
-- **Analysis stays client-side** (`frontend/src/engine/`). Don't add
-  content-analysis endpoints to the backend; it breaks the privacy promise.
-- **Anonymous persistence** is IndexedDB only (`frontend/src/lib/localDb.ts`).
-  Signed-in users use the API. `services/index.ts` switches on auth state.
-- **Quota** is enforced server-side (`backend/app/quota.py`); the client just
-  reacts to `429`. Fixed window, `analysis` and `clean` share the budget.
+- **No plans, no quotas, no accounts.** Everything is free for everyone. Do not
+  reintroduce auth or user data on the server.
+- **Analysis stays client-side** (`frontend/src/engine/`). No content-analysis
+  endpoints: it breaks the privacy promise.
+- **Persistence is IndexedDB only** (`frontend/src/lib/localDb.ts`).
+- **API is public**: keep it read-only (GET) and behind `app/hardening.py`
+  (rate limit, security headers).
+- **i18n**: every user-facing string goes in `frontend/src/i18n/locales/en/*`
+  and `fr/*` (French is typed against English). Catalogue translations live in
+  `backend/app/seed_data_fr.py`. Stylometry is language-aware (`engine/language.ts`,
+  `aiText.ts`, `statistics.ts`).
+- **Never use the em dash character** (U+2014) in code, UI copy or docs. CI fails on it.
 - **Latest stable deps.** TypeScript is pinned to 5.9 only because
-  `typescript-eslint` peers `<6.1`; revisit when it supports TS 7.
-- Tailwind 4 keeps the JS config via `@config` in `src/index.css`; custom color
-  tokens are CSS-variable based for runtime light/dark.
-- Commit messages: use `git commit -F <file>` for multi-line bodies (shell
-  mangles `-m` strings with `+`/unicode).
+  `typescript-eslint` peers `<6.1`.
+- Tailwind 4 keeps the JS config via `@config` in `src/index.css`; colour tokens
+  are CSS variables for runtime light/dark.
+- Commit messages: use `git commit -F <file>` for multi-line bodies.
 
 ## Layout
 
 ```
 frontend/src/
-  engine/         c2pa (WASM) · aiImage (FFT/noise) · aiText (prose stylometry) · aiCode (code stylometry + Trojan Source) · assess (verdict)
-                  · unicode · metadata · statistics · fingerprints · score · index (orchestrator) · clean
-  services/       index (analysisApi, historyApi, settingsApi, fingerprintApi, runAnalysis) · catalog · dashboard · errors
-  stores/         useAuthStore · useQuotaStore · useSettingsStore · useHistoryStore
-  lib/            apiClient · plans · localDb
-  components/auth/ AuthPanel · OAuthButtons · SignUpModal · AuthCallback (page)
+  engine/     c2pa · aiImage · aiText · aiCode · language · assess · unicode · metadata
+              · statistics · fingerprints · score · clean · index (orchestrator)
+  i18n/       index (setup, detection) · locales/en/* · locales/fr/*
+  services/   index (runAnalysis, history, settings, fingerprints) · catalog · dashboard
+  stores/     useSettingsStore · useHistoryStore
+  lib/        apiClient · localDb · analysisStatus · constants
   pages/ , pages/app/
 
 backend/app/
-  main · config · db · models · schemas · plans · quota · security · deps · oauth · auth_service · seed(_data)
-  routers/        auth · oauth_routes · users · settings_routes · scans · analyses · dashboard · fingerprints · billing
+  main · config · hardening · db · models · schemas · deps · seed · seed_data(_fr)
+  routers/fingerprints
 ```
 
 ## Docs
 
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/PLANS.md`](docs/PLANS.md)
-· [`backend/README.md`](backend/README.md) · [`frontend/README.md`](frontend/README.md)
+[`README.md`](README.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) ·
+[`CONTRIBUTING.md`](CONTRIBUTING.md) ·
+[`backend/README.md`](backend/README.md) · [`frontend/README.md`](frontend/README.md)

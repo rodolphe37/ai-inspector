@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest an idea, a detection method or a translation
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: For a detection method, link the paper, standard or reference implementation.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

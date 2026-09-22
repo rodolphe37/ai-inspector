@@ -1,6 +1,4 @@
-import { api } from '@/lib/apiClient';
 import { getLocalAnalysis, listLocalAnalyses } from '@/lib/localDb';
-import { useAuthStore } from '@/stores/useAuthStore';
 import type { Analysis } from '@/types/analysis';
 import { getCatalog } from './catalog';
 
@@ -13,22 +11,11 @@ export interface DashboardData {
   };
   activity: { date: string; analyses: number; signals: number }[];
   recent: Analysis[];
-  scope: 'account' | 'local';
 }
 
 const SIGNAL = new Set(['possible_signal', 'signal_detected', 'c2pa_found']);
 
 export async function getDashboard(days = 30): Promise<DashboardData> {
-  if (useAuthStore.getState().status === 'authenticated') {
-    const d = await api.get<{
-      stats: DashboardData['stats'];
-      activity: DashboardData['activity'];
-      recent: Analysis[];
-    }>('/dashboard');
-    return { ...d, scope: 'account' };
-  }
-
-  // Anonymous: derive from IndexedDB.
   const list = await listLocalAnalyses();
   const catalog = await getCatalog().catch(() => []);
   const full = await Promise.all(list.map((a) => getLocalAnalysis(a.id)));
@@ -58,6 +45,5 @@ export async function getDashboard(days = 30): Promise<DashboardData> {
     },
     activity: [...buckets.entries()].map(([date, v]) => ({ date, ...v })),
     recent: list.slice(0, 5),
-    scope: 'local',
   };
 }

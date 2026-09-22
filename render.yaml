@@ -1,0 +1,31 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# New > Blueprint > pick this repo. Render builds backend/Dockerfile, runs
+# `alembic upgrade head`, then serves the API on $PORT.
+services:
+  - type: web
+    name: ai-inspector-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    # Only changes under backend/ trigger a deploy. Docker paths are relative
+    # to the repository root (not to rootDir).
+    rootDir: backend
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      # Neon connection string (pooled endpoint recommended), e.g.
+      # postgresql://user:pass@ep-xxx-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # Your Netlify URL, e.g. https://ai-inspector.netlify.app
+      - key: CORS_ORIGINS
+        sync: false
+      # Optional: allow Netlify deploy previews, e.g. https://.*--ai-inspector\.netlify\.app
+      - key: CORS_ORIGIN_REGEX
+        sync: false
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "120"

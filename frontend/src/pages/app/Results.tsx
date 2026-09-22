@@ -14,7 +14,9 @@ import { PageTransition } from '@/components/layout/PageTransition';
 import { ScoreRing } from '@/components/ui/ScoreRing';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { ScoreSkeleton, CardsSkeleton } from '@/components/ui/Skeleton';
+import { useTranslation } from 'react-i18next';
 import { analysisApi } from '@/services';
+import { currentLocale } from '@/i18n';
 import type { AnalysisResult, TimelineEvent } from '@/types/analysis';
 
 const timelineIcons: Record<string, typeof FileText> = {
@@ -30,6 +32,7 @@ export default function Results() {
   const { id } = useParams<{ id: string }>();
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!id) return;
@@ -70,9 +73,9 @@ export default function Results() {
     return (
       <PageTransition>
         <div className="p-8 text-center">
-          <p className="text-muted">Result not available.</p>
+          <p className="text-muted">{t('results.notAvailable')}</p>
           <Link to="/app/history" className="mt-4 inline-block text-primary hover:text-primary-hover">
-            Back to history
+            {t('results.backToHistory')}
           </Link>
         </div>
       </PageTransition>
@@ -87,14 +90,14 @@ export default function Results() {
           <div>
             <Link to="/app/history" className="inline-flex items-center gap-1 text-sm text-muted hover:text-content mb-2">
               <ArrowLeft className="h-3.5 w-3.5" />
-              History
+              {t('nav.app.history')}
             </Link>
             <div className="flex items-center gap-2 mb-1">
               <CheckCircle2 className="h-5 w-5 text-success" />
-              <h1 className="text-2xl font-bold tracking-tight">Analysis complete</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{t('results.title')}</h1>
             </div>
             <p className="text-sm text-muted">
-              {result.name} · {new Date(result.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              {result.name} · {new Date(result.date).toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -103,21 +106,21 @@ export default function Results() {
               className="flex items-center gap-2 px-4 py-2 rounded-lg border border-default text-sm font-medium hover:bg-surface-2 transition-colors"
             >
               <Download className="h-4 w-4" />
-              Export report
+              {t('results.export')}
             </button>
             <Link
               to="/app/clean"
               className="flex items-center gap-2 px-4 py-2 rounded-lg border border-default text-sm font-medium hover:bg-surface-2 transition-colors"
             >
               <Sparkles className="h-4 w-4" />
-              Clean
+              {t('nav.app.clean')}
             </Link>
             <Link
               to="/app/analyze"
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
             >
               <Search className="h-4 w-4" />
-              Analyze again
+              {t('results.again')}
             </Link>
           </div>
         </div>
@@ -127,13 +130,10 @@ export default function Results() {
 
         {/* Provenance signal level (secondary) */}
         <div className="surface p-5 mb-6 flex flex-col sm:flex-row items-center gap-6">
-          <ScoreRing score={result.score} label={`${result.signalLevel.toUpperCase()}`} size={120} />
+          <ScoreRing score={result.score} label={t(`status.signalLevel.${result.signalLevel}`).toUpperCase()} size={120} />
           <div className="flex-1 text-center sm:text-left">
-            <p className="text-sm font-medium">Provenance signal level</p>
-            <p className="mt-1 text-sm text-muted">
-              How much technical provenance signal (Unicode, metadata, watermarks, manifests) is
-              present overall — distinct from the AI-origin verdict above.
-            </p>
+            <p className="text-sm font-medium">{t('results.signalLevel.title')}</p>
+            <p className="mt-1 text-sm text-muted">{t('results.signalLevel.description')}</p>
           </div>
         </div>
 
@@ -154,15 +154,15 @@ export default function Results() {
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted">Invisible characters</span>
+                <span className="text-muted">{t('results.unicode.invisible')}</span>
                 <span className="font-medium tabular-nums">{result.unicode.invisibleCharacters}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted">Control characters</span>
+                <span className="text-muted">{t('results.unicode.control')}</span>
                 <span className="font-medium tabular-nums">{result.unicode.controlCharacters}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted">Suspicious homoglyphs</span>
+                <span className="text-muted">{t('results.unicode.homoglyphs')}</span>
                 <span className="font-medium tabular-nums">{result.unicode.homoglyphs}</span>
               </div>
             </div>
@@ -178,7 +178,7 @@ export default function Results() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-info" />
-                <h3 className="font-semibold">Metadata</h3>
+                <h3 className="font-semibold">{t('results.metadata')}</h3>
               </div>
               <StatusBadge status={result.metadata.status === 'found' ? 'found' : 'not_found'} />
             </div>
@@ -209,48 +209,48 @@ export default function Results() {
             {result.c2pa.manifest ? (
               <div className="space-y-1.5 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted">Signature</span>
+                  <span className="text-muted">{t('results.c2pa.signature')}</span>
                   <span className={`font-medium ${result.c2pa.verified ? 'text-success' : 'text-error'}`}>
-                    {result.c2pa.verified ? 'valid' : 'did not validate'}
+                    {result.c2pa.verified ? t('results.c2pa.valid') : t('results.c2pa.invalid')}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted">AI-generated claim</span>
+                  <span className="text-muted">{t('results.c2pa.aiClaim')}</span>
                   <span className={`font-medium ${result.c2pa.isAiGenerated ? 'text-warning' : ''}`}>
                     {result.c2pa.isAiGenerated
                       ? result.c2pa.generativeType === 'compositeWithTrainedAlgorithmicMedia'
-                        ? 'AI-assisted composite'
-                        : 'yes'
-                      : 'none'}
+                        ? t('results.c2pa.composite')
+                        : t('common.yes')
+                      : t('common.none')}
                   </span>
                 </div>
                 {result.c2pa.signer && (
                   <div className="flex justify-between gap-3">
-                    <span className="text-muted">Signer</span>
+                    <span className="text-muted">{t('results.c2pa.signer')}</span>
                     <span className="font-medium text-right truncate">{result.c2pa.signer}</span>
                   </div>
                 )}
                 {result.c2pa.claimGenerator && (
                   <div className="flex justify-between gap-3">
-                    <span className="text-muted">Generator</span>
+                    <span className="text-muted">{t('results.c2pa.generator')}</span>
                     <span className="font-medium text-right truncate">{result.c2pa.claimGenerator}</span>
                   </div>
                 )}
                 {result.c2pa.softwareAgents?.length ? (
                   <div className="flex justify-between gap-3">
-                    <span className="text-muted">Software</span>
+                    <span className="text-muted">{t('results.c2pa.software')}</span>
                     <span className="font-medium text-right">{result.c2pa.softwareAgents.join(', ')}</span>
                   </div>
                 ) : null}
                 {result.c2pa.errors?.length ? (
-                  <p className="text-xs text-error pt-1">Validation issues: {result.c2pa.errors.join(', ')}</p>
+                  <p className="text-xs text-error pt-1">{t('results.c2pa.issues', { errors: result.c2pa.errors.join(', ') })}</p>
                 ) : null}
               </div>
             ) : (
               <p className="text-sm text-muted">
                 {result.type === 'text' || result.type === 'code'
-                  ? 'C2PA Content Credentials apply to media files, not plain text.'
-                  : 'No embedded C2PA / Content Credentials manifest was found. Note: credentials are commonly stripped by screenshots and social platforms.'}
+                  ? t('results.c2pa.textOnly')
+                  : t('results.c2pa.none')}
               </p>
             )}
           </motion.div>
@@ -265,13 +265,13 @@ export default function Results() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Fingerprint className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold">Known fingerprints</h3>
+                <h3 className="font-semibold">{t('results.fingerprints.title')}</h3>
               </div>
             </div>
             <div className="space-y-2.5">
               {result.fingerprints.length === 0 ? (
                 <p className="text-sm text-muted">
-                  Known-fingerprint matching is available on the Pro and Premium plans.
+                  {t('results.fingerprints.none')}
                 </p>
               ) : (
                 result.fingerprints.map((fp) => (
@@ -296,16 +296,21 @@ export default function Results() {
         <div className="surface p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <BarChart3 className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">Statistical analysis</h3>
+            <h3 className="text-lg font-semibold">{t('results.stats.title')}</h3>
+            {result.statistical.language && (
+              <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-surface-2 border border-default text-muted">
+                {t('results.stats.reference', { lang: t(`results.stats.languages.${result.statistical.language}`) })}
+              </span>
+            )}
           </div>
 
           <div className="grid sm:grid-cols-4 gap-4 mb-6">
             <div className="surface-2 p-4 rounded-lg">
-              <p className="text-xs text-muted mb-1">χ² (letter dist.)</p>
+              <p className="text-xs text-muted mb-1">{t('results.stats.chi2')}</p>
               <p className="text-2xl font-bold tabular-nums">{result.statistical.observedScore}</p>
             </div>
             <div className="surface-2 p-4 rounded-lg">
-              <p className="text-xs text-muted mb-1">Threshold</p>
+              <p className="text-xs text-muted mb-1">{t('results.stats.threshold')}</p>
               <p className="text-2xl font-bold tabular-nums">{result.statistical.threshold}</p>
             </div>
             <div className="surface-2 p-4 rounded-lg">
@@ -313,7 +318,7 @@ export default function Results() {
               <p className="text-2xl font-bold tabular-nums">{result.statistical.pValue}</p>
             </div>
             <div className="surface-2 p-4 rounded-lg">
-              <p className="text-xs text-muted mb-1">Entropy (bits/char)</p>
+              <p className="text-xs text-muted mb-1">{t('results.stats.entropy')}</p>
               <p className="text-2xl font-bold tabular-nums">{result.statistical.entropy}</p>
             </div>
           </div>
@@ -331,15 +336,15 @@ export default function Results() {
                   fontSize: '12px',
                 }}
               />
-              <ReferenceLine y={result.statistical.threshold} stroke="rgb(var(--color-warning))" strokeWidth={2} strokeDasharray="5 5" label={{ value: 'Threshold', fill: 'rgb(var(--color-warning))', fontSize: 11, position: 'right' }} />
-              <Bar dataKey="observed" fill="rgb(var(--color-primary))" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="expected" fill="rgb(var(--color-text-subtle))" opacity={0.3} radius={[4, 4, 0, 0]} />
+              <ReferenceLine y={result.statistical.threshold} stroke="rgb(var(--color-warning))" strokeWidth={2} strokeDasharray="5 5" label={{ value: t('results.stats.threshold'), fill: 'rgb(var(--color-warning))', fontSize: 11, position: 'right' }} />
+              <Bar dataKey="observed" name={t('results.stats.observed')} fill="rgb(var(--color-primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="expected" name={t('results.stats.expected')} fill="rgb(var(--color-text-subtle))" opacity={0.3} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
 
           <div className="mt-4 p-4 rounded-lg bg-info/10 border border-info/20">
             <p className="text-sm text-content">
-              <span className="font-semibold text-info">Conclusion: </span>
+              <span className="font-semibold text-info">{t('results.stats.conclusion')} </span>
               {result.statistical.conclusion}
             </p>
           </div>
@@ -348,7 +353,7 @@ export default function Results() {
           <div className="surface p-6 mb-6 border-info/20">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="h-5 w-5 text-info" />
-              <h3 className="text-lg font-semibold">Statistical analysis</h3>
+              <h3 className="text-lg font-semibold">{t('results.stats.title')}</h3>
             </div>
             <p className="text-sm text-muted">{result.statistical.conclusion}</p>
           </div>
@@ -356,7 +361,7 @@ export default function Results() {
 
         {/* What we found timeline */}
         <div className="surface p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-6">What we found</h3>
+          <h3 className="text-lg font-semibold mb-6">{t('results.timeline')}</h3>
           <div className="space-y-0">
             {result.timeline.map((event: TimelineEvent, i) => {
               const Icon = timelineIcons[event.icon] || FileText;
@@ -393,8 +398,8 @@ export default function Results() {
           <div className="flex gap-3">
             <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-warning">Important</p>
-              <p className="text-sm text-muted mt-1">{result.disclaimer}</p>
+              <p className="text-sm font-medium text-warning">{t('results.important')}</p>
+              <p className="text-sm text-muted mt-1">{t('engine.disclaimer')}</p>
             </div>
           </div>
         </div>
@@ -415,14 +420,8 @@ const VERDICT_STYLE: Record<
   human_declared: { ring: 'text-success', text: 'text-success', bg: 'bg-success/10', border: 'border-success/20' },
 };
 
-const CONFIDENCE_LABEL: Record<AnalysisResult['aiAssessment']['confidence'], string> = {
-  cryptographic: 'Cryptographic proof',
-  metadata: 'Metadata-based',
-  statistical: 'Forensic estimate',
-  none: 'No signal',
-};
-
 function AiVerdictCard({ result }: { result: AnalysisResult }) {
+  const { t } = useTranslation();
   const ai = result.aiAssessment;
   const s = VERDICT_STYLE[ai.verdict];
   const showPct = ai.confidence === 'statistical' || ai.confidence === 'metadata' || ai.verdict === 'ai_likely';
@@ -434,7 +433,7 @@ function AiVerdictCard({ result }: { result: AnalysisResult }) {
           {showPct ? (
             <>
               <span className={`text-2xl font-bold tabular-nums ${s.text}`}>{ai.probability}%</span>
-              <span className="text-[10px] text-subtle uppercase tracking-wide">AI</span>
+              <span className="text-[10px] text-subtle uppercase tracking-wide">{t('results.verdict.ai')}</span>
             </>
           ) : (
             <Fingerprint className={`h-9 w-9 ${s.text}`} />
@@ -442,9 +441,10 @@ function AiVerdictCard({ result }: { result: AnalysisResult }) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h2 className={`text-xl font-bold ${s.text}`}>{ai.label}</h2>
+            {/* Label, confidence and caveat are keyed by verdict → always in the current language. */}
+            <h2 className={`text-xl font-bold ${s.text}`}>{t(`engine.verdict.label.${ai.verdict}`)}</h2>
             <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 border border-default text-muted">
-              {CONFIDENCE_LABEL[ai.confidence]}
+              {t(`results.verdict.confidence.${ai.confidence}`)}
             </span>
           </div>
           {ai.basis.length > 0 && (
@@ -459,7 +459,7 @@ function AiVerdictCard({ result }: { result: AnalysisResult }) {
           )}
           <p className="mt-3 text-xs text-subtle flex gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-warning" />
-            {ai.caveat}
+            {t(`engine.verdict.caveat.${ai.verdict}`)}
           </p>
         </div>
       </div>
@@ -467,7 +467,7 @@ function AiVerdictCard({ result }: { result: AnalysisResult }) {
       {ai.signals.length > 0 && (
         <details className="mt-4 group">
           <summary className="cursor-pointer text-sm text-primary hover:text-primary-hover select-none">
-            Signal breakdown ({ai.signals.length})
+            {t('results.verdict.breakdown', { count: ai.signals.length })}
           </summary>
           <div className="mt-3 space-y-2">
             {ai.signals.map((sig) => (
