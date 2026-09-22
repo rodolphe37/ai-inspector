@@ -46,7 +46,7 @@ export default function FingerprintDetail() {
 
   return (
     <PageTransition>
-      <div className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
+      <div className="p-4 sm:p-6 lg:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-8">
         <Link to="/app/fingerprints" className="inline-flex items-center gap-1 text-sm text-muted hover:text-content mb-4">
           <ArrowLeft className="h-3.5 w-3.5" />
           {t('nav.app.fingerprints')}

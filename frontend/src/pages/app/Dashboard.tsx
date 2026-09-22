@@ -48,7 +48,7 @@ export default function Dashboard() {
 
   return (
     <PageTransition>
-      <div className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
+      <div className="p-4 sm:p-6 lg:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.title')}</h1>
           <p className="mt-1 text-muted">{t('dashboard.subtitle')}</p>
@@ -62,7 +62,7 @@ export default function Dashboard() {
         </div>
 
         <div className="surface p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
               <h2 className="text-lg font-semibold">{t('dashboard.activity.title')}</h2>
               <p className="text-sm text-muted">{t('dashboard.activity.period')}</p>

@@ -54,20 +54,20 @@ export function AppLayout() {
       </AnimatePresence>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 border-b border-default bg-bg/80 backdrop-blur-md">
-          <div className="flex h-14 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-2">
-              <button className="lg:hidden p-2 rounded-lg hover:bg-surface-2 text-muted" onClick={() => setSidebarOpen(true)} aria-label={t('nav.openMenu')}>
+        <header className="sticky top-0 z-30 border-b border-default bg-bg/80 backdrop-blur-md pt-[env(safe-area-inset-top)]">
+          <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <button className="lg:hidden shrink-0 p-2 -ml-2 rounded-lg hover:bg-surface-2 text-muted" onClick={() => setSidebarOpen(true)} aria-label={t('nav.openMenu')}>
                 <Menu className="h-5 w-5" />
               </button>
-              <nav className="flex items-center gap-1.5 text-sm">
-                <Link to="/app" className="text-muted hover:text-content transition-colors">{t('nav.app.dashboard')}</Link>
-                <ChevronRight className="h-3.5 w-3.5 text-subtle" />
-                <span className="text-content font-medium">{currentCrumb}</span>
+              <nav className="flex min-w-0 items-center gap-1.5 text-sm whitespace-nowrap">
+                <Link to="/app" className="hidden sm:inline text-muted hover:text-content transition-colors">{t('nav.app.dashboard')}</Link>
+                <ChevronRight className="hidden sm:block h-3.5 w-3.5 shrink-0 text-subtle" />
+                <span className="truncate text-content font-medium">{currentCrumb}</span>
               </nav>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex shrink-0 items-center gap-3">
               <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 {t('nav.localPrivate')}
@@ -81,12 +81,12 @@ export function AppLayout() {
           <Outlet />
         </main>
 
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-default bg-surface/90 backdrop-blur-md">
-          <div className="flex justify-around items-center h-16 px-2">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-default bg-surface/90 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
+          <div className="grid grid-cols-5 h-16 px-1">
             {navItems.slice(0, 5).map((item) => (
-              <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg text-xs transition-colors ${isActive ? 'text-primary' : 'text-muted'}`}>
-                <item.icon className="h-5 w-5" />
-                <span>{t(`nav.app.${item.key}`)}</span>
+              <NavLink key={item.to} to={item.to} end={item.end} aria-label={t(`nav.app.${item.key}`)} className={({ isActive }) => `flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0.5 transition-colors ${isActive ? 'text-primary' : 'text-muted'}`}>
+                <item.icon className="h-5 w-5 shrink-0" />
+                <span className="w-full truncate text-center text-[11px] leading-tight">{t(`nav.short.${item.key}`)}</span>
               </NavLink>
             ))}
           </div>

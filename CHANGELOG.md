@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.1.1] - 2026-09-22
+
+### Fixed
+- Mobile header: only the current page is shown (single line, truncated if
+  needed); the full breadcrumb comes back from tablet width.
+- Mobile bottom bar: five equal columns with short single-line labels, nothing
+  overflows down to 320 px wide screens.
+- Safe areas on notched phones in installed (standalone) mode: header and
+  bottom bar no longer sit under the status bar or home indicator.
+- Dashboard activity card header stacks on small screens.
+
 ## [1.1.0] - 2026-09-22
 
 ### Added
@@ -49,5 +60,6 @@ First open-source release.
 - Renamed the project from "IA Inspector" to **AI Inspector** (English product name).
 - The em dash character is banned from code, UI copy and docs (checked in CI).
 
+[1.1.1]: https://github.com/rodolphe37/ai-inspector/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/rodolphe37/ai-inspector/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/rodolphe37/ai-inspector/releases/tag/v1.0.0

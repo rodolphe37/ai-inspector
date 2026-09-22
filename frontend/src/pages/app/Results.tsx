@@ -84,7 +84,7 @@ export default function Results() {
 
   return (
     <PageTransition>
-      <div className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
+      <div className="p-4 sm:p-6 lg:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>

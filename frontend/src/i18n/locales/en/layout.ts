@@ -14,6 +14,15 @@ export const nav = {
     clean: 'Clean',
     settings: 'Settings',
   },
+  // Short labels for the mobile bottom bar.
+  short: {
+    overview: 'Home',
+    analyze: 'Analyze',
+    history: 'History',
+    fingerprints: 'Prints',
+    clean: 'Clean',
+    settings: 'Settings',
+  },
   launchApp: 'Launch app',
   openMenu: 'Open menu',
   closeMenu: 'Close menu',

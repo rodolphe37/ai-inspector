@@ -53,7 +53,7 @@ export default function Settings() {
 
   return (
     <PageTransition>
-      <div className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
+      <div className="p-4 sm:p-6 lg:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">{t('settings.title')}</h1>
           <p className="mt-1 text-muted">{t('settings.subtitle')}</p>
