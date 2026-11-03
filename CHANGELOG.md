@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.4.1] - 2026-11-03
+
+### Changed
+- Dependencies updated: React 19.3, i18next, react-i18next, React Router,
+  pdf.js 6.4, Zod 4.6, Zustand, Lucide, Vite 8.3, ESLint and
+  typescript-eslint, plus two new major versions (Framer Motion 14 and
+  vite-plugin-pwa 2).
+- CI and deployment workflows use the latest GitHub actions (checkout and
+  setup-node 7, Docker Buildx, login and build-push).
+
 ## [1.4.0] - 2026-09-22
 
 ### Added
@@ -177,6 +187,7 @@ First open-source release.
 - Renamed the project from "IA Inspector" to **AI Inspector** (English product name).
 - The em dash character is banned from code, UI copy and docs (checked in CI).
 
+[1.4.1]: https://github.com/rodolphe37/ai-inspector/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.4...v1.4.0
 [1.3.4]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/rodolphe37/ai-inspector/compare/v1.3.2...v1.3.3
